@@ -1,6 +1,6 @@
 {
   "name": "scope-focus",
-  "version": "0.0.0+codex.20260911001024",
+  "version": "0.0.0+codex.20260912131137",
   "description": "Define native goals, add explicit durable Goal Memory, and use optional explicit blind checks. Installation requires completing INSTALL.md.",
   "author": {
     "name": "A. Chukavin"

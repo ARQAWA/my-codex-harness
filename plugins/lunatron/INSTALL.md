@@ -53,8 +53,9 @@ persistent trust. Do not substitute `--dangerously-bypass-hook-trust`, which onl
 bypasses persisted trust for one invocation.
 
 Start a **new task** after trust. In that task, confirm from runtime evidence that
-Lunatron active context is present for root `gpt-6-astra` or `gpt-5.6-sol` at any
-effort, the `lunatik` profile is picked up, and the active context reports the
+Lunatron active context is present for root `gpt-6-astra`, `gpt-5.6-sol`, or
+`gpt-5.5` at any effort, the `lunatik` profile is picked up, and the active
+context reports the
 current `session_id` plus absolute `PLUGIN_DATA/tool-results/<safe-session-id>` and
 `PLUGIN_DATA/artifacts/<safe-session-id>` paths. Verify that `PLUGIN_DATA` is
 available. An already open task may retain old context and work; do not claim it

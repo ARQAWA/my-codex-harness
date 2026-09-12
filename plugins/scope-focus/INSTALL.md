@@ -7,6 +7,15 @@ Native plugin installation, agent-profile installation, and hook-trust handling 
 3. After an authorized installation, reinstall, or hook-changing update, use the existing Codex CLI app-server STDIO interface to inspect Scope Focus's exact hook trust, correct it only as needed within the granted authority, and verify the resulting state. Do not reuse stale trust for a changed hook; preserve unrelated hook trust and never bypass host approval requirements.
 
 Installation is incomplete until the native plugin, packaged `properliler` profile, and exact fresh hook trust are all ready; perform runtime checks only afterward.
+
+After installation or reinstallation, the new Sol reminders `SessionStart` hook must have current host trust and `enabled = false`, unless the user explicitly requested that it be enabled. Do not start a new Sol task before this disabled state is fixed. Disabled does not mean untrusted.
+
+Use the supported host hook-management flow to identify the new handler from the installed source and its current definition. `session_start:1:0` is the expected address with the existing order, not a universal ID across host versions. Do not construct `trusted_hash` yourself or transfer it between operating systems or versions. Read the current definition and state from the host and save trust through the native flow. If the available flow cannot produce trusted and disabled without an intermediate run, installation is incomplete.
+
+Every current command handler in both plugins must have a current host trust record. Check the disabled Sol hook too; disabled does not mean missing trust. Existing active hooks remain active. Do not use a trust bypass.
+
+The host's hook-trust and hash details are not a portable API. Preserve the packaged `properliler` profile and unrelated hook records.
+
 ## Windows hook verification
 
 On Windows, installation or reinstallation is incomplete until every command entry in the installed package's `hooks/hooks.json` has been executed successfully in the actual Codex hook environment. Perform this after native installation, packaged-profile installation, and current hook-trust verification.

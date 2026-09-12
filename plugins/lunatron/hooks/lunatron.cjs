@@ -3,7 +3,9 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
-const SOL_MODELS = new Set(['gpt-5.6-sol', 'gpt-6-astra']);
+const SOL_MODELS = new Set(['gpt-5.6-sol', 'gpt-6-astra', 'gpt-5.5']);
+const TRANSCRIPT_CHUNK_BYTES = 64 * 1024;
+const ACTIVE_REASONING_EFFORTS = new Set(['max', 'xhigh']);
 
 const ACTIVE_CONTEXT = `LUNATRON_STATE=ACTIVE
 You are Lunatron's root Main. Autonomously own the whole outcome, scope, complete
@@ -145,8 +147,60 @@ function isRoot(input) {
   return input.agent_id === undefined && input.agent_type === undefined;
 }
 
+function readReasoningEffort(input) {
+  if (typeof input.transcript_path !== 'string') return undefined;
+
+  let file;
+  try {
+    file = fs.openSync(input.transcript_path, 'r');
+    let position = fs.fstatSync(file).size;
+    let carry = Buffer.alloc(0);
+
+    while (position > 0) {
+      const length = Math.min(position, TRANSCRIPT_CHUNK_BYTES);
+      position -= length;
+      const chunk = Buffer.allocUnsafe(length);
+      fs.readSync(file, chunk, 0, length, position);
+      const data = Buffer.concat([chunk, carry]);
+      let lineEnd = data.length;
+
+      for (let index = data.length - 1; index >= 0; index -= 1) {
+        if (data[index] !== 10) continue;
+        const effort = effortFromLine(data.subarray(index + 1, lineEnd), input.turn_id);
+        if (effort !== undefined) return effort;
+        lineEnd = index;
+      }
+
+      if (position === 0) {
+        return effortFromLine(data.subarray(0, lineEnd), input.turn_id);
+      }
+      carry = data.subarray(0, lineEnd);
+    }
+  } catch {
+    return undefined;
+  } finally {
+    if (file !== undefined) fs.closeSync(file);
+  }
+  return undefined;
+}
+
+function effortFromLine(line, turnId) {
+  let record;
+  try {
+    record = JSON.parse(line.toString('utf8'));
+  } catch {
+    return undefined;
+  }
+  if (record?.type !== 'turn_context') return undefined;
+  if (turnId !== undefined && record.payload?.turn_id !== turnId) return undefined;
+  return record.payload?.effort;
+}
+
 function isActiveLunatron(input) {
-  return isRoot(input) && SOL_MODELS.has(input.model);
+  if (!isRoot(input)) return false;
+  if (SOL_MODELS.has(input.model)) return true;
+  if (input.model !== 'gpt-5.6-terra') return false;
+  return ACTIVE_REASONING_EFFORTS.has(readReasoningEffort(input));
 }
 
 function emitContext(eventName, additionalContext) {
