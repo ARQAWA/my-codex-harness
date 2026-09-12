@@ -32,15 +32,16 @@ Goal нужен только для формулирования и native goal.
 в текущем составе goal skill этого нет.
 
 Main владеет анализом, решениями, диагностикой и приёмкой. Один persistent
-lunatik исполняет mechanical поручения. `properliler` из Scope Focus — fresh
-read-only reviewer.
+luntik готовит bounded информационные факты, один persistent lunatik исполняет
+mechanical поручения. `properliler` из Scope Focus — fresh read-only reviewer.
 
 В packaged profiles сейчас указаны:
 
-- `lunatik`: `gpt-5.6-luna/high`
+- `lunatik`: `gpt-5.6-luna/medium`
+- `luntik`: `gpt-5.6-luna/max`
 - `properliler`: `gpt-5.6-terra/high`
 
-Исторические `medium/low` не применять.
+Исторические значения не переносить.
 
 Каталог содержит видимые `gpt-6-astra`, `gpt-5.5`, `gpt-5.6-sol`,
 `gpt-5.6-terra`, `gpt-5.6-luna` и скрытые `gpt-reserve`,

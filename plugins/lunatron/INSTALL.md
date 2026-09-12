@@ -6,7 +6,8 @@ Keep
 Tritron/Lunatron mutually exclusive and do not delete unrelated plugins, profiles,
 archives, configuration, or data.
 
-The package contains one synchronous `PostToolUse` hook. Its matcher is
+The package contains one synchronous `PostToolUse` hook and two Luna profiles.
+Its matcher is
 `^(Bash|read_mcp_resource|mcp__.*)$`; `mcp__codex_app__*` is skipped. Large
 results are stored under `PLUGIN_DATA/tool-results/<safe-session-id>` and Main's
 requested files belong under `PLUGIN_DATA/artifacts/<safe-session-id>`. No new MCP
@@ -29,21 +30,23 @@ python3 "$PLUGIN_CREATOR_DIR/update_plugin_cachebuster.py" "$PLUGIN_SOURCE" || e
 codex plugin add "lunatron@$MARKETPLACE_NAME" || exit 1
 VERSION="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["version"])' "$PLUGIN_SOURCE/.codex-plugin/plugin.json")"
 INSTALLED_ROOT="$CODEX_DIR/plugins/cache/$MARKETPLACE_NAME/lunatron/$VERSION"
-for REL in .codex-plugin/plugin.json hooks/hooks.json hooks/lunatron.cjs agents/lunatik.toml INSTALL.md; do
+for REL in .codex-plugin/plugin.json hooks/hooks.json hooks/lunatron.cjs agents/lunatik.toml agents/luntik.toml INSTALL.md; do
   cmp -s "$PLUGIN_SOURCE/$REL" "$INSTALLED_ROOT/$REL" || { echo "package mismatch: $REL" >&2; exit 1; }
 done
 mkdir -p "$CODEX_DIR/agents"
 cp "$PLUGIN_SOURCE/agents/lunatik.toml" "$CODEX_DIR/agents/lunatik.toml"
 cmp -s "$PLUGIN_SOURCE/agents/lunatik.toml" "$CODEX_DIR/agents/lunatik.toml" || { echo "profile mismatch" >&2; exit 1; }
+cp "$PLUGIN_SOURCE/agents/luntik.toml" "$CODEX_DIR/agents/luntik.toml"
+cmp -s "$PLUGIN_SOURCE/agents/luntik.toml" "$CODEX_DIR/agents/luntik.toml" || { echo "profile mismatch" >&2; exit 1; }
 ```
 
 Expected results: `read_marketplace_name.py` prints `personal`; the cachebuster
 helper prints the old and new manifest versions; `codex plugin add` prints the
 installed cache path. `VERSION` comes from the source manifest and
 `INSTALLED_ROOT` resolves to `<CODEX_DIR>/plugins/cache/personal/lunatron/<VERSION>`.
-Every `cmp` prints nothing and exits `0` for all five package files and the user
-profile. The profile must show `name = "lunatik"`, `model = "gpt-5.6-luna"`, and
-`model_reasoning_effort = "high"`.
+Every `cmp` prints nothing and exits `0` for all six package files and both user
+profiles. The profiles must show `lunatik`/`gpt-5.6-luna`/`medium` and
+`luntik`/`gpt-5.6-luna`/`max`.
 
 Open a new interactive Codex task in the source directory and enter `/hooks`.
 Review the listed Lunatron definitions. Trust the four current entries only:
@@ -54,7 +57,7 @@ bypasses persisted trust for one invocation.
 
 Start a **new task** after trust. In that task, confirm from runtime evidence that
 Lunatron active context is present for root `gpt-6-astra`, `gpt-5.6-sol`, or
-`gpt-5.5` at any effort, the `lunatik` profile is picked up, and the active
+`gpt-5.5` at any effort, both the `lunatik` and `luntik` profiles are picked up, and the active
 context reports the
 current `session_id` plus absolute `PLUGIN_DATA/tool-results/<safe-session-id>` and
 `PLUGIN_DATA/artifacts/<safe-session-id>` paths. Verify that `PLUGIN_DATA` is
@@ -119,17 +122,19 @@ python3 "$PLUGIN_CREATOR_DIR/update_plugin_cachebuster.py" "$PLUGIN_SOURCE" || e
 codex plugin add "lunatron@$MARKETPLACE_NAME" || exit 1
 VERSION="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["version"])' "$PLUGIN_SOURCE/.codex-plugin/plugin.json")"
 INSTALLED_ROOT="$CODEX_DIR/plugins/cache/$MARKETPLACE_NAME/lunatron/$VERSION"
-for REL in .codex-plugin/plugin.json hooks/hooks.json hooks/lunatron.cjs agents/lunatik.toml INSTALL.md; do
+for REL in .codex-plugin/plugin.json hooks/hooks.json hooks/lunatron.cjs agents/lunatik.toml agents/luntik.toml INSTALL.md; do
   cmp -s "$PLUGIN_SOURCE/$REL" "$INSTALLED_ROOT/$REL" || { echo "package mismatch: $REL" >&2; exit 1; }
 done
 mkdir -p "$CODEX_DIR/agents"
 cp "$PLUGIN_SOURCE/agents/lunatik.toml" "$CODEX_DIR/agents/lunatik.toml"
 cmp -s "$PLUGIN_SOURCE/agents/lunatik.toml" "$CODEX_DIR/agents/lunatik.toml" || exit 1
+cp "$PLUGIN_SOURCE/agents/luntik.toml" "$CODEX_DIR/agents/luntik.toml"
+cmp -s "$PLUGIN_SOURCE/agents/luntik.toml" "$CODEX_DIR/agents/luntik.toml" || exit 1
 ```
 
 Expected results and `/hooks` trust steps are the same as POSIX. Use the actual
-configured hook shell and installed `PLUGIN_ROOT`. After installation, profile,
-and trust, execute every actual `command` string from the installed
+configured hook shell and installed `PLUGIN_ROOT`. After installation of both
+profiles and trust, execute every actual `command` string from the installed
 `hooks/hooks.json` in that shell. Supply valid payloads for all four events and
 check command exit status, stdout, and stderr. Exercise Windows paths containing
 spaces and non-ASCII characters, verify `PLUGIN_ROOT` and `PLUGIN_DATA`, and check
@@ -155,7 +160,7 @@ codex plugin add "lunatron@$MarketplaceName"
 if ($LASTEXITCODE -ne 0) { throw 'plugin install failed' }
 $Version = (Get-Content (Join-Path $PluginSource '.codex-plugin\plugin.json') -Raw | ConvertFrom-Json).version
 $InstalledRoot = Join-Path (Join-Path (Join-Path (Join-Path $CodexDir 'plugins') 'cache') $MarketplaceName) (Join-Path 'lunatron' $Version)
-foreach ($Relative in @('.codex-plugin\plugin.json','hooks\hooks.json','hooks\lunatron.cjs','agents\lunatik.toml','INSTALL.md')) {
+foreach ($Relative in @('.codex-plugin\plugin.json','hooks\hooks.json','hooks\lunatron.cjs','agents\lunatik.toml','agents\luntik.toml','INSTALL.md')) {
   $SourceHash = (Get-FileHash (Join-Path $PluginSource $Relative)).Hash
   $InstalledHash = (Get-FileHash (Join-Path $InstalledRoot $Relative)).Hash
   if ($SourceHash -ne $InstalledHash) { throw "package mismatch: $Relative" }
@@ -164,22 +169,27 @@ $AgentsDir = Join-Path $CodexDir 'agents'
 New-Item -ItemType Directory -Force -Path $AgentsDir | Out-Null
 Copy-Item (Join-Path $PluginSource 'agents\lunatik.toml') (Join-Path $AgentsDir 'lunatik.toml') -Force
 if ((Get-FileHash (Join-Path $PluginSource 'agents\lunatik.toml')).Hash -ne (Get-FileHash (Join-Path $AgentsDir 'lunatik.toml')).Hash) { throw 'profile mismatch' }
+Copy-Item (Join-Path $PluginSource 'agents\luntik.toml') (Join-Path $AgentsDir 'luntik.toml') -Force
+if ((Get-FileHash (Join-Path $PluginSource 'agents\luntik.toml')).Hash -ne (Get-FileHash (Join-Path $AgentsDir 'luntik.toml')).Hash) { throw 'profile mismatch' }
 ```
 
 `codex plugin add` must print the installed cache path. `$Version` comes from the
 source manifest and `$InstalledRoot` is the corresponding
-`<CODEX_DIR>/plugins/cache/<marketplace>/lunatron/<version>` directory. The five
-`Get-FileHash` comparisons and the user-profile comparison must all match; the
-profile must use `gpt-5.6-luna` and `high`. In a new interactive task, use `/hooks` to review and
-trust exactly the four Lunatron definitions. Then run every installed hook command
+`<CODEX_DIR>/plugins/cache/<marketplace>/lunatron/<version>` directory. The six
+`Get-FileHash` package comparisons and both profile comparisons must all match; the
+profiles must use `lunatik`/`gpt-5.6-luna`/`medium` and `luntik`/`gpt-5.6-luna`/`max`. In a new interactive task, use `/hooks` to review and
+trust exactly the four Lunatron definitions. Start a new task and confirm from
+runtime evidence that both the `lunatik` and `luntik` profiles are picked up. Then
+run every installed hook command
 in the real configured shell, with valid payloads for all four events. Check exit,
 stdout protocol, stderr, path quoting, spaces/non-ASCII paths, `PLUGIN_ROOT`, and
 `PLUGIN_DATA`. Cover small passthrough, large `>8192` save plus block, and fail-open
 without `PLUGIN_DATA`. Do not use `--dangerously-bypass-hook-trust` as a substitute
 for persistent trust.
 
-When Lunatron is disabled, a new task does not load its hooks. The `lunatik` profile
-starts nothing by itself. An open task can retain old context or running work.
+When Lunatron is disabled, a new task does not load its hooks. The `lunatik` and
+`luntik` profiles start nothing by themselves. An open task can retain old context
+or running work.
 Disable/update/reinstall never removes `PLUGIN_DATA/tool-results` or
 `PLUGIN_DATA/artifacts`; remove only exact temporary files or directories when an
 authorized validation procedure requires it.
