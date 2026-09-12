@@ -239,7 +239,7 @@
       ],
       "supports_search_tool": true,
       "supports_experimental_context": false,
-      "use_responses_lite": true,
+      "use_responses_lite": false,
       "node_repl_auto_review_required": true,
       "node_repl_disabled": false,
       "tool_mode": "code_mode_only",
