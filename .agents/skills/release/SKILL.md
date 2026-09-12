@@ -45,7 +45,9 @@ commit. Соблюдай профили из `INSTALL` и fresh hook trust: Scop
 `properliler`, Lunatron — `lunatik` и `luntik`. Trust не обходи.
 
 После установки выполни runtime checks и platform-specific обязательства из
-`INSTALL`.
+`INSTALL` для clean install. При обычном update обнови весь runtime: native
+package, packaged profiles и отдельные runtime-файлы; прочитай изменённые
+материалы и нормальный вывод установки без clean-install probes.
 
 Не запускай второй cachebuster из `INSTALL`: bump уже сделан. Остальной
 `INSTALL` обязателен.

@@ -1,12 +1,15 @@
 # Installation and update
 
-Run this procedure only after an authorized Lunatron installation or update request.
+For an install or update, start by reading
+[`skills/setup-lunatron/SKILL.md`](skills/setup-lunatron/SKILL.md), then read this
+file completely. Native CLI/UI registration does not execute Markdown.
 Start in the root of the unpacked Lunatron folder; it is the authoritative source.
 Keep
 Tritron/Lunatron mutually exclusive and do not delete unrelated plugins, profiles,
 archives, configuration, or data.
 
-The package contains one synchronous `PostToolUse` hook and two Luna profiles.
+The package contains four hook definitions, including the synchronous
+`PostToolUse` hook, and two Luna profiles.
 Its matcher is
 `^(Bash|read_mcp_resource|mcp__.*)$`; `mcp__codex_app__*` is skipped. Large
 results are stored under `PLUGIN_DATA/tool-results/<safe-session-id>` and Main's
@@ -14,14 +17,20 @@ requested files belong under `PLUGIN_DATA/artifacts/<safe-session-id>`. No new M
 is required. Disabling, updating, or reinstalling the plugin does not clean either
 of these data trees.
 
+Before changing the version, confirm with `codex plugin list` that the
+marketplace source matches this authoritative folder. If it is not registered,
+use the current Plugin Creator registration flow first. Run exactly one
+platform block. Skip `update_plugin_cachebuster.py` when the release already
+bumped this source version.
+
 ## macOS, Linux, and other POSIX shells
 
 Run from the authoritative source:
 
 ```sh
 PLUGIN_SOURCE="$(pwd -P)"
-CODEX_DIR="${CODEX_HOME:-$HOME/.codex}"
-PLUGIN_CREATOR="$(find "$CODEX_DIR/skills/.system/plugin-creator" -type f -name 'read_marketplace_name.py' -print -quit)"
+codex plugin list
+PLUGIN_CREATOR="$(find "$HOME/.codex/skills/.system/plugin-creator" -type f -name 'read_marketplace_name.py' -print -quit)"
 [ -n "$PLUGIN_CREATOR" ] || { echo "plugin-creator not found" >&2; exit 1; }
 PLUGIN_CREATOR_DIR="$(dirname "$PLUGIN_CREATOR")"
 MARKETPLACE_NAME="$(python3 "$PLUGIN_CREATOR_DIR/read_marketplace_name.py")" || exit 1
@@ -29,24 +38,30 @@ MARKETPLACE_NAME="$(python3 "$PLUGIN_CREATOR_DIR/read_marketplace_name.py")" || 
 python3 "$PLUGIN_CREATOR_DIR/update_plugin_cachebuster.py" "$PLUGIN_SOURCE" || exit 1
 codex plugin add "lunatron@$MARKETPLACE_NAME" || exit 1
 VERSION="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["version"])' "$PLUGIN_SOURCE/.codex-plugin/plugin.json")"
-INSTALLED_ROOT="$CODEX_DIR/plugins/cache/$MARKETPLACE_NAME/lunatron/$VERSION"
-for REL in .codex-plugin/plugin.json hooks/hooks.json hooks/lunatron.cjs agents/lunatik.toml agents/luntik.toml INSTALL.md; do
-  cmp -s "$PLUGIN_SOURCE/$REL" "$INSTALLED_ROOT/$REL" || { echo "package mismatch: $REL" >&2; exit 1; }
-done
-mkdir -p "$CODEX_DIR/agents"
-cp "$PLUGIN_SOURCE/agents/lunatik.toml" "$CODEX_DIR/agents/lunatik.toml"
-cmp -s "$PLUGIN_SOURCE/agents/lunatik.toml" "$CODEX_DIR/agents/lunatik.toml" || { echo "profile mismatch" >&2; exit 1; }
-cp "$PLUGIN_SOURCE/agents/luntik.toml" "$CODEX_DIR/agents/luntik.toml"
-cmp -s "$PLUGIN_SOURCE/agents/luntik.toml" "$CODEX_DIR/agents/luntik.toml" || { echo "profile mismatch" >&2; exit 1; }
+INSTALLED_ROOT="$HOME/.codex/plugins/cache/$MARKETPLACE_NAME/lunatron/$VERSION"
+mkdir -p "$HOME/.codex/agents"
+cp "$PLUGIN_SOURCE/agents/lunatik.toml" "$HOME/.codex/agents/lunatik.toml"
+cp "$PLUGIN_SOURCE/agents/luntik.toml" "$HOME/.codex/agents/luntik.toml"
 ```
 
 Expected results: `read_marketplace_name.py` prints `personal`; the cachebuster
 helper prints the old and new manifest versions; `codex plugin add` prints the
 installed cache path. `VERSION` comes from the source manifest and
-`INSTALLED_ROOT` resolves to `<CODEX_DIR>/plugins/cache/personal/lunatron/<VERSION>`.
-Every `cmp` prints nothing and exits `0` for all six package files and both user
-profiles. The profiles must show `lunatik`/`gpt-5.6-luna`/`medium` and
-`luntik`/`gpt-5.6-luna`/`max`.
+`INSTALLED_ROOT` resolves to `~/.codex/plugins/cache/personal/lunatron/<VERSION>`.
+The profiles must show `lunatik`/`gpt-5.6-luna`/`medium` and
+`luntik`/`gpt-5.6-luna`/`xhigh`.
+
+For an existing installation, update the native package and copy both packaged
+profiles to `~/.codex/agents/` every time. Read the changed installed files and
+the normal install output. Do not run the clean-install activation probes or a
+full `cmp` sweep during an ordinary update. A new task may be needed to load
+newly discovered context; this is not hot reload.
+
+## Clean-install activation and checks
+
+The following trust, activation, and runtime checks apply only to a clean
+install. For an existing update, reconcile trust only when definitions changed
+or the host asks; do not start a new runtime task or run these probes.
 
 Open a new interactive Codex task in the source directory and enter `/hooks`.
 Review the listed Lunatron definitions. Trust the four current entries only:
@@ -112,8 +127,8 @@ From the authoritative source in Git Bash:
 
 ```bash
 PLUGIN_SOURCE="$(pwd -P)"
-CODEX_DIR="${CODEX_HOME:-$HOME/.codex}"
-PLUGIN_CREATOR="$(find "$CODEX_DIR/skills/.system/plugin-creator" -type f -name 'read_marketplace_name.py' -print -quit)"
+codex plugin list
+PLUGIN_CREATOR="$(find "$HOME/.codex/skills/.system/plugin-creator" -type f -name 'read_marketplace_name.py' -print -quit)"
 [ -n "$PLUGIN_CREATOR" ] || { echo "plugin-creator not found" >&2; exit 1; }
 PLUGIN_CREATOR_DIR="$(dirname "$PLUGIN_CREATOR")"
 MARKETPLACE_NAME="$(python3 "$PLUGIN_CREATOR_DIR/read_marketplace_name.py")" || exit 1
@@ -121,18 +136,13 @@ MARKETPLACE_NAME="$(python3 "$PLUGIN_CREATOR_DIR/read_marketplace_name.py")" || 
 python3 "$PLUGIN_CREATOR_DIR/update_plugin_cachebuster.py" "$PLUGIN_SOURCE" || exit 1
 codex plugin add "lunatron@$MARKETPLACE_NAME" || exit 1
 VERSION="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["version"])' "$PLUGIN_SOURCE/.codex-plugin/plugin.json")"
-INSTALLED_ROOT="$CODEX_DIR/plugins/cache/$MARKETPLACE_NAME/lunatron/$VERSION"
-for REL in .codex-plugin/plugin.json hooks/hooks.json hooks/lunatron.cjs agents/lunatik.toml agents/luntik.toml INSTALL.md; do
-  cmp -s "$PLUGIN_SOURCE/$REL" "$INSTALLED_ROOT/$REL" || { echo "package mismatch: $REL" >&2; exit 1; }
-done
-mkdir -p "$CODEX_DIR/agents"
-cp "$PLUGIN_SOURCE/agents/lunatik.toml" "$CODEX_DIR/agents/lunatik.toml"
-cmp -s "$PLUGIN_SOURCE/agents/lunatik.toml" "$CODEX_DIR/agents/lunatik.toml" || exit 1
-cp "$PLUGIN_SOURCE/agents/luntik.toml" "$CODEX_DIR/agents/luntik.toml"
-cmp -s "$PLUGIN_SOURCE/agents/luntik.toml" "$CODEX_DIR/agents/luntik.toml" || exit 1
+INSTALLED_ROOT="$HOME/.codex/plugins/cache/$MARKETPLACE_NAME/lunatron/$VERSION"
+mkdir -p "$HOME/.codex/agents"
+cp "$PLUGIN_SOURCE/agents/lunatik.toml" "$HOME/.codex/agents/lunatik.toml"
+cp "$PLUGIN_SOURCE/agents/luntik.toml" "$HOME/.codex/agents/luntik.toml"
 ```
 
-Expected results and `/hooks` trust steps are the same as POSIX. Use the actual
+For clean install, expected results and `/hooks` trust steps are the same as POSIX. Use the actual
 configured hook shell and installed `PLUGIN_ROOT`. After installation of both
 profiles and trust, execute every actual `command` string from the installed
 `hooks/hooks.json` in that shell. Supply valid payloads for all four events and

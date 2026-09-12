@@ -1,6 +1,6 @@
 {
   "name": "context-management",
-  "version": "0.1.0",
+  "version": "0.1.0+codex.20260912230445",
   "description": "Local context memory through a direct Node.js and SQLite CLI.",
   "skills": "./skills/",
   "interface": {

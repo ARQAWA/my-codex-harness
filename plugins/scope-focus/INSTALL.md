@@ -1,27 +1,77 @@
-# Installation
+# Installation and update
 
-Native plugin installation, agent-profile installation, and hook-trust handling are separate required actions. Installation and every reinstall are incomplete until all of these finish:
+Read this file completely before an authorized install or update. Confirm with
+`codex plugin list` that the marketplace source points at this repository. The
+marketplace helper reads `MARKETPLACE_NAME`; if the source is not registered,
+use the current Plugin Creator registration flow first. Bump the manifest once with
+the existing cachebuster (skip when already bumped), then run
+`codex plugin add "scope-focus@personal"`.
 
-1. Use the native plugin flow for Scope Focus. Do not treat it as installation of an agent profile.
-2. Remove the legacy `foculizer` user-level agent profile, preserve unrelated profiles, install this package's `agents/properliler.toml` in the current user-level Codex agents directory, and verify the installed profile exactly matches the packaged profile.
-3. After an authorized installation, reinstall, or hook-changing update, use the existing Codex CLI app-server STDIO interface to inspect Scope Focus's exact hook trust, correct it only as needed within the granted authority, and verify the resulting state. Do not reuse stale trust for a changed hook; preserve unrelated hook trust and never bypass host approval requirements.
+From the authoritative source in a POSIX shell, the native flow is:
 
-Installation is incomplete until the native plugin, packaged `properliler` profile, and exact fresh hook trust are all ready; perform runtime checks only afterward.
+```sh
+PLUGIN_SOURCE="$(pwd -P)"
+PLUGIN_CREATOR="$(find "$HOME/.codex/skills/.system/plugin-creator" -type f -name 'read_marketplace_name.py' -print -quit)"
+[ -n "$PLUGIN_CREATOR" ] || { echo "plugin-creator not found" >&2; exit 1; }
+PLUGIN_CREATOR_DIR="$(dirname "$PLUGIN_CREATOR")"
+MARKETPLACE_NAME="$(python3 "$PLUGIN_CREATOR_DIR/read_marketplace_name.py")" || exit 1
+python3 "$PLUGIN_CREATOR_DIR/update_plugin_cachebuster.py" "$PLUGIN_SOURCE" || exit 1
+codex plugin add "scope-focus@$MARKETPLACE_NAME" || exit 1
+mkdir -p "$HOME/.codex/agents"
+cp "$PLUGIN_SOURCE/agents/properliler.toml" "$HOME/.codex/agents/properliler.toml" || exit 1
+```
 
-After installation or reinstallation, the new Sol reminders `SessionStart` hook must have current host trust and `enabled = false`, unless the user explicitly requested that it be enabled. Do not start a new Sol task before this disabled state is fixed. Disabled does not mean untrusted.
+Every install or update must finish the native package update and copy the
+packaged `properliler.toml` to `~/.codex/agents/properliler.toml`. Preserve all
+unrelated profiles, settings, data, and hook trust. Remove the legacy
+`foculizer` profile only when that old migration condition is detected.
 
-Use the supported host hook-management flow to identify the new handler from the installed source and its current definition. `session_start:1:0` is the expected address with the existing order, not a universal ID across host versions. Do not construct `trusted_hash` yourself or transfer it between operating systems or versions. Read the current definition and state from the host and save trust through the native flow. If the available flow cannot produce trusted and disabled without an intermediate run, installation is incomplete.
+## Clean install
 
-Every current command handler in both plugins must have a current host trust record. Check the disabled Sol hook too; disabled does not mean missing trust. Existing active hooks remain active. Do not use a trust bypass.
+After native installation and profile copy, inspect the installed hook
+definitions and use the supported host flow to trust only the current entries.
+Do not construct hashes or bypass trust. Always ensure the Sol reminder is
+trusted and `enabled = false` on every clean install
+unless the user expressly enabled it; preserve unrelated
+trust. On Windows, execute every installed hook command in the actual Codex
+hook shell, using Git Bash where configured, and check its protocol and paths.
+Run activation and runtime probes only for this clean-install path.
 
-The host's hook-trust and hash details are not a portable API. Preserve the packaged `properliler` profile and unrelated hook records.
+## Windows hook verification (clean install)
 
-## Windows hook verification
+On Windows, a clean installation is incomplete until every command entry in
+the installed package's `hooks/hooks.json` has executed successfully in the
+actual Codex hook environment. Perform this after native installation,
+packaged-profile installation, and current hook-trust verification.
 
-On Windows, installation or reinstallation is incomplete until every command entry in the installed package's `hooks/hooks.json` has been executed successfully in the actual Codex hook environment. Perform this after native installation, packaged-profile installation, and current hook-trust verification.
+Use the actual configured hook shell (including Git Bash where configured), the
+installed `PLUGIN_ROOT`, and an appropriate event payload on stdin for each
+declared hook event and command. Check the exact command as shipped, not only
+the referenced script. Exercise a path that actually loads and runs the
+script; an inactive guard or skipped hook alone does not prove execution.
 
-Use the actual configured hook shell (including Git Bash where configured), the installed `PLUGIN_ROOT`, and an appropriate event payload on stdin for each declared hook event and command. Check the exact command as shipped, not only the referenced script. Exercise a path that actually loads and runs the script; an inactive guard or skipped hook alone does not prove execution.
+Verify required tooling is available on PATH, environment variables expand
+correctly, and executable/script/data paths resolve with actual Windows drive,
+separators, quoting, spaces, and non-ASCII characters when present. Check
+command exit status, stdout protocol and expected event result, and stderr for
+unexplained shell, path, module, or tooling errors. Distinguish an intentional
+policy-denial response from an execution failure. Use non-destructive probes.
 
-Verify required tooling is available on PATH, environment variables expand correctly, and executable/script/data paths resolve with the actual Windows drive, separators, quoting, spaces, and non-ASCII characters when present. Check command exit status, stdout protocol and expected event result, and stderr for unexplained shell, path, module, or tooling errors. Distinguish an intentional policy-denial response from an execution failure. Use non-destructive probe payloads, not changes to real user resources.
+Static inspection or successful macOS/Linux execution is not Windows runtime
+evidence. If a command cannot be executed or a check fails, do not declare the
+Windows installation complete; report the exact command, environment, error,
+and unresolved check. Preserve the macOS/Linux installation flow.
 
-Static inspection or successful macOS/Linux execution is not Windows runtime evidence. If a command cannot be executed or a check fails, do not declare the Windows installation complete: report the exact command, environment, observed error, and the unresolved check. Preserve the existing macOS/Linux installation flow.
+## Existing update
+
+Update the native package and copy `agents/properliler.toml` every time. Read
+the changed installed files and normal install output. Reconcile hook trust only
+when definitions changed or the host requests it; preserve unrelated records.
+Do not run clean-install activation probes, Windows full hook checks, or a
+repository-wide comparison sweep during an ordinary update. A new task may be
+needed to discover changed skills; this is not hot reload.
+
+Native CLI or UI registration alone does not execute Markdown. An agent install
+starts by reading `skills/setup-scope-focus/SKILL.md` and this `INSTALL.md`.
+Trust bypasses are forbidden. Windows commands use Git Bash and portable
+quoting; static inspection or a POSIX run is not Windows evidence.

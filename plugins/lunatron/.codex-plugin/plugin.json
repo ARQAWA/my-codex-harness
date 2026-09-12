@@ -1,10 +1,11 @@
 {
   "name": "lunatron",
-  "version": "0.0.0+codex.20260912221108",
+  "version": "0.0.0+codex.20260912230252",
   "description": "Lunatron: Main-led decisions with persistent Luna specialists for information preparation and mechanical execution. Installation requires completing INSTALL.md.",
   "author": {
     "name": "A. Chukavin"
   },
+  "skills": "./skills/",
   "interface": {
     "displayName": "Lunatron",
     "shortDescription": "Main decides. Luntik prepares information; lunatik performs mechanical work.",
@@ -16,6 +17,6 @@
       "Main-directed information preparation",
       "Main-directed mechanical execution"
     ],
-    "defaultPrompt": "Explain the active Lunatron contract for the current model."
+    "defaultPrompt": "For an install or update, use setup-lunatron and follow INSTALL.md completely. Otherwise explain the active Lunatron contract for the current model."
   }
 }

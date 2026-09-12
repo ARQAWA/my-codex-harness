@@ -3,6 +3,11 @@
 Плагин хранит контекст в локальной SQLite через CLI на Node.js. Он не запускает
 MCP и не держит фоновый сервер.
 
+Choose the path before continuing: for a **new installation**, continue with
+registration, runtime, config, and activation. For an **existing installation**,
+go directly to «Обычное обновление»; if an old MCP service is detected, run the
+migration section first.
+
 ## Требования
 
 Нужен Node.js 24.5 или новее с встроенным `node:sqlite`. Нужен Codex CLI с
@@ -69,17 +74,20 @@ runtime и не меняют `config.toml`; автоматическая нас�
 
 ## Runtime
 
+Choose one path before running commands: **clean install** creates runtime and
+settings; **ordinary update** preserves settings and data and uses the saved
+paths below. Do not run the clean-install block during an update.
+
 Для **новой установки** создайте каталог runtime и скопируйте CLI и skill:
 
 ```sh
 REPO_ROOT="/ABS/path/my-codex-harness"
 RUNTIME_DIR="$HOME/.local/share/ctx-mgr-local-native"
-CODEX_DIR="${CODEX_HOME:-$HOME/.codex}"
 mkdir -p "$RUNTIME_DIR"
 cp -- "$REPO_ROOT/plugins/context-management/memory.js" "$RUNTIME_DIR/memory.js"
-mkdir -p "$CODEX_DIR/skills/local-context-memory"
+mkdir -p "$HOME/.codex/skills/local-context-memory"
 cp -- "$REPO_ROOT/plugins/context-management/skills/local-context-memory/SKILL.md" \
-  "$CODEX_DIR/skills/local-context-memory/SKILL.md"
+  "$HOME/.codex/skills/local-context-memory/SKILL.md"
 ```
 
 В Windows эти Bash-команды выполняйте в Git Bash. Перед записью путей в
@@ -90,16 +98,13 @@ cp -- "$REPO_ROOT/plugins/context-management/skills/local-context-memory/SKILL.m
 cygpath -am "$(command -v node)"
 ```
 
-Остальные `settings_path`, `db_path`, `skill_path`, `cli_path`, `log_path` и
-`codex_home` должны указывать на созданные каталоги и файлы в формате `C:/...`;
-для `CODEX_HOME` используйте фактический заданный каталог. Для существующей
-установки сохраняйте её реальные settings и пути, не заменяйте их defaults.
+Остальные `settings_path`, `db_path`, `skill_path`, `cli_path` и `log_path`
+должны указывать на созданные каталоги и файлы в формате `C:/...`. Для
+существующей установки сохраняйте её реальные settings и пути, не заменяйте
+их defaults.
 
-Если задан `CODEX_HOME`, используйте этот абсолютный каталог вместо
-`~/.codex` в config, skill и всех полях settings. Сохраняйте свои custom paths.
-
-Для **существующей установки** сначала выполните раздел «Обновление старой
-установки». Сохраните её settings и данные, затем копируйте CLI и skill именно
+Для **существующей установки** сначала выполните раздел «Обычное обновление»
+Сохраните её settings и данные, затем копируйте CLI и skill именно
 в пути `settings.cli_path` и `settings.skill_path`. Не запускайте блок новой
 установки вслепую.
 
@@ -110,7 +115,6 @@ cygpath -am "$(command -v node)"
 {
   "settings_path": "/ABS/path/.local/share/ctx-mgr-local-native/settings.json",
   "db_path": "/ABS/path/.local/share/ctx-mgr-local-native/memory.sqlite3",
-  "codex_home": "/ABS/path/.codex",
   "max_output_bytes": 65536,
   "skill_path": "/ABS/path/.codex/skills/local-context-memory/SKILL.md",
   "node_path": "/ABS/path/bin/node",
@@ -119,14 +123,13 @@ cygpath -am "$(command -v node)"
 }
 ```
 
-Сохраните JSON в UTF-8 без BOM. Все восемь полей и их значения
-нужны; абсолютные пути должны соответствовать этому компьютеру.
+Сохраните JSON в UTF-8 без BOM. Все показанные поля и их значения нужны;
+абсолютные пути должны соответствовать этому компьютеру.
 
 `/ABS/path` — машинный путь. Это не секрет и не переменная runtime. Не
 переиспользуйте `$HOME` для другой цели. Если установка уже есть, сохраните её
 `settings.json`, базу, checkpoint и лог. Скопируйте CLI и skill в пути
 `settings.cli_path` и `settings.skill_path`; миграция данных не нужна.
-Переменная `CODEX_HOME` учитывается CLI.
 
 ## config.toml
 
@@ -153,7 +156,39 @@ reminder_threshold_tokens = 6000
 Сохраните все остальные настройки и секреты. Таблицу `[mcp_servers.notes]`
 не добавляйте.
 
-## Обновление старой установки
+## Обычное обновление
+
+Сохраните существующие `settings.json`, базу, checkpoint, лог и config.
+После проверки marketplace source выполните команды блока ниже. Если версия уже
+повышена, пропустите cachebuster. Скопируйте CLI и local skill в пути
+`settings.cli_path` и `settings.skill_path` из сохранённых settings.
+
+Замените `REPO_ROOT` и `SETTINGS_PATH` фактическими абсолютными путями
+исходников и сохранённого `settings.json`. В Windows используйте Git Bash. Команды:
+
+```sh
+REPO_ROOT="/ABS/path/my-codex-harness"
+SETTINGS_PATH="/ABS/path/.local/share/ctx-mgr-local-native/settings.json"
+CLI_PATH="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["cli_path"])' "$SETTINGS_PATH")" || exit 1
+SKILL_PATH="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["skill_path"])' "$SETTINGS_PATH")" || exit 1
+PLUGIN_CREATOR="$HOME/.codex/skills/.system/plugin-creator/scripts"
+MARKETPLACE_NAME="$(python3 "$PLUGIN_CREATOR/read_marketplace_name.py" --marketplace-path "$REPO_ROOT/.agents/plugins/marketplace.json")" || exit 1
+python3 "$PLUGIN_CREATOR/update_plugin_cachebuster.py" "$REPO_ROOT/plugins/context-management" || exit 1
+codex plugin add "context-management@$MARKETPLACE_NAME" || exit 1
+cp -- "$REPO_ROOT/plugins/context-management/memory.js" "$CLI_PATH" || exit 1
+cp -- "$REPO_ROOT/plugins/context-management/skills/local-context-memory/SKILL.md" "$SKILL_PATH" || exit 1
+```
+
+Меняйте
+config guidance только если эти пути или инструкции реально изменились.
+Прочитайте изменённые файлы и обычный вывод установки. Bootstrap и probes
+нужны только для clean install или прямого запроса; новый task может быть
+нужен для обнаружения skill.
+
+## Миграция прежней MCP-установки
+
+Этот раздел выполняйте только если обнаружена старая MCP-служба, объявлявшая
+этот memory CLI. Для обычного обновления он не нужен.
 
 Перед заменой старого CLI удалите только `[mcp_servers.notes]`, если её команда
 указывает на этот memory CLI. Остановите его автозапуск и точные процессы MCP;
@@ -176,7 +211,7 @@ launchctl bootout gui/$(id -u)/local.ctx-mgr-native
 > Перечитай установленный `SKILL.md`. Используй прямой CLI по абсолютным
 > `cli_path` и `settings_path`, без MCP notes и без фонового сервера.
 
-## Активация
+## Активация (clean install или прямой запрос)
 
 Перед активацией существующей установки возьмите фактические `node_path`,
 `cli_path` и `settings_path` из сохранённого `settings.json`; не подставляйте
