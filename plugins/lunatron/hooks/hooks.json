@@ -1,0 +1,51 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "^(startup|resume|clear|compact)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"require(require('node:path').join(process.env.PLUGIN_ROOT,'hooks','lunatron.cjs')).sessionStart()\"",
+            "timeout": 7
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"require(require('node:path').join(process.env.PLUGIN_ROOT,'hooks','lunatron.cjs')).userPromptSubmit()\"",
+            "timeout": 7
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "^spawn_agent$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"require(require('node:path').join(process.env.PLUGIN_ROOT,'hooks','lunatron.cjs')).preToolUse()\"",
+            "timeout": 7
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "^(Bash|read_mcp_resource|mcp__.*)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"require(require('node:path').join(process.env.PLUGIN_ROOT,'hooks','lunatron.cjs')).postToolUse()\"",
+            "timeout": 7
+          }
+        ]
+      }
+    ]
+  }
+}

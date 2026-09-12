@@ -1,0 +1,31 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "^(startup|resume|clear|compact)$",
+        "statusMessage": "Loading Scope Focus contract",
+        "additionalContextLimit": 0,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"require(require('node:path').join(process.env.PLUGIN_ROOT,'hooks','run.cjs')).sessionStart()\"",
+            "timeout": 7
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "statusMessage": "Preparing Scope Focus prompt context",
+        "additionalContextLimit": 2500,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"require(require('node:path').join(process.env.PLUGIN_ROOT,'hooks','run.cjs')).userPromptSubmit()\"",
+            "timeout": 7
+          }
+        ]
+      }
+    ]
+  }
+}

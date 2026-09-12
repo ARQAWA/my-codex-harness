@@ -1,0 +1,6 @@
+interface:
+  display_name: "Goal Memory"
+  short_description: "Durable memory for an active native Goal"
+  default_prompt: "Use $goal-memory to attach durable execution memory to the active native Goal."
+policy:
+  allow_implicit_invocation: false

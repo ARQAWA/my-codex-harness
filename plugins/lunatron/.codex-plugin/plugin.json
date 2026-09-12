@@ -1,0 +1,20 @@
+{
+  "name": "lunatron",
+  "version": "0.0.0+codex.20260911023755",
+  "description": "Lunatron: Main-led decisions with a persistent mechanical Luna worker. Installation requires completing INSTALL.md.",
+  "author": {
+    "name": "A. Chukavin"
+  },
+  "interface": {
+    "displayName": "Lunatron",
+    "shortDescription": "Main decides. Luna does the mechanical work.",
+    "longDescription": "Main autonomously owns analysis, technical decisions, error diagnosis, acceptance, and output; one persistent Luna worker carries out explicit mechanical instructions.",
+    "developerName": "A. Chukavin",
+    "category": "Productivity",
+    "capabilities": [
+      "Model-gated Main task leadership",
+      "Main-directed mechanical execution"
+    ],
+    "defaultPrompt": "Explain the active Lunatron contract for the current model."
+  }
+}
