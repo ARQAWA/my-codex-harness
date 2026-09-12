@@ -1,12 +1,13 @@
 # Рабочая база
 
-Этот репозиторий — рабочая база текущих Scope Focus, Lunatron, каталога
-четырёх моделей и системного prompt.
+Этот репозиторий — рабочая база текущих Scope Focus, Lunatron, Context
+Management, каталога четырёх моделей и системного prompt.
 
 Источники правды после импорта:
 
 - `plugins/scope-focus`
 - `plugins/lunatron`
+- `plugins/context-management`
 - `config/codex-model-catalog.json`
 - `config/new-model-instructions.md`
 - `config/codex-model-catalog-help.txt`
@@ -19,6 +20,7 @@ Runtime-копии `~/.codex/plugins/cache` и прежние `~/plugins` отд
 
 - Scope Focus: `0.0.0+codex.20260911001024`
 - Lunatron: `0.0.0+codex.20260911023755`
+- Context Management: `0.1.0`
 
 Prompt и каталог отдельных номеров версии не имеют. Snapshot фиксируется Git.
 
@@ -115,3 +117,4 @@ Tritron и Lunatron не смешивать в runtime. Tritron не входи�
   проекта, не утверждение о выполненной установке.
 - Кроссплатформенность macOS/Linux/Windows обязательна: обычный JSON и штатные
   пути/механизмы хоста; не переносить абсолютные пути одной ОС в другую.
+  В Windows команды установки документируются только для Git Bash.

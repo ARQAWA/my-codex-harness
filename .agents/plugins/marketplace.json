@@ -1,0 +1,20 @@
+{
+  "name": "context-management",
+  "interface": {
+    "displayName": "Context Management"
+  },
+  "plugins": [
+    {
+      "name": "context-management",
+      "source": {
+        "source": "local",
+        "path": "./plugins/context-management"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

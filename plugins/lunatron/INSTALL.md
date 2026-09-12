@@ -141,52 +141,6 @@ spaces and non-ASCII characters, verify `PLUGIN_ROOT` and `PLUGIN_DATA`, and che
 small passthrough, large `>8192` save plus `decision: "block"`, and fail-open
 without `PLUGIN_DATA`. A static read or macOS run is not Windows evidence.
 
-## Windows PowerShell
-
-Run from the authoritative source:
-
-```powershell
-$PluginSource = (Get-Location).Path
-$CodexDir = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $HOME '.codex' }
-$CreatorRoot = Join-Path $CodexDir 'skills\.system\plugin-creator'
-$MarketplaceScript = Get-ChildItem -Path $CreatorRoot -Filter read_marketplace_name.py -File -Recurse | Select-Object -First 1
-if (-not $MarketplaceScript) { throw 'plugin-creator not found' }
-$CreatorDir = $MarketplaceScript.DirectoryName
-$MarketplaceName = (python $MarketplaceScript.FullName).Trim()
-if ($MarketplaceName -ne 'personal') { throw "unexpected marketplace: $MarketplaceName" }
-python (Join-Path $CreatorDir 'update_plugin_cachebuster.py') $PluginSource
-if ($LASTEXITCODE -ne 0) { throw 'cachebuster update failed' }
-codex plugin add "lunatron@$MarketplaceName"
-if ($LASTEXITCODE -ne 0) { throw 'plugin install failed' }
-$Version = (Get-Content (Join-Path $PluginSource '.codex-plugin\plugin.json') -Raw | ConvertFrom-Json).version
-$InstalledRoot = Join-Path (Join-Path (Join-Path (Join-Path $CodexDir 'plugins') 'cache') $MarketplaceName) (Join-Path 'lunatron' $Version)
-foreach ($Relative in @('.codex-plugin\plugin.json','hooks\hooks.json','hooks\lunatron.cjs','agents\lunatik.toml','agents\luntik.toml','INSTALL.md')) {
-  $SourceHash = (Get-FileHash (Join-Path $PluginSource $Relative)).Hash
-  $InstalledHash = (Get-FileHash (Join-Path $InstalledRoot $Relative)).Hash
-  if ($SourceHash -ne $InstalledHash) { throw "package mismatch: $Relative" }
-}
-$AgentsDir = Join-Path $CodexDir 'agents'
-New-Item -ItemType Directory -Force -Path $AgentsDir | Out-Null
-Copy-Item (Join-Path $PluginSource 'agents\lunatik.toml') (Join-Path $AgentsDir 'lunatik.toml') -Force
-if ((Get-FileHash (Join-Path $PluginSource 'agents\lunatik.toml')).Hash -ne (Get-FileHash (Join-Path $AgentsDir 'lunatik.toml')).Hash) { throw 'profile mismatch' }
-Copy-Item (Join-Path $PluginSource 'agents\luntik.toml') (Join-Path $AgentsDir 'luntik.toml') -Force
-if ((Get-FileHash (Join-Path $PluginSource 'agents\luntik.toml')).Hash -ne (Get-FileHash (Join-Path $AgentsDir 'luntik.toml')).Hash) { throw 'profile mismatch' }
-```
-
-`codex plugin add` must print the installed cache path. `$Version` comes from the
-source manifest and `$InstalledRoot` is the corresponding
-`<CODEX_DIR>/plugins/cache/<marketplace>/lunatron/<version>` directory. The six
-`Get-FileHash` package comparisons and both profile comparisons must all match; the
-profiles must use `lunatik`/`gpt-5.6-luna`/`medium` and `luntik`/`gpt-5.6-luna`/`max`. In a new interactive task, use `/hooks` to review and
-trust exactly the four Lunatron definitions. Start a new task and confirm from
-runtime evidence that both the `lunatik` and `luntik` profiles are picked up. Then
-run every installed hook command
-in the real configured shell, with valid payloads for all four events. Check exit,
-stdout protocol, stderr, path quoting, spaces/non-ASCII paths, `PLUGIN_ROOT`, and
-`PLUGIN_DATA`. Cover small passthrough, large `>8192` save plus block, and fail-open
-without `PLUGIN_DATA`. Do not use `--dangerously-bypass-hook-trust` as a substitute
-for persistent trust.
-
 When Lunatron is disabled, a new task does not load its hooks. The `lunatik` and
 `luntik` profiles start nothing by themselves. An open task can retain old context
 or running work.

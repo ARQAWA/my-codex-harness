@@ -1,0 +1,15 @@
+{
+  "name": "context-management",
+  "version": "0.1.0",
+  "description": "Local context memory through a direct Node.js and SQLite CLI.",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Context Management",
+    "shortDescription": "Restore context without MCP or a background server.",
+    "category": "Productivity",
+    "longDescription": "The agent installation skill is in skills/setup-context-management/SKILL.md and reads install.md before setup; CLI registration alone does not perform setup.",
+    "defaultPrompt": [
+      "Use $context-management:setup-context-management to finish installation and configure the harness."
+    ]
+  }
+}
