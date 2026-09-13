@@ -11,7 +11,7 @@ const userPromptOutput = additionalContext => JSON.stringify({
 
 exports.sessionStart = () => {
   try {
-    const context = `${read('session.txt')}\nFor a complete long explanation, read ${path.join(__dirname, "..", "skills", "html-brief", "SKILL.md")} and use its template; read it only when that format is needed.`;
+    const context = `${read('session.txt')}\nFor an HTML report, read ${path.join(__dirname, "..", "skills", "html-brief", "SKILL.md")} and use its template and brevity rules; read it only when that format is needed.`;
     process.stdout.write(JSON.stringify({
       hookSpecificOutput: { hookEventName: 'SessionStart', additionalContext: context }
     }));

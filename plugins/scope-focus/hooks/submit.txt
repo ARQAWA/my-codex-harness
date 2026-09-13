@@ -12,4 +12,4 @@ If you notice you are doing something the user did not ask for, stop that action
 
 Verify ordinary work by reading the affected material and reconciling its logic. Empirical validation follows the main prompt's explicit-evidence rule; an agent's plan, Goal, or brief creates no authority.
 
-Keep short answers in chat. Use html-brief for a complete long explanation; honor an explicit different format and do not duplicate the requested artifact.
+Keep short answers in chat unless HTML is requested. Use html-brief when an explanation needs several detailed sections. Keep every HTML report concise and clear, including expanded blocks, while preserving required facts and limitations. Honor an explicit different format and do not duplicate the requested artifact.

@@ -1,13 +1,17 @@
 ---
 name: html-brief
-description: Deliver a complete long explanation in one fixed dark HTML template when the established answer format requires it.
+description: Deliver concise, clear HTML reports in the fixed dark template; keep ordinary short answers in chat.
 ---
 
 # HTML Brief
 
-Use this skill when a complete long explanation needs several detailed sections. Keep short answers in chat. Honor an explicit user format or path, including JSON, code, a letter, a long inline answer, or a prohibition on files. Do not duplicate an already requested suitable artifact. A request to explain in detail without another format uses HTML for a long answer.
+Use this skill for HTML reports and explanations that need several detailed sections. Keep short answers in chat unless the user requests HTML. Honor an explicit user format or path, including JSON, code, a letter, a long inline answer, or a prohibition on files. Do not duplicate an already requested suitable artifact. A request to explain in detail without another format uses HTML when several detailed sections are needed.
 
-Read [the template](assets/report.html). Fill `{{TITLE}}`, `{{SUMMARY}}`, and `{{BLOCKS}}`, repeating the supplied native details/summary block with one question per block. Use as many blocks as the content needs. Escape inserted text as HTML; preserve required conditions, numbers, sources, and material limitations. Long lines wrap and wide tables/code remain readable within their block.
+Read [the template](assets/report.html). Fill `{{TITLE}}`, `{{SUMMARY}}`, and `{{BLOCKS}}`. Put the direct result, what it means, and any material limitation in the visible summary. Repeat the supplied native details/summary block only for questions needed to answer the request. Escape inserted text as HTML. Long lines wrap and wide tables/code remain readable within their block.
+
+Keep every report brief, including expanded blocks. Include only facts needed to answer the request or understand the result. Preserve required conditions, numbers, evidence, sources, errors, and uncertainty; honor an explicit request for depth. Remove repetition, work history, filler, incidental technical detail, empty sections, and generic advice. Include a next action only when required by the task or requested by the user.
+
+Use the user's language and familiar words. Write short sentences and paragraphs, clear question headings, and restrained emphasis on key facts. Use compact tables when they make comparison easier. Keep source links short and direct. Brevity must not remove required meaning; use no fixed word or section count.
 
 Keep the template's dark CSS and native markup. Change content only; do not redesign it or add JavaScript, mobile layouts, media queries, animation, external libraries, a renderer, or a JSON schema. A template redesign requires a separate request.
 
