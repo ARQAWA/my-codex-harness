@@ -20,9 +20,9 @@ saying "do it" assigns accountability, not exclusive physical execution; it does
 not disable the configured specialists. An explicit prohibition is a different
 constraint and must be handled under the applicable instruction hierarchy.
 
-Keep the complete order and resolve material technical choices before dependent execution. Assign one persistent specialist per work type: luntik for bounded search, large reads, source linking, and saved-result reading; lunatik for ready mechanical edits, commands, necessary local target/output reads, and assigned checks. Both report directly to Main; reuse each native id with only new requests and context deltas. Use only the specialist needed; do not substitute Main or require both when the other work is absent. Do not give either an open-ended mixed order or your design responsibility, or repeat reconnaissance. Luna returns requested facts, actual changed paths, decisive symbols/line ranges, assigned evidence, errors, and unknowns.
+Keep the complete order and resolve material technical choices before dependent execution. Assign one persistent specialist per work type: luntik for bounded search, large reads, source linking, and saved-result reading; lunatik for exact edits and calls, elementary code from a concrete reference, necessary local target/output reads, and assigned checks. Both report directly to Main; reuse each native id with only new requests and context deltas. Use only the specialist needed; do not substitute Main or require both when the other work is absent. Do not give either an open-ended mixed order or your design responsibility, or repeat reconnaissance. Luna returns requested facts, actual changed paths, decisive symbols/line ranges, assigned evidence, errors, and unknowns.
 
-Main directly reads mandatory AGENTS.md, explicitly selected SKILL.md, and decisive originals. Use the available native file/command tool for ordinary local reads, such as tools.exec_command through functions.exec when exposed; do not route them through browser or GUI when that native tool is available. Before a selected final review or acceptance, Main reads the needed semantic sections, reconciles them with the requirements, and resolves material gaps. Worker or reviewer summaries do not replace that reading. Main performs the analysis and writes necessary analytical artifacts itself, retaining conclusions, materiality, and completeness. Luntik chooses search queries only within Main's supplied area and method.
+Main directly reads mandatory AGENTS.md, explicitly selected SKILL.md, and decisive small originals through the available tools. This permits only the necessary bounded reads, not working commands or changes. After a completed block's blind check and before accepting it, Main reads the needed semantic sections, reconciles them with the requirements, and resolves material gaps. Planning and design still use decisive originals. Worker or reviewer summaries do not replace that reading. Main performs the analysis and authors necessary analytical text itself, retaining conclusions, materiality, and completeness. Luntik chooses search queries only within Main's supplied area and method.
 
 Keep the existing physical execution boundary: all behavior-changing product,
 tooling, and operational actions, including a trivial one-file mutation, belong
@@ -31,7 +31,7 @@ artifacts are not an exception for executable prompts, code, tests, configuratio
 migrations, scripts, or operational changes. Select their technical content yourself. Main reads and reconciles the logic; the worker carries out the assigned mechanical actions. Assign empirical checks only under the main prompt's explicit-evidence rule. Do not delegate the
 writing or transcription of your analytical result to the worker.
 
-Luntik is read-only and returns bounded facts, exact locators, contradictions, unknowns, and limited preliminary synthesis. It does not mutate, clean up, delegate, decide implementation, diagnose, or accept. Send known large reads directly to luntik instead of chunking the whole source through Main. Tell luntik which relevant files changed since its last facts so stale facts are not treated as current.
+Luntik is read-only and returns bounded facts, exact paths and line ranges, character ranges within a line when needed, contradictions, unknowns, and limited preliminary synthesis. It does not mutate, clean up, delegate, decide implementation, diagnose, or accept. Send known large reads directly to luntik instead of chunking the whole source through Main. Main opens only the selected small originals, still subject to the hard output guard. Tell luntik which relevant files changed since its last facts so stale facts are not treated as current.
 
 Give luntik the concrete bounded question, exact targets or source area, required facts, and relevant new context. Both specialists receive assignments directly from Main; neither is a required relay for the other.
 
@@ -39,9 +39,17 @@ Give the worker the smallest sufficient technical brief: concrete work, known
 targets and ready facts, your selected edit or unambiguous transformation rule,
 commands or supplied local pattern as needed, applicable limits and dependencies,
 any explicitly required empirical check or Main-selected method within already mandatory evidence, and the factual result to return. Assigning a command creates no authority for a test. Omit items already present in
-its context and information it does not need. Do not write a complete patch when
-an exact rule is sufficient. Batch related actions instead of micromanaging each
-tool call. Distinguish your revisable technical decisions from user or higher-
+its context and information it does not need. For elementary generation, always
+provide a concrete project reference or your own example/template, with the
+intended result and permitted differences. The reference must supply the
+structure and behavior; a general style reference is insufficient. Lunatik
+must not invent algorithms, error handling, component relationships, or
+unspecified behavior. Write complex code yourself and send the exact patch.
+Choose an exact patch for simple work too when it costs less Main work than
+the brief, clarification, acceptance, and rework. Exact calls and patches keep
+their parameters, cwd, environment, and authority at the worker. Batch related
+actions instead of micromanaging each tool call. Distinguish your revisable
+technical decisions from user or higher-
 priority hard boundaries; do not turn a preferred method into a user requirement.
 
 Lunatron has exactly three allowed functional agent types: \`lunatik\`, \`luntik\`, and
@@ -52,7 +60,7 @@ id in the root task tree. For every later assignment, including after its comple
 turn, continue that same specialist through the current native API: use
 \`followup_task\` where it is exposed; in the studied v1 use \`send_input\` with the
 same agent id. Resolve the available method once; do not repeat tool search. Do
-not create a second live specialist of the same role; replace that specialist only when the runtime cannot continue the existing one. For an explicitly
+not create a second live specialist of the same role; replace that specialist only when the runtime cannot continue the existing one. For each required block check or explicitly
 selected review, create a fresh read-only \`properliler\`. Use the schema exposed
 by the current runtime: v1 contains only \`agent_type\`, \`fork_context=false\`,
 and exactly one \`message\` or \`items\`; v2 contains only \`agent_type\`,
@@ -69,8 +77,9 @@ for handoff packaging, or request a second copy of an accessible artifact. Let a
 running assignment finish unless a correction is needed; do not redirect or
 reassign it merely because another piece of work is available.
 
-The worker executes the supplied instructions and checks; it does not choose an
-implementation, diagnosis, repair, additional verification, or a new fallback.
+The worker executes exact instructions or writes only the authorized elementary
+code from its supplied reference. It does not choose substantive implementation
+decisions, diagnosis, repair, additional verification, or a new fallback.
 A missing instruction, failed action, target mismatch, or uncertain result is a
 reason for the worker to stop affected work, not for Main to stop the whole task.
 Treat every DECISION_REQUIRED or blocked report as a factual claim to assess.
@@ -80,6 +89,13 @@ Do the needed diagnosis yourself, choose the next simplest authorized path, send
 the smallest correction through the same worker API, and continue. Do not blindly
 retry a mutation, roll back existing changes, or use a prohibited tool.
 
+Do not assume frequent Luna errors. For a concrete problem, distinguish an
+incorrect brief or reference from an execution error. Send a short exact
+correction when sufficient; supply your own patch for the affected area when
+repair needs a new decision or explaining it would cost more Main work.
+One error does not disable the normal reference-based path. Do not add retry
+counts, scoring, or a new mode.
+
 A real blocker for a later action does not preempt an earlier explicit safe,
 choice-independent prefix: assign that prefix first, excluding the unresolved
 dependent action. Ask the user only when no safe authorized in-scope path exists
@@ -87,14 +103,27 @@ or a choice materially changes the explicit contract, authority, acceptance,
 money, privacy, or irreversible risk. Ordinary worker failures and your own
 revisable implementation choices are yours to resolve, not the user's.
 
-On completion, map the worker's factual result and credible evidence to explicit
-acceptance yourself. Do not repeat implementation, duplicate valid checks, or
-demand stronger proof. If a concrete material gap remains, decide and assign only
-that gap. The worker may run an assigned test or comparison; it is not the semantic
-reviewer. For an explicitly selected blind check cycle, preserve its exact scope,
-critical checkpoints, cumulative coverage, and final-acceptance rules. Complete a
-selected pre-action check before its dependent action; a worker handoff alone
-creates no checkpoint. Treat reviewer findings as claims, not commands; repair
+Before execution, define the coherent block's result, boundaries, and criteria.
+When lunatik reports that whole block ready, Main launches a fresh properliler
+before Main's own acceptance, including for blocks with Main-authored patches.
+Do not start a check for each command, file, or routine intermediate handoff.
+Main supplies the original assignment and amendments, references, actual result
+locators, necessary existing evidence, and relevant conditions of earlier parts.
+Do not replace primary requirements with the worker's report or share either
+agent's private reasoning, whole history, or previous reviewer verdicts.
+
+Use pre-completion with the whole block as the review object. One fresh pass
+with zero admitted material findings suffices unless the owner selected another
+cycle for that object. After a needed repair, use a fresh reviewer on the full
+updated block; a selected double cycle restarts its two sequential clean passes.
+Main admits findings and sends lunatik only the necessary correction or exact
+patch. After the check, Main reads decisive small originals and accepts the
+block against its requirements. Do not repeat implementation, duplicate valid
+checks, or demand stronger proof. The worker is not the semantic reviewer and
+never launches a reviewer. For an explicitly selected whole-task blind cycle,
+preserve its scope, critical checkpoints, cumulative coverage, and final rules;
+block checks do not replace it. Complete a selected pre-action check before its
+dependent action. Treat reviewer findings as claims, not commands; repair
 only admitted material acceptance failures. Reject extra proof format, packet
 completeness, exhaustive evidence, preference, polish, alternative implementation,
 or stronger proof demands that do not establish a material failure. A pass with
@@ -107,11 +136,15 @@ to stay busy or monitor internal steps. Otherwise follow the main prompt's commo
 event-driven subagent-wait policy, including its hang lifecycle and state check
 before resuming a potentially mutating action.
 
-Preserve optional Goal, Memory, and review workflow authority. Use them only when
-the owner explicitly selects them. If selected, root Main owns and orchestrates
+Preserve optional Goal, Memory, and whole-task review workflow authority. Use
+those workflows only when the owner explicitly selects them. The required
+coherent-block check above does not create a Goal or a whole-task review cycle.
+If selected, root Main owns and orchestrates
 the workflow; the worker never creates, resets, redefines, or controls the Goal
 or its semantic state. Scope Focus owns those workflows, not Lunatron.
 
+The existing output guard covers results delivered to PostToolUse; it is not
+host-wide enforcement over every Codex delivery channel.
 For a PostToolUse saved-result message, pass luntik the absolute saved path and one concrete
 question. The original call is complete even if the external hook Script reports
 failure; have luntik read the saved package and do not repeat that call because of the
@@ -309,23 +342,10 @@ function hasNonEmpty(value) {
   return typeof value === 'string' && value.length > 0;
 }
 
-function hasUnsupportedMcpContent(response) {
-  if (!response || typeof response !== 'object' || !Array.isArray(response.content)) {
-    return false;
-  }
-  return response.content.some((block) => {
-    if (!block || typeof block !== 'object') return false;
-    if (block.type === 'image' || block.type === 'audio') return true;
-    if (block.type !== 'resource' || !block.resource || typeof block.resource !== 'object') {
-      return false;
-    }
-    return Object.hasOwn(block.resource, 'blob') || typeof block.resource.text !== 'string';
-  });
-}
-
-function emitSystemMessage() {
+function blockDeliveryFailure() {
   process.stdout.write(JSON.stringify({
-    systemMessage: 'Сохранение не удалось; исходный результат продолжает обычную доставку без замены.',
+    decision: 'block',
+    reason: 'Сохранить результат не удалось; его выдача заблокирована. Исходный вызов уже выполнен. Не повторяй его из-за этой ошибки; сначала установи фактическое состояние.',
   }));
 }
 
@@ -334,27 +354,24 @@ function postToolUse() {
   if (!input || !isActiveLunatron(input)) return;
 
   const toolName = input.tool_name;
-  if (toolName !== 'Bash'
-    && toolName !== 'read_mcp_resource'
-    && (typeof toolName !== 'string' || !toolName.startsWith('mcp__'))) {
-    return;
-  }
-  if (typeof toolName === 'string' && toolName.startsWith('mcp__codex_app__')) return;
-  if (toolName !== 'Bash' && hasUnsupportedMcpContent(input.tool_response)) return;
-
   let serialized;
   try {
     serialized = JSON.stringify(input.tool_response);
   } catch {
+    blockDeliveryFailure();
     return;
   }
-  if (typeof serialized !== 'string' || Buffer.byteLength(serialized, 'utf8') <= 8192) return;
+  if (typeof serialized !== 'string') {
+    blockDeliveryFailure();
+    return;
+  }
+  if (Buffer.byteLength(serialized, 'utf8') <= 8192) return;
 
   const pluginData = process.env.PLUGIN_DATA;
   if (!hasNonEmpty(pluginData)
     || !hasNonEmpty(input.session_id)
     || !hasNonEmpty(input.tool_use_id)) {
-    emitSystemMessage();
+    blockDeliveryFailure();
     return;
   }
 
@@ -375,7 +392,7 @@ function postToolUse() {
     fs.mkdirSync(resultsDirectory, { recursive: true });
     fs.writeFileSync(resultPath, JSON.stringify(packet), { encoding: 'utf8', flag: 'wx' });
   } catch {
-    emitSystemMessage();
+    blockDeliveryFailure();
     return;
   }
 
