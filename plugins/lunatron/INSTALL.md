@@ -1,8 +1,7 @@
 # Installation and update
 
-For an install or update, start by reading
-[`skills/setup-lunatron/SKILL.md`](skills/setup-lunatron/SKILL.md), then read this
-file completely. Native CLI/UI registration does not execute Markdown.
+For an install or update, read this INSTALL.md completely. Native CLI/UI
+registration does not execute Markdown.
 Start in the root of the unpacked Lunatron folder; it is the authoritative source.
 Keep
 Tritron/Lunatron mutually exclusive and do not delete unrelated plugins, profiles,

@@ -1,6 +1,6 @@
 {
   "name": "scope-focus",
-  "version": "0.0.0+codex.20260912230445",
+  "version": "0.0.0+codex.20260913005023",
   "description": "Define native goals, add explicit durable Goal Memory, and use optional explicit blind checks. Installation requires completing INSTALL.md.",
   "author": {
     "name": "A. Chukavin"
@@ -8,7 +8,7 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Scope Focus",
-    "defaultPrompt": "For an install or update, use setup-scope-focus and follow INSTALL.md completely. Otherwise explain the active Scope Focus contract.",
+    "defaultPrompt": "Explain the active Scope Focus contract.",
     "shortDescription": "Use native Define Goal with minimum-path execution and concise action-oriented output.",
     "longDescription": "Define Goal creates native goals; Goal Memory explicitly adds durable execution state; optional blind checks are explicit-only.",
     "developerName": "A. Chukavin",

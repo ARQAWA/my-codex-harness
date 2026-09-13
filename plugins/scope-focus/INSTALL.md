@@ -72,6 +72,6 @@ repository-wide comparison sweep during an ordinary update. A new task may be
 needed to discover changed skills; this is not hot reload.
 
 Native CLI or UI registration alone does not execute Markdown. An agent install
-starts by reading `skills/setup-scope-focus/SKILL.md` and this `INSTALL.md`.
+starts by reading this `INSTALL.md`.
 Trust bypasses are forbidden. Windows commands use Git Bash and portable
 quoting; static inspection or a POSIX run is not Windows evidence.

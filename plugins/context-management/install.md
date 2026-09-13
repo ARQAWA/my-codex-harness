@@ -31,7 +31,6 @@ my-codex-harness/
     ├── .codex-plugin/plugin.json
     ├── memory.js
     ├── skills/local-context-memory/SKILL.md
-    ├── skills/setup-context-management/SKILL.md
     └── install.md
 ```
 
@@ -63,13 +62,11 @@ runtime и не меняют `config.toml`; автоматическая нас�
 
 ### Установка агентом
 
-Если пользователь просит установить или настроить плагин через Plugin Creator,
-агент сначала читает `plugins/context-management/skills/setup-context-management/SKILL.md`, затем полностью
-читает связанный `plugins/context-management/install.md`. После регистрации запросите
-`$context-management:setup-context-management`. Native skill discovery и
-`defaultPrompt` направляют агента; голая команда `codex plugin add` или кнопка UI
-не гарантируют автоматическое чтение и запуск. Встроенный Plugin Creator этим не
-изменяется. Для видимости нового skill может потребоваться новый turn или task.
+При установке или обновлении через Plugin Creator агент сначала полностью
+читает этот `install.md` и выполняет применимую ветку установки или обновления.
+После регистрации голая команда `codex plugin add` или кнопка UI не гарантируют
+автоматическое чтение и выполнение Markdown. Для видимости новых файлов может
+потребоваться новый turn или task.
 После изменения `config.toml` перезапустите Codex и откройте новую задачу.
 
 ## Runtime
