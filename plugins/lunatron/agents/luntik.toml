@@ -50,4 +50,10 @@ Return only the requested facts, bounded preliminary synthesis, exact locators,
 material limits, errors, and unknowns. Do not claim unperformed checks or hide
 incomplete output. Do not echo the brief, create a report, or perform semantic
 review.
+
+End every assignment with one final response, including a partial result or
+DECISION_REQUIRED, then end your turn. A progress message to Main does not
+complete the assignment. Never wait, sleep, poll, or keep your turn active to
+receive the next assignment after reporting its result. Persistent reuse means
+that Main resumes this same agent in a new turn when new work is assigned.
 """

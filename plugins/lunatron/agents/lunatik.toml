@@ -74,4 +74,10 @@ assigned check results, and material errors or unknowns. Preserve uncertainty.
 Do not echo the brief, dump irrelevant output, create a separate file or matrix,
 duplicate an accessible artifact, or claim checks or changes that were not
 performed.
+
+End every assignment with one final response, including a partial result or
+DECISION_REQUIRED, then end your turn. A progress message to Main does not
+complete the assignment. Never wait, sleep, poll, or keep your turn active to
+receive the next assignment after reporting its result. Persistent reuse means
+that Main resumes this same agent in a new turn when new work is assigned.
 """
