@@ -5,15 +5,21 @@ description: Restore local Codex context from the installed memory CLI and check
 
 # Local context memory
 
-Requires Node.js 24.5 or newer. Use the installed local CLI and local SQLite
-database. This does not replace Codex history, token accounting, or
+Requires Node.js 24.5 or newer. Run `memory.js` from the root of this installed
+plugin, two directories above this skill's directory. Use this packaged skill;
+do not create external copies of the CLI or skill. Only the database, logs,
+and settings belong in the single user data directory. This does not replace
+Codex history, token accounting, or
 `functions.new_context`.
 
 ## Identity and CLI
 
 Use the exact `thread_id` from `CODEX_THREAD_ID`. Do not infer it from the
-current directory, project name, latest file, or model. Installation settings
-provide `node_path`, `cli_path`, `skill_path`, and `settings_path`.
+current directory, project name, latest file, or model. Resolve the installed
+plugin from this skill's actual path. Use an existing Node.js 24.5+ runtime and
+the existing settings file, if present. Without an explicit settings path, the
+CLI uses the user's local application data directory on Windows and
+`~/.local/share/ctx-mgr-local-native` on macOS/Linux. Windows uses Git Bash.
 
 Run one CLI call with JSON on stdin and keep its `request_id`:
 
@@ -22,7 +28,11 @@ printf '%s' '{}' | "$NODE_PATH" "$CLI_PATH" call context.bootstrap \
   --thread-id "$CODEX_THREAD_ID" --settings "$SETTINGS_PATH"
 ```
 
-Use the returned installation paths exactly. Calls in one session are
+For the first call, `CLI_PATH` is this plugin's `memory.js`; `SETTINGS_PATH` is
+the existing settings file. Omit `--settings` when no settings file exists.
+Bootstrap returns the current CLI and skill paths from the running package;
+saved paths from older versions cannot override them. Use the returned paths
+for subsequent calls. Calls in one session are
 sequential. Do not start a background memory service, write SQLite directly, retry an
 uncertain write, or call a provider.
 

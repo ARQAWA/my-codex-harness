@@ -62,7 +62,7 @@ function defaults() {
   return {
     settings_path: path.join(data, 'settings.json'),
     db_path: path.join(data, 'memory.sqlite3'),
-    codex_home: process.env.CODEX_HOME || path.join(home(), '.codex'),
+    codex_home: path.join(home(), '.codex'),
     max_output_bytes: 64 * 1024,
     skill_path: path.resolve(__dirname, 'skills', 'local-context-memory', 'SKILL.md'),
     node_path: process.execPath,
@@ -85,7 +85,9 @@ function readSettings(file) {
     throw new MemoryError('invalid_request', `cannot read settings: ${e.message}`);
   }
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new MemoryError('invalid_request', 'settings must be an object');
-  for (const k of Object.keys(out)) if (parsed[k] !== undefined) out[k] = parsed[k];
+  for (const k of Object.keys(out)) {
+    if (k !== 'cli_path' && k !== 'skill_path' && parsed[k] !== undefined) out[k] = parsed[k];
+  }
   return out;
 }
 

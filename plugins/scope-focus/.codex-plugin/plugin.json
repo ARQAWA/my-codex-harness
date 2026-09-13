@@ -1,16 +1,16 @@
 {
   "name": "scope-focus",
-  "version": "0.0.0+codex.20260913005023",
-  "description": "Define native goals, add explicit durable Goal Memory, and use optional explicit blind checks. Installation requires completing INSTALL.md.",
+  "version": "0.0.0+codex.20260913020500",
+  "description": "\u041f\u043e\u043c\u043e\u0433\u0430\u0435\u0442 \u0442\u043e\u0447\u043d\u043e \u0432\u044b\u043f\u043e\u043b\u043d\u0438\u0442\u044c \u0437\u0430\u043f\u0440\u043e\u0441 \u0431\u0435\u0437 \u043b\u0438\u0448\u043d\u0435\u0439 \u0440\u0430\u0431\u043e\u0442\u044b.",
   "author": {
     "name": "A. Chukavin"
   },
   "skills": "./skills/",
   "interface": {
     "displayName": "Scope Focus",
-    "defaultPrompt": "Explain the active Scope Focus contract.",
-    "shortDescription": "Use native Define Goal with minimum-path execution and concise action-oriented output.",
-    "longDescription": "Define Goal creates native goals; Goal Memory explicitly adds durable execution state; optional blind checks are explicit-only.",
+    "defaultPrompt": "\u041f\u0440\u0438 \u0443\u0441\u0442\u0430\u043d\u043e\u0432\u043a\u0435 \u0438\u043b\u0438 \u043e\u0431\u043d\u043e\u0432\u043b\u0435\u043d\u0438\u0438 \u043f\u0440\u043e\u0447\u0438\u0442\u0430\u0439 INSTALL.md \u0432 \u043a\u043e\u0440\u043d\u0435 \u044d\u0442\u043e\u0433\u043e \u043f\u043b\u0430\u0433\u0438\u043d\u0430 \u0438 \u0441\u043b\u0435\u0434\u0443\u0439 \u0435\u043c\u0443.",
+    "shortDescription": "\u041f\u043e\u043c\u043e\u0433\u0430\u0435\u0442 \u0442\u043e\u0447\u043d\u043e \u0432\u044b\u043f\u043e\u043b\u043d\u0438\u0442\u044c \u0437\u0430\u043f\u0440\u043e\u0441 \u0431\u0435\u0437 \u043b\u0438\u0448\u043d\u0435\u0439 \u0440\u0430\u0431\u043e\u0442\u044b.",
+    "longDescription": "\u041f\u043e\u043c\u043e\u0433\u0430\u0435\u0442 \u0442\u043e\u0447\u043d\u043e \u0432\u044b\u043f\u043e\u043b\u043d\u0438\u0442\u044c \u0437\u0430\u043f\u0440\u043e\u0441 \u0431\u0435\u0437 \u043b\u0438\u0448\u043d\u0435\u0439 \u0440\u0430\u0431\u043e\u0442\u044b. \u041f\u0440\u0438 \u0443\u0441\u0442\u0430\u043d\u043e\u0432\u043a\u0435 \u0438\u043b\u0438 \u043e\u0431\u043d\u043e\u0432\u043b\u0435\u043d\u0438\u0438 \u043f\u0440\u043e\u0447\u0438\u0442\u0430\u0439 INSTALL.md \u0432 \u043a\u043e\u0440\u043d\u0435 \u044d\u0442\u043e\u0433\u043e \u043f\u043b\u0430\u0433\u0438\u043d\u0430 \u0438 \u0441\u043b\u0435\u0434\u0443\u0439 \u0435\u043c\u0443.",
     "developerName": "A. Chukavin",
     "category": "Productivity",
     "capabilities": [
