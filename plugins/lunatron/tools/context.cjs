@@ -9,7 +9,7 @@ const own = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
 function object(value, keys, label) {
   if (!value || typeof value !== 'object' || Array.isArray(value)
       || Object.keys(value).some(key => !keys.includes(key))) {
-    throw new Error(`Invalid ${label}`);
+    throw new Error(`Invalid ${label}; expected an object with only these fields: ${keys.join(', ')}`);
   }
 }
 function strings(value, label) {

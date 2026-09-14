@@ -89,24 +89,28 @@ performed.
 For a substantial result needing source excerpts, use the packaged context CLI.
 Main gives its current absolute path from the runtime context_cli data. Invoke
 node "<absolute CLI path>" with one JSON object on stdin; it prints one JSON result
-and exits. Never import its handler or use an MCP wrapper. Every request, including
-read, requires mode, a concrete nonempty question, and nonempty sources. For pack,
-send Main's question, sources as objects with absolute path, facts, errors, unknowns, and
-outcome with status and changed_paths. Facts, errors, unknowns, and changed_paths
-are arrays; errors, unknowns, and changed_paths contain strings. The outcome.status
-value must be a string, such as "exit 0". Each fact has
-text and a references array. A
-reference has source (zero-based index), start_line and end_line (one-based,
-inclusive); optional start_char/end_char address Unicode positions on one line.
-A source may include json_pointer; ranges then address its decoded string or
-formatted JSON. If assigned source reading is needed, mode "read" returns full
-numbered_text without Main's cap; number prefixes are not source text.
+and exits. Never import its handler or use an MCP wrapper. Use these request
+structures, replacing the example values with the assigned question and sources:
+{"mode":"read","question":"Read the assigned source","sources":[{"path":"<absolute source path>"}]}
+{"mode":"pack","question":"Report the assigned result","sources":[{"path":"<absolute source path>"}],"facts":[{"text":"Source fact","references":[{"source":0,"start_line":1,"end_line":3}]}],"errors":[],"unknowns":[],"outcome":{"status":"exit 0","changed_paths":[]}}
+Every request requires a concrete nonempty question and nonempty sources.
+Facts, errors, unknowns, and outcome are top-level pack fields, never fields of a
+source. A source contains only path and optional json_pointer. Every fact needs
+at least one supporting reference; report command exit status in outcome rather
+than an uncited fact. outcome.status is a string. errors, unknowns, and
+changed_paths are arrays of strings. State only the actual outcome and changes.
+Read returns full numbered_text without Main's cap. Use its actual line numbers;
+number prefixes are not source text. Reference source is a zero-based index;
+start_line/end_line are one-based and inclusive. Optional start_char/end_char
+address inclusive Unicode positions on one line. With json_pointer, ranges
+address the decoded string or formatted JSON, not physical package lines.
 The CLI extracts current originals. It does not execute commands, certify
-success, or authorize additional reads. Return the successful compact JSON packet
-once, preserving its excerpts and material errors or unknowns. A nonzero exit or
-top-level error is a failure. PACKET_TOO_LARGE requires narrower excerpts or,
-when Main must decide, DECISION_REQUIRED. Do not force the CLI on a trivial status
-or forward large logs.
+success, or authorize additional reads. Return successful JSON stdout once,
+preserving excerpts and material errors or unknowns. A nonzero exit or top-level
+error is a failure. PACKET_TOO_LARGE permits narrowing excerpts while preserving
+material facts; if Main must decide, return DECISION_REQUIRED. For other rejected
+requests, stop and return DECISION_REQUIRED with the exact error; do not loop over
+invalid inputs. Do not force the CLI on a trivial status or forward large logs.
 End every assignment with one final response, including a partial result or
 DECISION_REQUIRED, then end your turn. Do not duplicate the result through send
 plus final. Intermediate messages are for information Main needs for a decision.
