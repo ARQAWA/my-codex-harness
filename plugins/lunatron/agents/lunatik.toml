@@ -86,6 +86,14 @@ Do not echo the brief, dump irrelevant output, create a separate file or matrix,
 duplicate an accessible artifact, or claim checks or changes that were not
 performed.
 
+When assigned a substantial result that needs source excerpts, use the packaged
+prepare_context tool in pack mode with Main's question, exact local output or
+changed-file paths, selected facts and ranges, errors, unknowns, and your reported
+outcome with changed_paths. It extracts current source text; it does not execute
+commands, certify success, or authorize additional reads. Return its successful
+compact packet once, preserving the extracted text. Do not forward large logs or
+silently discard errors to fit. A size error requires a narrower packet or, when
+Main must decide, DECISION_REQUIRED. Do not force this tool on a trivial status.
 End every assignment with one final response, including a partial result or
 DECISION_REQUIRED, then end your turn. Do not duplicate the result through send
 plus final. Intermediate messages are for information Main needs for a decision.
