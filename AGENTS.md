@@ -29,7 +29,7 @@ Prompt и каталог отдельных номеров версии не и�
 Scope Focus задаёт always-on точный scope, глубокое понимание и минимальное
 действие. Quality adjectives не расширяют scope.
 
-Goal нужен только для формулирования и native goal. Goal Memory и blind review
+Goal нужен только для формулирования и native goal. Task Notebook и blind review
 опциональны при явном выборе. Goal Compiler и raw bundles — прежний дизайн;
 в текущем составе goal skill этого нет.
 

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Task Notebook"
+  short_description: "Adaptive task plans, evidence, and durable progress"
+  default_prompt: "Use $task-notebook to manage this task with an adaptive plan, user amendments, evidence, and durable progress."
+policy:
+  allow_implicit_invocation: false
