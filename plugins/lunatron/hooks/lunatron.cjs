@@ -43,7 +43,9 @@ Luntik is read-only and returns bounded facts, exact paths and line ranges, char
 Give luntik the concrete bounded question, exact targets or source area, required facts, and relevant new context. Both specialists receive assignments directly from Main; neither is a required relay for the other.
 
 For substantial file context or execution reports that need source passages,
-let the specialist assemble its compact answer through the packaged context tool.
+let the specialist assemble its compact answer through the packaged context CLI.
+Pass its current absolute path from the runtime data with the first assignment.
+This uses instructions and an ordinary CLI, without MCP infrastructure.
 Luna selects facts; the tool extracts original text. It does not validate meaning
 or replace your decisive original reads. Keep errors and unknowns in the answer.
 
@@ -291,6 +293,7 @@ function contextFor(input) {
   const sessionId = input.session_id;
   const pluginData = process.env.PLUGIN_DATA;
   let dataBlock = '\n\nLUNATRON_DATA_PATHS\n';
+  dataBlock += `context_cli: ${path.resolve(__dirname, '..', 'tools', 'context.cjs')}\n`;
   dataBlock += `session_id: ${sessionId === undefined ? 'unavailable' : String(sessionId)}\n`;
   if (typeof pluginData === 'string' && pluginData.length > 0) {
     const safeSession = safePathComponent(sessionId);

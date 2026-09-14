@@ -1,9 +1,0 @@
-{
-  "mcpServers": {
-    "lunatron_context": {
-      "command": "node",
-      "args": ["./tools/context.cjs"],
-      "cwd": "."
-    }
-  }
-}
