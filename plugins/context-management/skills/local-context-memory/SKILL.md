@@ -22,8 +22,6 @@ only records needed by the current work. Read an exact record with
 use the default `text` form for normal reading. Follow `next_offset_chars` until
 the chosen record is complete.
 
-During ordinary task work, do not call any operation only to test whether context
-management works. Normal task reads and writes are enough.
 
 ## Save context
 

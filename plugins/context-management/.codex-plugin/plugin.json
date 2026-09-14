@@ -1,6 +1,6 @@
 {
   "name": "context-management",
-  "version": "0.0.0+codex.20260914234224",
+  "version": "0.0.0+codex.20260914234838",
   "description": "Помогает сохранять и восстанавливать контекст задач.",
   "skills": "./skills/",
   "interface": {
