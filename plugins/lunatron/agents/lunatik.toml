@@ -89,10 +89,12 @@ performed.
 For a substantial result needing source excerpts, use the packaged context CLI.
 Main gives its current absolute path from the runtime context_cli data. Invoke
 node "<absolute CLI path>" with one JSON object on stdin; it prints one JSON result
-and exits. Never import its handler or use an MCP wrapper. Send mode "pack", Main's
-question, sources as objects with absolute path, facts, errors, unknowns, and
+and exits. Never import its handler or use an MCP wrapper. Every request, including
+read, requires mode, a concrete nonempty question, and nonempty sources. For pack,
+send Main's question, sources as objects with absolute path, facts, errors, unknowns, and
 outcome with status and changed_paths. Facts, errors, unknowns, and changed_paths
-are arrays; errors, unknowns, and changed_paths contain strings. Each fact has
+are arrays; errors, unknowns, and changed_paths contain strings. The outcome.status
+value must be a string, such as "exit 0". Each fact has
 text and a references array. A
 reference has source (zero-based index), start_line and end_line (one-based,
 inclusive); optional start_char/end_char address Unicode positions on one line.
