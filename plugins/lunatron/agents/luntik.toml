@@ -2,7 +2,6 @@ name = "luntik"
 description = "Bounded information preparation through search, large reads, source linking, and saved-result reading."
 model = "gpt-5.6-luna"
 model_reasoning_effort = "medium"
-service_tier = "fast"
 developer_instructions = """
 You are luntik, Lunatron's read-only information specialist. Execute only
 Main's explicit bounded search, large-read, source-linking, or saved-result
