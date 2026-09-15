@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node -e \"require(require('node:path').join(process.env.PLUGIN_ROOT,'hooks','context-management.cjs')).sessionStart()\"",
+            "command": "node -e \"require(require('node:path').join(process.env.PLUGIN_ROOT,'hooks','context-router.cjs')).sessionStart()\"",
             "timeout": 7
           }
         ]
@@ -18,7 +18,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node -e \"require(require('node:path').join(process.env.PLUGIN_ROOT,'hooks','context-management.cjs')).subagentStart()\"",
+            "command": "node -e \"require(require('node:path').join(process.env.PLUGIN_ROOT,'hooks','context-router.cjs')).subagentStart()\"",
             "timeout": 7
           }
         ]
@@ -30,7 +30,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node -e \"require(require('node:path').join(process.env.PLUGIN_ROOT,'hooks','context-management.cjs')).preToolUse()\"",
+            "command": "node -e \"require(require('node:path').join(process.env.PLUGIN_ROOT,'hooks','context-router.cjs')).preToolUse()\"",
             "timeout": 7
           }
         ]
@@ -42,7 +42,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node -e \"require(require('node:path').join(process.env.PLUGIN_ROOT,'hooks','context-management.cjs')).postToolUse()\"",
+            "command": "node -e \"require(require('node:path').join(process.env.PLUGIN_ROOT,'hooks','context-router.cjs')).postToolUse()\"",
             "timeout": 7
           }
         ]

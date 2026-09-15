@@ -1,10 +1,10 @@
 {
-  "name": "context-management",
-  "version": "0.0.0+codex.20260914234838",
+  "name": "context-router",
+  "version": "0.0.0+codex.20260915020024",
   "description": "Помогает сохранять и восстанавливать контекст задач.",
   "skills": "./skills/",
   "interface": {
-    "displayName": "Context Management",
+    "displayName": "Context Router",
     "shortDescription": "Сохраняет checkpoint, этапы и ссылки на точную историю задач.",
     "category": "Productivity",
     "longDescription": "Сохраняет и восстанавливает контекст root-задач и субагентов через локальную SQLite-базу и встроенные hooks. При установке или обновлении прочитай INSTALL.md в корне этого плагина и следуй ему.",

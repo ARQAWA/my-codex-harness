@@ -15,11 +15,7 @@ detail on demand. The notebook supports the task; it grants no authority.
 
 ## Start and ownership
 
-- Use the `Task Notebook session_id` and `Task Notebook plan` locator supplied by
-  Scope Focus SessionStart. The persistent path is
-  `<Scope Focus PLUGIN_DATA>/task-notebook/<session-key>/plan.md`, where
-  `session-key` is the UTF-8 bytes of `session_id` encoded as hex. Do not place
-  records in a temporary directory or a versioned plugin cache.
+- Use the Task Notebook session_id and Task Notebook plan locator supplied by Scope Focus SessionStart. Store the notebook only in the operating system's temporary directory: `os.tmpdir()/scope-focus/task-notebook/<session-key>/plan.md`, where session-key is the UTF-8 bytes of session_id encoded as hex. Keep its notes, work records, reports, and needed evidence in that temporary notebook directory. Do not use the repository, PLUGIN_DATA, a plugin cache, or a persistent external artifacts directory. OS cleanup may remove these files; do not create a hidden permanent copy. If a recorded old locator differs, use the current SessionStart locator. If the file is missing, continue only from available task sources and do not invent recovered state.
 - Read an existing header before writing. For the same continuing task, retain
   its task key and records. For a new explicitly selected order, choose one unused
   filesystem-safe task key. Never overwrite a different task's active notebook.
@@ -31,10 +27,11 @@ detail on demand. The notebook supports the task; it grants no authority.
   objective through the available Goal tools and record that association. Do not
   create, reset, or redefine a Goal through this skill. Native status remains native;
   newer user instructions still govern the effective order.
-- If the session ID, persistent data path, or restore event is unavailable, report
-  the actual limitation when needed. Use an explicitly supplied notebook path for
-  manual continuation when available; do not promise automatic restore or mix in
-  another session's records. Continue compatible work with available context.
+- If the session ID, temporary notebook locator, or restore event is unavailable,
+  report the actual limitation when needed. Use an explicitly supplied notebook
+  path inside the operating system's temporary directory for manual continuation
+  when available; do not promise automatic restore or mix in another session's
+  records. Continue compatible work with available context.
 
 ## Notebook layout
 
@@ -218,7 +215,7 @@ or later use. Legacy Goal Memory data is not migrated or deleted by this replace
 ## Existing workflows
 
 Keep Goal definition and native status with the selected Goal workflow. When Context
-Management is enabled, link this notebook from its checkpoint and use relevant exact
+Router is enabled, link this notebook from its checkpoint and use relevant exact
 history records; do not maintain a second independent plan there. Neither Context
-Management nor Lunatron is a dependency. Follow the environment's existing roles and
+Router nor Lunatron is a dependency. Follow the environment's existing roles and
 selected review process without adding workers or review cycles through this skill.

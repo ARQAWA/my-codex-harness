@@ -1,14 +1,14 @@
 {
-  "name": "context-management",
+  "name": "context-router",
   "interface": {
-    "displayName": "Context Management"
+    "displayName": "Context Router"
   },
   "plugins": [
     {
-      "name": "context-management",
+      "name": "context-router",
       "source": {
         "source": "local",
-        "path": "./plugins/context-management"
+        "path": "./plugins/context-router"
       },
       "policy": {
         "installation": "AVAILABLE",

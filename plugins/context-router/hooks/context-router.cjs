@@ -67,15 +67,15 @@ function bootstrap(expected) {
   const value = input(expected); if (!value) return;
   const thread = threadId(value);
   if (!thread) {
-    emitContext(expected, 'Context Management error during bootstrap: thread_id_missing. Report this actual error to the parent agent or user. Continue with the context already available.');
+    emitContext(expected, 'Context Router error during bootstrap: thread_id_missing. Report this actual error to the parent agent or user. Continue with the context already available.');
     return;
   }
   const result = call('context.bootstrap', thread, {});
   if (result.error) {
-    emitContext(expected, `Context Management error during bootstrap: ${JSON.stringify(result.error)}. Report this actual error to the parent agent or user. Continue with the context already available.`);
+    emitContext(expected, `Context Router error during bootstrap: ${JSON.stringify(result.error)}. Report this actual error to the parent agent or user. Continue with the context already available.`);
     return;
   }
-  emitContext(expected, `Restore task context from this Context Management bootstrap. Read linked exact originals only when the current task needs them. Do not run a separate health check. If history_error is present, report that actual error to the parent agent or user. Bootstrap: ${JSON.stringify(result.result)}`);
+  emitContext(expected, `Restore task context from this Context Router bootstrap. Read linked exact originals only when the current task needs them. Do not run a separate health check. If history_error is present, report that actual error to the parent agent or user. Bootstrap: ${JSON.stringify(result.result)}`);
 }
 
 function saveRecord(expected, destination, origin, stableId, role, value, payload, extraRefs = {}) {
@@ -91,14 +91,14 @@ function saveRecord(expected, destination, origin, stableId, role, value, payloa
   };
   const receipt = `${stableId}:${crypto.createHash('sha256').update(destination).digest('hex').slice(0, 16)}`;
   const result = call('history.record', destination, args, receipt);
-  if (result.error) emitContext(expected, `Context Management failed to save an inter-agent record: ${JSON.stringify(result.error)}. Report this actual error to the parent agent or user. The tool call remains allowed.`);
+  if (result.error) emitContext(expected, `Context Router failed to save an inter-agent record: ${JSON.stringify(result.error)}. Report this actual error to the parent agent or user. The tool call remains allowed.`);
 }
 
 function record(expected, suffix, role, field) {
   const value = input(expected); if (!value) return;
   const current = threadId(value);
   if (!current) {
-    emitContext(expected, 'Context Management failed to save an inter-agent record: thread_id_missing. Report this actual error to the parent agent or user. The tool call remains allowed.');
+    emitContext(expected, 'Context Router failed to save an inter-agent record: thread_id_missing. Report this actual error to the parent agent or user. The tool call remains allowed.');
     return;
   }
   const payload = value[field];
