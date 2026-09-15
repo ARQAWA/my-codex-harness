@@ -44,10 +44,9 @@ Native install выполняй командой `codex plugin add <name>@<marke
 commit. Соблюдай профили из `INSTALL` и fresh hook trust: Scope Focus —
 `properliler`, Lunatron — `lunatik` и `luntik`. Trust не обходи.
 
-После установки выполни runtime checks и platform-specific обязательства из
-`INSTALL` для clean install. При обычном update обнови весь runtime: native
-package, packaged profiles и отдельные runtime-файлы; прочитай изменённые
-материалы и нормальный вывод установки без clean-install probes.
+После установки или обновления выполни запуск хуков по разделу проверки
+`INSTALL`. При обычном update обнови весь runtime: native package,
+packaged profiles и отдельные runtime-файлы.
 
 Не запускай второй cachebuster из `INSTALL`: bump уже сделан. Остальной
 `INSTALL` обязателен.
