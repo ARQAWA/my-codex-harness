@@ -2,41 +2,29 @@
 
 ## Состав
 
-- `codex-model-catalog.json` задаёт модели и их возможности.
-- `new-model-instructions.md` задаёт общие правила работы агента.
+Пакет содержит два исходных файла:
 
-Codex читает только копии этих файлов из пользовательской папки `.codex`.
-Исходные файлы этого каталога остаются source of truth и не подключаются
-напрямую.
+- `config/codex-model-catalog.json` задаёт модели и их возможности.
+- `config/new-model-instructions.md` задаёт общие правила работы агента.
 
-## Требования
-
-Нужны Codex, папка `~/.codex` и право записи в неё. В Windows используй
-только Git Bash.
+Исходные файлы в пакете и репозитории остаются source of truth. Codex использует
+их копии, размещённые в постоянном месте пользовательской конфигурации.
 
 ## Первая установка
 
-Скопируй оба файла в целевые копии:
-Выполняй команды из каталога, где лежит этот INSTALL.md.
+Размести копии `config/codex-model-catalog.json` и
+`config/new-model-instructions.md` в подходящем постоянном месте для файлов
+пользовательской конфигурации Codex. В пользовательском `config.toml` укажи
+реальные пути к этим копиям в ключах `model_catalog_json` и
+`model_instructions_file`.
 
-```bash
-cp codex-model-catalog.json ~/.codex/codex-model-catalog.json
-cp new-model-instructions.md ~/.codex/new-model-instructions.md
-```
-
-В корне `~/.codex/config.toml` укажи абсолютные пути именно к этим копиям:
-
-```toml
-model_catalog_json = "/Users/arkadijcukavin/.codex/codex-model-catalog.json"
-model_instructions_file = "/Users/arkadijcukavin/.codex/new-model-instructions.md"
-```
-
-## Проверка после установки
-
-Прочитай обе целевые копии и `~/.codex/config.toml`. Оба ключа должны
-указывать на файлы в `~/.codex`, а не на файлы исходного репозитория.
+Оба ключа должны указывать на доступные постоянные копии, а исходные файлы
+пакета не подключаются напрямую.
 
 ## Обновление
 
-Снова скопируй оба source-файла в те же целевые копии, сохрани остальные
-настройки `config.toml` и повтори проверку после установки.
+При обновлении снова замени обе постоянные копии актуальными файлами
+`config/codex-model-catalog.json` и `config/new-model-instructions.md` из
+пакета. Сохрани остальные настройки пользовательского `config.toml` и
+проверь, что ключи `model_catalog_json` и `model_instructions_file` по-прежнему
+содержат реальные пути к этим копиям.
