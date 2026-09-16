@@ -51,7 +51,7 @@ packaged profiles и отдельные runtime-файлы.
 Не запускай второй cachebuster из `INSTALL`: bump уже сделан. Остальной
 `INSTALL` обязателен.
 
-Для prompt и catalog следуй `config/codex-model-catalog-help.txt`: скопируй
+Для prompt и catalog следуй `config/INSTALL.md`: скопируй
 оба файла, укажи точные config keys `model_catalog_json` и
 `model_instructions_file` с абсолютными локальными путями, сохрани другие
 настройки и перезапусти Codex. Затем начни новую задачу.

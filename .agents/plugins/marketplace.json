@@ -1,14 +1,26 @@
 {
-  "name": "context-router",
+  "name": "my-codex-harness",
   "interface": {
-    "displayName": "Context Router"
+    "displayName": "My Codex Harness"
   },
   "plugins": [
     {
-      "name": "context-router",
+      "name": "scope-focus",
       "source": {
         "source": "local",
-        "path": "./plugins/context-router"
+        "path": "./plugins/scope-focus"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "lunatron",
+      "source": {
+        "source": "local",
+        "path": "./plugins/lunatron"
       },
       "policy": {
         "installation": "AVAILABLE",
