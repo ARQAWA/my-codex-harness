@@ -3,7 +3,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
-const SOL_MODELS = new Set(['gpt-5.6-sol', 'gpt-6-astra', 'gpt-5.5', 'gpt-5.4']);
+const SOL_MODELS = new Set(['gpt-5.6-sol', 'gpt-6-astra', 'gpt-5.5']);
 const TRANSCRIPT_CHUNK_BYTES = 64 * 1024;
 const ACTIVE_REASONING_EFFORTS = new Set(['max', 'xhigh']);
 
