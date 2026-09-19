@@ -41,7 +41,7 @@ assert.equal(stop({ last_assistant_message: '😀'.repeat(5001), stop_hook_activ
 assert.equal(stop({ last_assistant_message: 'x'.repeat(5001), stop_hook_active: true }).systemMessage.includes('failed'), true);
 
 const properliler = readFileSync(path.join(root, 'agents', 'properliler.toml'), 'utf8');
-for (const term of ['name = "properliler"', 'model = "gpt-5.6-terra"', 'model_reasoning_effort = "high"', 'sandbox_mode = "read-only"', 'review_stage', '`pre-action`', '`pre-completion`']) assert.ok(properliler.includes(term), term);
+for (const term of ['name = "properliler"', 'model = "gpt-5.6-sol"', 'model_reasoning_effort = "low"', 'sandbox_mode = "read-only"', 'review_stage', '`pre-action`', '`pre-completion`']) assert.ok(properliler.includes(term), term);
 for (const skill of ['blind-check-cycle', 'blind-double-check-cycle']) {
   const text = readFileSync(path.join(root, 'skills', skill, 'SKILL.md'), 'utf8');
   assert.ok(text.includes('frozen object'), skill);

@@ -1,0 +1,17 @@
+{
+  "name": "filesystem-search",
+  "version": "0.0.0+codex.20260919163814",
+  "description": "Поиск по файлам, синтаксису и связям кода через локальные CLI.",
+  "author": {
+    "name": "A. Chukavin"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Filesystem Search",
+    "defaultPrompt": "При установке или обновлении прочитай INSTALL.md в корне этого плагина и следуй ему.",
+    "shortDescription": "Поиск по файлам, синтаксису и связям кода.",
+    "longDescription": "Поиск по файлам, синтаксису и связям кода через локальные CLI. Устанавливающий агент должен прочитать INSTALL.md в корне плагина и выполнить описанную установку или обновление.",
+    "developerName": "A. Chukavin",
+    "category": "Productivity"
+  }
+}

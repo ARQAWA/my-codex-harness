@@ -22,6 +22,13 @@ Runtime-копии `~/.codex/plugins/cache` и прежние `~/plugins` отд
 
 Prompt и каталог отдельных номеров версии не имеют. Snapshot фиксируется Git.
 
+Все plugin manifest используют `0.0.0+codex.YYYYMMDDHHMMSS`; timestamp — UTC.
+Для штатного bump используется `update_plugin_cachebuster.py`. Новый plugin
+сразу получает этот формат. Для source release каждого изменённого plugin
+выполняется один bump перед source commit. Обычное редактирование без release
+и install/update без source changes версию не меняют. Timestamp вручную не
+придумывать и повторный bump не делать.
+
 ## Политика
 
 Scope Focus задаёт always-on точный scope, глубокое понимание и минимальное
@@ -62,7 +69,7 @@ Lunatik и Luntik не запускают reviewer. Каждый микроша�
 
 - `lunatik`: `gpt-5.6-luna/medium`
 - `luntik`: `gpt-5.6-luna/medium`
-- `properliler`: `gpt-5.6-terra/high`
+- `properliler`: `gpt-5.6-sol/low`
 
 Исторические значения не переносить.
 
