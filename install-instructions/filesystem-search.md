@@ -41,6 +41,33 @@ Existing marketplace переиспользуй. Не создавай втор�
 skill. Соблюдай repository release contract; этот файл сам не делает bump,
 commit или push.
 
+После `codex plugin add` установи или синхронизируй в
+`<active-codex-home>/AGENTS.md` управляемый глобальный блок
+`FILESYSTEM_SEARCH_GLOBAL_ROUTING` из канонического текста ниже. При update
+пересинхронизируй этот блок всегда, даже если runtime и tooling не изменились.
+Алгоритм синхронизации: одна полная пара markers — замени только managed
+region; если markers нет, преобразуй старый точный unmarked body, иначе вставь
+блок перед `<!-- codebase-memory-mcp:start -->`, а без этого anchor допиши его в
+конец файла. Partial или duplicate markers — остановись с конфликтом. Запись
+делай атомарно; сохрани encoding, newline style и весь текст вне managed region.
+Канонический блок:
+
+```markdown
+<!-- BEGIN FILESYSTEM_SEARCH_GLOBAL_ROUTING -->
+# Mandatory filesystem discovery routing
+
+Before any command or tool call whose purpose is to discover files, symbols,
+text, callers, dependencies, impact, or source context, load the
+`filesystem-search` skill and follow its routing. This gate is mandatory and
+comes before `rg`, `grep`, `find`, globs, AST scripts, or Codebase Memory CLI.
+Read an already known exact path directly when discovery is not needed.
+<!-- END FILESYSTEM_SEARCH_GLOBAL_ROUTING -->
+```
+
+Проверь, что в целевом файле ровно одна marker pair, body совпадает с
+каноническим текстом, а внешний текст не изменился. Для вступления глобальной
+инструкции в силу нужен новый Codex task.
+
 Найди старый CBM по фактическим command/config и принадлежность каждого
 объекта. До новой Codex session, установки tooling и functional check удали
 целиком устаревший `[mcp_servers.codebase-memory-mcp]`, только его CBM
