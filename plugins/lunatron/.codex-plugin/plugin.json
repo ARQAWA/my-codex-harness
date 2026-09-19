@@ -1,6 +1,6 @@
 {
   "name": "lunatron",
-  "version": "0.0.0+codex.20260916034532",
+  "version": "0.0.0+codex.20260919202402",
   "description": "Помогает основному агенту работать с помощниками.",
   "author": {
     "name": "A. Chukavin"
@@ -8,14 +8,13 @@
   "interface": {
     "displayName": "Lunatron",
     "shortDescription": "Помогает основному агенту работать с помощниками.",
-    "longDescription": "Помогает основному агенту работать с помощниками. При установке или обновлении прочитай INSTALL.md в корне этого плагина и следуй ему.",
+    "longDescription": "Помогает основному агенту работать с помощниками.",
     "developerName": "A. Chukavin",
     "category": "Productivity",
     "capabilities": [
       "Model-gated Main task leadership",
       "Main-directed information preparation",
       "Main-directed mechanical execution"
-    ],
-    "defaultPrompt": "При установке или обновлении прочитай INSTALL.md в корне этого плагина и следуй ему."
+    ]
   }
 }

@@ -49,8 +49,6 @@ for (const skill of ['blind-check-cycle', 'blind-double-check-cycle']) {
 }
 assert.ok(readFileSync(path.join(root, 'skills', 'blind-check-cycle', 'SKILL.md'), 'utf8').includes('configured-executor handoffs are not'));
 assert.ok(readFileSync(path.join(root, 'skills', 'blind-double-check-cycle', 'SKILL.md'), 'utf8').includes('exactly two sequential fresh `CLEAN` passes'));
-assert.ok(readFileSync(path.join(root, 'INSTALL.md'), 'utf8').includes('agents/properliler.toml'));
-
 for (const file of ['SKILL.md', 'agents/openai.yaml', 'LICENSE.txt']) assert.ok(existsSync(path.join(root, 'skills', 'goal', file)), file);
 assert.equal(hash('skills/goal/SKILL.md'), '580a832f665a5ca0d10e28d4a6fbd967bda93cd4b25689626e0ae106da9cb3e9');
 assert.equal(hash('skills/goal/agents/openai.yaml'), 'd688b0e33e4359a90ac509f5f06adcd1aad0a9272191538f361269894089898c');

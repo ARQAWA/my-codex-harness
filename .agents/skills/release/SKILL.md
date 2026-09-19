@@ -10,8 +10,9 @@ description: Release or install the selected my-codex-harness components, commit
 
 ## 1. Область и источники
 
-Определи явно заказанные компоненты и части release. Прочитай `AGENTS.md` и
-соответствующий `INSTALL`. Сохрани чужой delta.
+Определи явно заказанные компоненты и части release. Прочитай
+`INSTALL_FOR_AGENTS.md`, затем выбранный
+`install-instructions/<plugin>.md`. Сохрани чужой delta.
 
 Analysis-only не меняет состояние. Полный релиз выполняет весь порядок ниже.
 Частичный запрос выполняет только его явно заказанную часть.
@@ -41,15 +42,16 @@ Prompt и catalog snapshot определяется source commit. Придум�
 
 Native install выполняй командой `codex plugin add <name>@<marketplace>` только
 когда entry source указывает этот репозиторий и версия соответствует source
-commit. Соблюдай профили из `INSTALL` и fresh hook trust: Scope Focus —
+commit. Соблюдай профили из выбранного документа и fresh hook trust: Scope Focus —
 `properliler`, Lunatron — `lunatik` и `luntik`. Trust не обходи.
 
-После установки или обновления выполни запуск хуков по разделу проверки
-`INSTALL`. При обычном update обнови весь runtime: native package,
+После native install выполни только оставшиеся applicable setup/check шаги из
+выбранного документа. Не повторяй cachebuster или native add, уже выполненные
+release flow. При обычном update обнови весь runtime: native package,
 packaged profiles и отдельные runtime-файлы.
 
-Не запускай второй cachebuster из `INSTALL`: bump уже сделан. Остальной
-`INSTALL` обязателен.
+Не запускай второй cachebuster или native add из выбранного документа: bump и
+native install уже выполнены release flow.
 
 Для prompt и catalog следуй `config/INSTALL.md`: скопируй
 оба файла, укажи точные config keys `model_catalog_json` и
@@ -60,7 +62,7 @@ packaged profiles и отдельные runtime-файлы.
 
 Для полного release создай в `releases/` переносимый ZIP каждого выбранного
 plugin с именем `<plugin>-portable-<manifest-version>.zip`. Включи всё shipped
-дерево, включая `.codex-plugin`, skills, agents, `INSTALL` и имеющиеся tests.
+дерево plugin, включая `.codex-plugin`, skills, agents и имеющиеся tests.
 Исключи только `.git`, OS junk и runtime data.
 
 Для выпуска config создай `harness-config-<source-short-commit>.zip` с catalog,
@@ -68,9 +70,10 @@ prompt и help. Инструкцию из config адаптируй внутри
 структура архива не содержит `config`; проще архивировать `config/` целиком без
 изменения.
 
-Сверь содержимое архивов с committed source и установленными пакетами и
-профилями, где применимо. ZIP создавай после установки. Source commit ради
-архива не меняй.
+Сверь содержимое plugin tree в архиве с committed source и установленным
+пакетом, где применимо. Repo-level документы проверяй как исходные документы,
+а не как payload plugin archive. ZIP создавай после установки. Source commit
+ради архива не меняй.
 
 ## 6. Архивный коммит и ошибки
 

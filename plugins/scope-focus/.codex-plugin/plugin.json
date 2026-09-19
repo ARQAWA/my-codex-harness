@@ -1,6 +1,6 @@
 {
   "name": "scope-focus",
-  "version": "0.0.0+codex.20260915022449",
+  "version": "0.0.0+codex.20260919202402",
   "description": "Помогает точно выполнить запрос без лишней работы.",
   "author": {
     "name": "A. Chukavin"
@@ -8,9 +8,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Scope Focus",
-    "defaultPrompt": "При установке или обновлении прочитай INSTALL.md в корне этого плагина и следуй ему.",
     "shortDescription": "Помогает точно выполнить запрос без лишней работы.",
-    "longDescription": "Помогает точно выполнить запрос без лишней работы. При установке или обновлении прочитай INSTALL.md в корне этого плагина и следуй ему.",
+    "longDescription": "Помогает точно выполнить запрос без лишней работы.",
     "developerName": "A. Chukavin",
     "category": "Productivity",
     "capabilities": [
