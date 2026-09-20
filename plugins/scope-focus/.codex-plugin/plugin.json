@@ -1,6 +1,6 @@
 {
   "name": "scope-focus",
-  "version": "0.0.0+codex.20260919202402",
+  "version": "0.0.0+codex.20260920003146",
   "description": "Помогает точно выполнить запрос без лишней работы.",
   "author": {
     "name": "A. Chukavin"
@@ -15,6 +15,9 @@
     "capabilities": [
       "Interactive",
       "Write"
+    ],
+    "defaultPrompt": [
+      "Помоги точно выполнить задачу без лишней работы."
     ]
   }
 }

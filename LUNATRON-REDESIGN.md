@@ -24,8 +24,9 @@ Luntik и при необходимых независимых вопросах 
 Новая управляющая роль не нужна.
 
 Модели остаются текущими: Lunatik — `gpt-5.6-luna/medium`, Luntik —
-`gpt-5.6-luna/medium`, properliler — `gpt-5.6-terra/high`. Этот проект не меняет
-каталог моделей и условия включения Lunatron.
+`gpt-5.6-luna/medium`, properliler — `gpt-5.6-sol/low`. Текущий model gate
+включает Lunatron у root только для `gpt-5.6-sol` и `gpt-6-astra`; детали и
+история решения закреплены в разделе 5.
 
 ### Работа с кодом
 
@@ -284,6 +285,7 @@ Main; слепой цикл охватывает связный блок и не
 На этом этапе hook включал Lunatron только у root. Поддерживались
 `gpt-6-astra`, `gpt-5.5`, `gpt-5.6-sol` при любом effort и
 `gpt-5.6-terra` при `max` или `xhigh`. Для Terra effort читается из transcript.
+Это исторический контракт, заменённый решением от 2026-09-20 ниже.
 `SessionStart` и `UserPromptSubmit` передают контракт; `PreToolUse` ограничивает
 создание функциональных ролей, `PostToolUse` сохраняет слишком большой вывод.
 `SubagentStart` в этой версии не зарегистрирован.
@@ -358,3 +360,15 @@ Fast. Модели и их доступные режимы в каталоге �
 Источники: [согласование владельца](codex://threads/01a0a100-9cbd-7092-9a10-76e799353346),
 [подсчёт ёмкости V2](https://github.com/openai/codex/blob/b5bffd3ec4db487e7e3dec59663875b0ef7b72ca/codex-rs/core/src/config/mod.rs#L2702-L2715),
 [передача tier Main](https://github.com/openai/codex/blob/b5bffd3ec4db487e7e3dec59663875b0ef7b72ca/codex-rs/core/src/session/mod.rs#L3532-L3549).
+
+## 5. 2026-09-20: сужение model gate
+
+Владелец удалил compatibility-активацию для `gpt-5.5` и специальную активацию
+`gpt-5.6-terra` при `max` или `xhigh`. Текущий model gate включает Lunatron у
+root только для `gpt-5.6-sol` и `gpt-6-astra`. Effort и transcript больше не
+участвуют в решении об активации. Запись `gpt-5.5` может оставаться скрытой в
+каталоге моделей, но это не даёт ей доступ к Lunatron.
+
+Причина изменения — убрать исторические compatibility-ветки и оставить один
+явный список поддерживаемых Main-моделей. Тесты фиксируют обе стороны
+контракта: Sol и Astra активны; GPT-5.5, Terra и остальные модели неактивны.

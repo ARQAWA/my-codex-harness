@@ -1,6 +1,6 @@
 {
   "name": "filesystem-search",
-  "version": "0.0.0+codex.20260919202402",
+  "version": "0.0.0+codex.20260920003146",
   "description": "Поиск по файлам, синтаксису и связям кода через локальные CLI.",
   "author": {
     "name": "A. Chukavin"
@@ -11,6 +11,13 @@
     "shortDescription": "Поиск по файлам, синтаксису и связям кода.",
     "longDescription": "Поиск по файлам, синтаксису и связям кода через локальные CLI.",
     "developerName": "A. Chukavin",
-    "category": "Productivity"
+    "category": "Productivity",
+    "capabilities": [
+      "Filesystem discovery",
+      "Code structure search"
+    ],
+    "defaultPrompt": [
+      "Найди нужные файлы, символы и связи в коде."
+    ]
   }
 }

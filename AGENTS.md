@@ -7,6 +7,7 @@
 
 - `plugins/scope-focus`
 - `plugins/lunatron`
+- `plugins/filesystem-search`
 - `config/codex-model-catalog.json`
 - `config/new-model-instructions.md`
 - `config/INSTALL.md`
@@ -17,19 +18,18 @@ Runtime-копии `~/.codex/plugins/cache` и прежние `~/plugins` отд
 Текущий импорт их не меняет. Дальнейшая разработка идёт здесь, установка
 выполняется отдельно.
 
-## Baseline
-
-- Scope Focus: `0.0.0+codex.20260911001024`
-- Lunatron: `0.0.0+codex.20260911023755`
-
-Prompt и каталог отдельных номеров версии не имеют. Snapshot фиксируется Git.
-
 Все plugin manifest используют `0.0.0+codex.YYYYMMDDHHMMSS`; timestamp — UTC.
 Для штатного bump используется `update_plugin_cachebuster.py`. Новый plugin
 сразу получает этот формат. Для source release каждого изменённого plugin
 выполняется один bump перед source commit. Обычное редактирование без release
 и install/update без source changes версию не меняют. Timestamp вручную не
 придумывать и повторный bump не делать.
+
+## Локальная проверка исходников
+
+Единая детерминированная проверка репозитория запускается командой
+`node tests/run.mjs`. Она не заменяет install-time проверки на целевой ОС из
+`install-instructions/*.md` и не меняет активный Codex home.
 
 ## Политика
 
@@ -94,6 +94,9 @@ Lunatik и Luntik не запускают reviewer. Каждый микроша�
 location, format или value секретов.
 
 Tritron и Lunatron не смешивать в runtime. Tritron не входит в этот snapshot.
+Lunatron активируется у root только для `gpt-5.6-sol` и `gpt-6-astra`.
+`gpt-5.5` и `gpt-5.6-terra` Lunatron не активируют независимо от effort или
+transcript.
 
 Новая версия, установка, архивы и cleanup не следуют из обычного редактирования.
 Порядок release описан в `.agents/skills/release/SKILL.md`.
