@@ -3,7 +3,7 @@
 ## Состав
 
 Пакет содержит правила работы, hooks, skills и профиль проверяющего
-`agents/properliler.toml`. Task Notebook хранит план и прогресс длительной
+`agents/spotty.toml`. Task Notebook хранит план и прогресс длительной
 задачи при явном выборе пользователя. Goal Memory заменён этим skill.
 Notebook и HTML-отчёты создаются только во временной папке ОС.
 
@@ -13,7 +13,7 @@ Custom catalog и общие instructions — отдельные файлы по
 ## Требования
 
 Нужны Codex CLI с поддержкой плагинов, hooks и app-server, Node.js и отдельно подключённый
-профиль `properliler`. Поддерживаются macOS, Linux и Windows; в Windows
+профиль `spotty`. Поддерживаются macOS, Linux и Windows; в Windows
 используется только Git Bash, без PowerShell.
 
 ## Первая установка
@@ -30,7 +30,7 @@ codex plugin marketplace add "<источник>"
 codex plugin add "scope-focus@<marketplace>" --json
 ```
 
-Подключи `agents/properliler.toml` из установленного пакета в каталог `agents`
+Подключи `agents/spotty.toml` из установленного пакета в каталог `agents`
 активного Codex home (обычно `~/.codex/agents`). Остальные профили сохраняются.
 Напоминание для Sol по умолчанию выключено; включай его только по запросу.
 
@@ -75,9 +75,12 @@ Git Bash. На этом проверка закончена.
 
 Обновление из актуального источника использует ту же команду
 `codex plugin add "scope-focus@<marketplace>" --json`. Обнови пакет и отдельно установленный
-`properliler` из одной версии; отдельно поставленные catalog/instructions —
+`spotty` из одной версии; отдельно поставленные catalog/instructions —
 из выбранной поставки с сохранением их настроенных путей. Если файлы уже
 совпадают, повторная запись не нужна.
+После установки совпадающей версии удали только устаревший активный
+`agents/properliler.toml`, если он остался от предыдущего пакета Scope Focus;
+все остальные профили сохрани.
 
 Сохрани остальные профили, настройки, notebook и данные. При явно выбранном
 переносе старого действующего notebook в OS tmp сохрани task key, содержимое

@@ -80,22 +80,28 @@ const invalidSubmit = invoke('userPromptSubmit', {});
 assert.equal(invalidSubmit.status, 1);
 assert.match(invalidSubmit.stderr, /UserPromptSubmit unavailable/);
 
-const properliler = readFileSync(path.join(root, 'agents', 'properliler.toml'), 'utf8');
+const spotty = readFileSync(path.join(root, 'agents', 'spotty.toml'), 'utf8');
 for (const term of [
-  'name = "properliler"',
+  'name = "spotty"',
   'model = "gpt-5.6-sol"',
   'model_reasoning_effort = "low"',
   'sandbox_mode = "read-only"',
   'review_stage',
   '`pre-action`',
   '`pre-completion`',
-]) assert.ok(properliler.includes(term), term);
+  'substantial',
+  'stage',
+]) assert.ok(spotty.includes(term), term);
+assert.ok(!spotty.includes('properliler'));
 
 for (const skill of ['blind-check-cycle', 'blind-double-check-cycle']) {
   const text = readFileSync(path.join(root, 'skills', skill, 'SKILL.md'), 'utf8');
   assert.ok(text.includes('frozen object'), skill);
   assert.ok(text.includes('pre-action'), skill);
 }
+const blindCheck = readFileSync(path.join(root, 'skills', 'blind-check-cycle', 'SKILL.md'), 'utf8');
+assert.ok(blindCheck.includes('agent_type=spotty'));
+assert.ok(blindCheck.includes('does not automatically respawn Spotty'));
 for (const file of ['SKILL.md', 'agents/openai.yaml', 'LICENSE.txt']) {
   assert.ok(existsSync(path.join(root, 'skills', 'goal', file)), file);
 }

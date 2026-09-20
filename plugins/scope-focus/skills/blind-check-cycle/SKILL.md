@@ -1,6 +1,6 @@
 ---
 name: blind-check-cycle
-description: Run only when explicitly invoked to independently check one frozen object with one fresh blind CLEAN pass and batch-fix loop.
+description: Run only when explicitly invoked to independently check one frozen object with one fresh blind pass for substantial findings.
 ---
 
 # Blind Check Cycle
@@ -34,9 +34,10 @@ results of completed stages and their relationships, the current overall result,
 and sufficient factual evidence. Check accuracy, adequate quality, consistency,
 missing requirements due by this stage, and truthful readiness claims. Preserve
 mandatory user procedure/order and apply later explicit changes over superseded
-ones. Do not demand future work at an intermediate stage. After repair, review
-the full updated object, not only the last diff or previous findings. Reuse valid
-evidence; do not replay the entire execution log or rerun checks for confidence.
+ones. Do not demand future work at an intermediate stage. When a later explicit
+pass follows a repair, review the full updated object, not only the last diff or
+previous findings. Reuse valid evidence; do not replay the entire execution log
+or rerun checks for confidence.
 
 Set `review_stage=pre-action` for a selected gating object, and complete that check
 before its actual dependent action. Set `review_stage=pre-completion` for the
@@ -59,7 +60,7 @@ applicable requirement, not because a reviewer prefers more material.
 
 Do not create baselines, hashes, exhaustive inventories, per-file scans, provenance reconstruction, or extra artifacts only for review unless the user or Goal explicitly requires that exact artifact or no smaller proof can establish a material result.
 
-For every attempt, use a fresh configured blind acceptance reviewer. Use the schema exposed by the current runtime: v1 uses only `agent_type=properliler`, `fork_context=false`, and the frozen packet as exactly one `message` or `items`; v2 uses only `agent_type=properliler`, `fork_turns="none"`, the frozen packet in `message`, and a non-empty `task_name`. Never mix schemas or add fields. If the compatible spawn tool or `properliler` role is unavailable, the selected check is unavailable and cannot pass; root-agent self-review is not a substitute. Never resume a closed or interrupted reviewer. It checks only material requirement→object/evidence and concrete change→authority mismatches under the configured reviewer's materiality gate.
+For every attempt, use a fresh configured blind acceptance reviewer. Use the schema exposed by the current runtime: v1 uses only `agent_type=spotty`, `fork_context=false`, and the frozen packet as exactly one `message` or `items`; v2 uses only `agent_type=spotty`, `fork_turns="none"`, the frozen packet in `message`, and a non-empty `task_name`. Never mix schemas or add fields. If the compatible spawn tool or `spotty` role is unavailable, the selected check is unavailable and cannot pass; root-agent self-review is not a substitute. Never resume a closed or interrupted reviewer. It checks only substantial requirement→object/evidence and concrete change→authority mismatches under the configured reviewer's materiality gate.
 
 Use the main prompt's common subagent-wait policy. If a reviewer hang is confirmed, interrupt that pass and use a fresh configured reviewer on the unchanged object. Never resume a closed or interrupted reviewer.
 
@@ -72,4 +73,11 @@ EVIDENCE: <evidence>
 REQUIRED OUTCOME: <required outcome>
 ```
 
-On `FINDINGS:`, MAIN treats each finding as a claim, not a command. Admit only findings that satisfy the configured reviewer's materiality gate. If no findings are admitted, count that pass as `CLEAN` and complete the single cycle; do not change the result, add evidence, or retry. If any finding is admitted, batch-fix all admitted findings, invalidate only affected evidence, rebuild the compact packet, and use a new fresh configured reviewer. Repeat until one pass has zero admitted material findings. Do not add a second pass.
+On `FINDINGS:`, MAIN treats each finding as a claim, not a command. Admit only
+findings that satisfy the configured reviewer's materiality gate. If no findings
+are admitted, count that pass as `CLEAN` and complete the single cycle; do not
+change the result, add evidence, or retry. If an admitted finding remains,
+return it to Main for the necessary repair and acceptance decision. The ordinary
+single cycle does not automatically respawn Spotty or require a full rereview
+after that repair. A later fresh pass requires a new explicit invocation or the
+separate double-check cycle's own restart rule.

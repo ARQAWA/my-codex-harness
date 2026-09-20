@@ -43,7 +43,7 @@ Prompt и catalog snapshot определяется source commit. Придум�
 Native install выполняй командой `codex plugin add <name>@<marketplace>` только
 когда entry source указывает этот репозиторий и версия соответствует source
 commit. Соблюдай профили из выбранного документа и fresh hook trust: Scope Focus —
-`properliler`, Lunatron — `lunatik` и `luntik`. Trust не обходи.
+`spotty`, Lunatron — `lunatik` и `luntik`. Trust не обходи.
 
 После native install выполни только оставшиеся applicable setup/check шаги из
 выбранного документа. Не повторяй cachebuster или native add, уже выполненные
