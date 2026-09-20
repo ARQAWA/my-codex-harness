@@ -5,6 +5,7 @@ const path = require('node:path');
 
 // Leave space for the host's envelope below Main's 8192-byte output guard.
 const PACKET_BYTES = 6000;
+const SEARCH_PACKET_BYTES = 6000;
 const own = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
 function object(value, keys, label) {
   if (!value || typeof value !== 'object' || Array.isArray(value)
@@ -87,8 +88,137 @@ function excerpt(reference, sources) {
   }
   return { ...reference, text };
 }
+function valueType(value) {
+  if (value === null) return 'null';
+  if (Array.isArray(value)) return 'array';
+  return typeof value;
+}
+function sourceSummary(source) {
+  const summary = { ...source.locator };
+  if (source.error) return { ...summary, error: source.error };
+  return {
+    ...summary,
+    ...(source.status ? { status: source.status } : {}),
+    value_type: valueType(source.value),
+    lines: source.rendered.split('\n').length,
+  };
+}
+function boundedInteger(value, label, minimum, maximum, fallback) {
+  const selected = value === undefined ? fallback : value;
+  if (!Number.isInteger(selected) || selected < minimum || selected > maximum) {
+    throw new Error(`${label} must be an integer from ${minimum} to ${maximum}`);
+  }
+  return selected;
+}
+function searchMatches(source, sourceIndex, literal, beforeLines, afterLines) {
+  if (source.error) return [];
+  const lines = source.rendered.split('\n');
+  const matches = [];
+  const literalChars = [...literal].length;
+  for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
+    const line = lines[lineIndex];
+    let offset = 0;
+    while (offset <= line.length) {
+      const found = line.indexOf(literal, offset);
+      if (found < 0) break;
+      const startChar = [...line.slice(0, found)].length + 1;
+      const contextStart = Math.max(0, lineIndex - beforeLines);
+      const contextEnd = Math.min(lines.length, lineIndex + afterLines + 1);
+      matches.push({
+        source: sourceIndex,
+        line: lineIndex + 1,
+        start_char: startChar,
+        end_char: startChar + literalChars - 1,
+        text: line.slice(found, found + literal.length),
+        context: lines.slice(contextStart, contextEnd).map((text, index) => ({
+          line: contextStart + index + 1,
+          text,
+        })),
+      });
+      offset = found + Math.max(literal.length, 1);
+    }
+  }
+  return matches;
+}
+function searchContinuation(matches, index) {
+  if (index >= matches.length) return null;
+  const match = matches[index];
+  return {
+    match_index: index,
+    source: match.source,
+    line: match.line,
+    start_char: match.start_char,
+  };
+}
+function prepareSearch(input) {
+  object(input, [
+    'mode', 'question', 'sources', 'literal', 'before_lines', 'after_lines',
+    'max_results', 'start_match',
+  ], 'search request');
+  if (typeof input.question !== 'string' || !input.question.trim()
+      || !Array.isArray(input.sources) || !input.sources.length
+      || typeof input.literal !== 'string' || !input.literal.length) {
+    throw new Error('mode, a concrete question, nonempty sources, and a nonempty literal are required');
+  }
+  const beforeLines = boundedInteger(input.before_lines, 'before_lines', 0, 5, 1);
+  const afterLines = boundedInteger(input.after_lines, 'after_lines', 0, 5, 1);
+  const maxResults = boundedInteger(input.max_results, 'max_results', 1, 50, 20);
+  const startMatch = boundedInteger(input.start_match, 'start_match', 0, Number.MAX_SAFE_INTEGER, 0);
+  const sources = input.sources.map(readSource);
+  const matches = sources.flatMap((source, index) => (
+    searchMatches(source, index, input.literal, beforeLines, afterLines)
+  ));
+  const sourceSummaries = sources.map(sourceSummary);
+  const available = matches.slice(startMatch, startMatch + maxResults);
+  let selected = [];
+  for (let count = 1; count <= available.length; count += 1) {
+    const candidate = available.slice(0, count);
+    const nextIndex = startMatch + count;
+    const packet = {
+      question: input.question,
+      literal: input.literal,
+      sources: sourceSummaries,
+      start_match: startMatch,
+      matches: candidate,
+      returned_count: candidate.length,
+      total_matches: matches.length,
+      omitted_count: Math.max(0, matches.length - nextIndex),
+      continuation: searchContinuation(matches, nextIndex),
+    };
+    if (Buffer.byteLength(JSON.stringify(packet), 'utf8') > SEARCH_PACKET_BYTES) break;
+    selected = candidate;
+  }
+  const nextIndex = startMatch + selected.length;
+  const packet = {
+    question: input.question,
+    literal: input.literal,
+    sources: sourceSummaries,
+    start_match: startMatch,
+    matches: selected,
+    returned_count: selected.length,
+    total_matches: matches.length,
+    omitted_count: Math.max(0, matches.length - nextIndex),
+    continuation: searchContinuation(matches, nextIndex),
+  };
+  const bytes = Buffer.byteLength(JSON.stringify(packet), 'utf8');
+  if (bytes > SEARCH_PACKET_BYTES) {
+    return {
+      error: 'SEARCH_RESULT_TOO_LARGE',
+      bytes,
+      limit: SEARCH_PACKET_BYTES,
+      omitted_count: Math.max(0, matches.length - startMatch),
+      continuation: searchContinuation(matches, startMatch),
+      instruction: 'Narrow context lines or request a later continuation coordinate; no match was silently truncated.',
+    };
+  }
+  return packet;
+}
 function prepareContext(input) {
   try {
+    if (!input || typeof input !== 'object' || Array.isArray(input)) {
+      throw new Error('request must be an object');
+    }
+    if (input.mode === 'search') return prepareSearch(input);
     object(input, ['mode', 'question', 'sources', 'facts', 'errors', 'unknowns', 'outcome'], 'request');
     if (!['read', 'pack'].includes(input.mode) || typeof input.question !== 'string'
         || !input.question.trim() || !Array.isArray(input.sources) || !input.sources.length) {
