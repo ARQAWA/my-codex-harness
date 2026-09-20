@@ -23,7 +23,7 @@ const profiles = {
     'model = "gpt-5.6-sol"', 'model_reasoning_effort = "low"', 'sandbox_mode = "read-only"',
   ],
   'plugins/lunatron/agents/lunatik.toml': [
-    'model = "gpt-5.6-luna"', 'model_reasoning_effort = "medium"',
+    'model = "gpt-5.6-luna"', 'model_reasoning_effort = "max"',
   ],
   'plugins/lunatron/agents/luntik.toml': [
     'model = "gpt-5.6-luna"', 'model_reasoning_effort = "medium"',
@@ -50,7 +50,8 @@ assert.ok(!agents.includes('## Baseline'));
 assert.ok(agents.includes('node tests/run.mjs'));
 assert.ok(agents.includes('plugins/filesystem-search'));
 assert.ok(agents.includes('install-instructions/filesystem-search.md'));
-assert.ok(agents.includes('Lunatron активируется у root только для `gpt-5.6-sol` и `gpt-6-astra`'));
+assert.ok(agents.includes('В автоматическом режиме Lunatron активируется у root только для `gpt-5.6-sol`'));
+assert.ok(agents.includes('Точные корневые команды `ltn 1` и `ltn 0`'));
 
 const lunatronHook = read('plugins/lunatron/hooks/lunatron.cjs');
 assert.ok(lunatronHook.includes("new Set(['gpt-5.6-sol', 'gpt-6-astra'])"));

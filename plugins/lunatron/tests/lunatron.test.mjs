@@ -57,6 +57,7 @@ try {
   const validSpawn = invoke('preToolUse', {
     hook_event_name: 'PreToolUse',
     model: 'gpt-5.6-sol',
+    session_id: 'valid-spawn',
     tool_name: 'spawn_agent',
     tool_input: {
       agent_type: 'lunatik', fork_turns: 'none', message: 'do work', task_name: 'test',
@@ -68,6 +69,7 @@ try {
   const invalidSpawn = invoke('preToolUse', {
     hook_event_name: 'PreToolUse',
     model: 'gpt-5.6-sol',
+    session_id: 'invalid-spawn',
     tool_name: 'spawn_agent',
     tool_input: {
       agent_type: 'lunatik', fork_turns: 'none', message: 'do work', task_name: 'test', extra: true,
@@ -94,6 +96,37 @@ try {
   const packages = filesBelow(pluginData).filter(file => file.endsWith('.json'));
   assert.equal(packages.length, 1);
   assert.equal(JSON.parse(readFileSync(packages[0], 'utf8')).tool_name, 'exec');
+
+  const forcedOn = invoke('userPromptSubmit', {
+    hook_event_name: 'UserPromptSubmit', model: 'gpt-5.6-terra',
+    session_id: 'mode-session', prompt: '  ltn 1  ',
+  });
+  assert.equal(forcedOn.status, 0, forcedOn.stderr);
+  assert.match(forcedOn.stdout, /LUNATRON_STATE=ACTIVE/);
+  assert.match(forcedOn.stdout, /LUNATRON_MODE=forced-on/);
+
+  const forcedOff = invoke('userPromptSubmit', {
+    hook_event_name: 'UserPromptSubmit', model: 'gpt-6-astra',
+    session_id: 'mode-session', prompt: 'ltn 0',
+  });
+  assert.equal(forcedOff.status, 0, forcedOff.stderr);
+  assert.match(forcedOff.stdout, /LUNATRON_STATE=INACTIVE/);
+  assert.match(forcedOff.stdout, /LUNATRON_MODE=forced-off/);
+
+  const automatic = invoke('userPromptSubmit', {
+    hook_event_name: 'UserPromptSubmit', model: 'gpt-5.6-terra',
+    session_id: 'mode-session', prompt: 'ltn -1',
+  });
+  assert.equal(automatic.status, 0, automatic.stderr);
+  assert.match(automatic.stdout, /LUNATRON_STATE=INACTIVE/);
+  assert.match(automatic.stdout, /LUNATRON_MODE=automatic-off/);
+
+  const mention = invoke('userPromptSubmit', {
+    hook_event_name: 'UserPromptSubmit', model: 'gpt-5.6-terra',
+    session_id: 'mention-session', prompt: 'example: ltn 1',
+  });
+  assert.equal(mention.status, 0, mention.stderr);
+  assert.match(mention.stdout, /LUNATRON_MODE=automatic-off/);
 
   const source = path.join(temp, 'source.txt');
   writeFileSync(source, 'alpha\nbeta\n');
