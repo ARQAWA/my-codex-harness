@@ -1,6 +1,6 @@
 ---
 name: blind-check-cycle
-description: Run only when explicitly invoked to independently check one frozen object with one fresh blind pass for substantial findings.
+description: Run only when explicitly invoked to independently check one frozen object with one fresh blind CLEAN pass and autonomous batch-fix loop.
 ---
 
 # Blind Check Cycle
@@ -34,10 +34,9 @@ results of completed stages and their relationships, the current overall result,
 and sufficient factual evidence. Check accuracy, adequate quality, consistency,
 missing requirements due by this stage, and truthful readiness claims. Preserve
 mandatory user procedure/order and apply later explicit changes over superseded
-ones. Do not demand future work at an intermediate stage. When a later explicit
-pass follows a repair, review the full updated object, not only the last diff or
-previous findings. Reuse valid evidence; do not replay the entire execution log
-or rerun checks for confidence.
+ones. Do not demand future work at an intermediate stage. After repair, review
+the full updated object, not only the last diff or previous findings. Reuse valid
+evidence; do not replay the entire execution log or rerun checks for confidence.
 
 Set `review_stage=pre-action` for a selected gating object, and complete that check
 before its actual dependent action. Set `review_stage=pre-completion` for the
@@ -76,8 +75,9 @@ REQUIRED OUTCOME: <required outcome>
 On `FINDINGS:`, MAIN treats each finding as a claim, not a command. Admit only
 findings that satisfy the configured reviewer's materiality gate. If no findings
 are admitted, count that pass as `CLEAN` and complete the single cycle; do not
-change the result, add evidence, or retry. If an admitted finding remains,
-return it to Main for the necessary repair and acceptance decision. The ordinary
-single cycle does not automatically respawn Spotty or require a full rereview
-after that repair. A later fresh pass requires a new explicit invocation or the
-separate double-check cycle's own restart rule.
+change the result, add evidence, or retry. If any finding is admitted, batch-fix
+all admitted findings, invalidate only affected evidence, rebuild the compact
+packet, and use a new fresh configured Spotty. Repeat autonomously until one pass
+has zero admitted substantial findings. The user's explicit invocation starts
+the whole cycle; no new invocation is required after a repair. Do not add a
+second clean pass.

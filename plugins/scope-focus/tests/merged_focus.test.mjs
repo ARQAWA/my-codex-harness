@@ -101,7 +101,8 @@ for (const skill of ['blind-check-cycle', 'blind-double-check-cycle']) {
 }
 const blindCheck = readFileSync(path.join(root, 'skills', 'blind-check-cycle', 'SKILL.md'), 'utf8');
 assert.ok(blindCheck.includes('agent_type=spotty'));
-assert.ok(blindCheck.includes('does not automatically respawn Spotty'));
+assert.ok(blindCheck.includes('Repeat autonomously until one pass'));
+assert.ok(blindCheck.includes('no new invocation is required after a repair'));
 for (const file of ['SKILL.md', 'agents/openai.yaml', 'LICENSE.txt']) {
   assert.ok(existsSync(path.join(root, 'skills', 'goal', file)), file);
 }
