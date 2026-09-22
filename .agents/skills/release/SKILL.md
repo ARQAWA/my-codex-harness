@@ -1,11 +1,11 @@
 ---
 name: release
-description: Release or install the selected my-codex-harness components, commit the source version, install it into Codex, and commit portable archives when requested; ordinary edits do not trigger a release.
+description: Release or install the selected my-codex-harness components, commit the source version, and install it into Codex; ordinary edits do not trigger a release.
 ---
 
 # Release
 
-Триггер: «выпустить», «установить» или «упаковать релиз этих компонентов».
+Триггер: «выпустить» или «установить» эти компоненты.
 Обычное редактирование release не запускает.
 
 ## 1. Область и источники
@@ -58,32 +58,11 @@ native install уже выполнены release flow.
 `model_instructions_file` с абсолютными локальными путями, сохрани другие
 настройки и перезапусти Codex. Затем начни новую задачу.
 
-## 5. Переносимые архивы
-
-Для полного release создай в `releases/` переносимый ZIP каждого выбранного
-plugin с именем `<plugin>-portable-<manifest-version>.zip`. Включи всё shipped
-дерево plugin, включая `.codex-plugin`, skills, agents и имеющиеся tests.
-Исключи только `.git`, OS junk и runtime data.
-
-Для выпуска config создай `harness-config-<source-short-commit>.zip` с catalog,
-prompt и help. Инструкцию из config адаптируй внутри config ZIP только если
-структура архива не содержит `config`; проще архивировать `config/` целиком без
-изменения.
-
-Сверь содержимое plugin tree в архиве с committed source и установленным
-пакетом, где применимо. Repo-level документы проверяй как исходные документы,
-а не как payload plugin archive. ZIP создавай после установки. Source commit
-ради архива не меняй.
-
-## 6. Архивный коммит и ошибки
-
-Сделай отдельный коммит только для exact новых archive paths.
+## 5. Ошибки
 
 Если выбран blind cycle, соблюдай именно его count и stage. Final делай после
 полного результата. Не запускай автоматически многократный цикл по старой
 истории.
-
-Не удаляй старые архивы без явного cleanup запроса.
 
 При uncertain install сначала прочитай affected state. Не повторяй install
 вслепую. Сообщи незавершённый этап и не объявляй release завершённым.
