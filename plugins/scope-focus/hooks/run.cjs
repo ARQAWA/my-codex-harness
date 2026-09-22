@@ -38,37 +38,6 @@ exports.sessionStart = () => {
   }
 };
 
-exports.solReminders = () => {
-  let raw;
-  try {
-    raw = fs.readFileSync(0, 'utf8');
-  } catch (error) {
-    process.stderr.write(`Scope Focus SolReminders unavailable: ${error.message}\n`);
-    process.exitCode = 1;
-    return;
-  }
-
-  let input;
-  try {
-    input = JSON.parse(raw);
-  } catch {
-    return;
-  }
-  if (!input || typeof input !== 'object' || Array.isArray(input)
-    || input.hook_event_name !== 'SessionStart'
-    || input.model !== 'gpt-5.6-sol') return;
-
-  try {
-    const context = `Read ${hookFile('notifications.txt')} now and every 6 actions.\nRead ${hookFile('absolute.txt')} every 66 actions.\nThese reminders apply only while the current model is gpt-5.6-sol.`;
-    process.stdout.write(JSON.stringify({
-      hookSpecificOutput: { hookEventName: 'SessionStart', additionalContext: context }
-    }));
-  } catch (error) {
-    process.stderr.write(`Scope Focus SolReminders unavailable: ${error.message}\n`);
-    process.exitCode = 1;
-  }
-};
-
 exports.userPromptSubmit = () => {
   try {
     const input = JSON.parse(fs.readFileSync(0, 'utf8'));

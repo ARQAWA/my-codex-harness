@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -33,18 +33,8 @@ function captureOutput(input) {
     env: { ...process.env, PLUGIN_DATA: pluginData },
   });
 }
-function filesBelow(dir) {
-  const result = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) result.push(...filesBelow(full));
-    else result.push(full);
-  }
-  return result;
-}
-
 try {
-  for (const model of ['gpt-5.6-sol', 'gpt-6-astra', 'gpt-5.6-terra', 'gpt-5.6-luna', 'gpt-5.5', 'unrelated-model']) {
+  for (const model of ['gpt-5.6-sol', 'gpt-6-astra', 'gpt-6-sol', 'gpt-5.6-luna', 'gpt-5.5', 'unrelated-model']) {
     const result = invoke('sessionStart', {
       hook_event_name: 'SessionStart', model, session_id: `inactive-${model}`,
       transcript_path: path.join(temp, 'unused-transcript.jsonl'),
@@ -57,7 +47,7 @@ try {
   }
 
   const forcedOn = invoke('userPromptSubmit', {
-    hook_event_name: 'UserPromptSubmit', model: 'gpt-5.6-terra',
+    hook_event_name: 'UserPromptSubmit', model: 'gpt-6-luna',
     session_id: 'mode-session', prompt: 'lnT1 Выполни задачу',
   });
   assert.equal(forcedOn.status, 0, forcedOn.stderr);
@@ -117,52 +107,6 @@ try {
     assert.equal(result.stdout, '');
   }
 
-  const small = invoke('postToolUse', {
-    hook_event_name: 'PostToolUse', model: 'gpt-5.6-sol',
-    session_id: 'mode-session', tool_use_id: 'small-tool', tool_name: 'exec',
-    tool_response: { status: 'ok', output: 'small' },
-  });
-  assert.equal(small.status, 0, small.stderr);
-  assert.equal(small.stdout, '');
-
-  const large = invoke('postToolUse', {
-    hook_event_name: 'PostToolUse', model: 'gpt-5.6-sol',
-    session_id: 'mode-session', tool_use_id: 'large-tool', tool_name: 'exec',
-    tool_response: { status: 'ok', output: 'X'.repeat(9000) },
-  });
-  assert.equal(large.status, 0, large.stderr);
-  assert.match(large.stdout, /"continue":false/);
-  assert.doesNotMatch(large.stdout, /"decision":"block"/);
-  assert.match(large.stdout, /completeness=complete_as_received/);
-  const packages = filesBelow(path.join(pluginData, 'tool-results')).filter(file => file.endsWith('.json'));
-  assert.equal(packages.length, 1);
-  assert.equal(JSON.parse(readFileSync(packages[0], 'utf8')).tool_name, 'exec');
-
-  const terraLarge = invoke('postToolUse', {
-    hook_event_name: 'PostToolUse', model: 'gpt-5.6-terra',
-    session_id: 'mode-session', tool_use_id: 'terra-tool', tool_name: 'exec',
-    tool_response: { status: 'ok', output: 'T'.repeat(9000), original_token_count: 9001 },
-  });
-  assert.equal(terraLarge.status, 0, terraLarge.stderr);
-  assert.match(terraLarge.stdout, /"continue":false/);
-  assert.match(terraLarge.stdout, /completeness=incomplete/);
-
-  const lunaLarge = invoke('postToolUse', {
-    hook_event_name: 'PostToolUse', model: 'gpt-5.6-luna',
-    session_id: 'mode-session', tool_use_id: 'luna-tool', tool_name: 'exec',
-    tool_response: { status: 'ok', output: 'L'.repeat(9000) },
-  });
-  assert.equal(lunaLarge.status, 0, lunaLarge.stderr);
-  assert.match(lunaLarge.stdout, /"continue":false/);
-
-  const subagentLarge = invoke('postToolUse', {
-    hook_event_name: 'PostToolUse', model: 'gpt-5.6-sol', agent_type: 'lunatik',
-    session_id: 'mode-session', tool_use_id: 'child-tool', tool_name: 'exec',
-    tool_response: { status: 'ok', output: 'C'.repeat(9000) },
-  });
-  assert.equal(subagentLarge.status, 0, subagentLarge.stderr);
-  assert.equal(subagentLarge.stdout, '');
-
   const forcedOff = invoke('userPromptSubmit', {
     hook_event_name: 'UserPromptSubmit', model: 'gpt-6-astra',
     session_id: 'mode-session', prompt: 'Продолжай самостоятельно LNT0',
@@ -174,16 +118,6 @@ try {
   assert.match(forcedOff.stdout, /Establish the state of interrupted changes/);
   assert.match(forcedOff.stdout, /carry out the rest of the user request/);
   assert.doesNotMatch(forcedOff.stdout, /LUNATRON_DATA_PATHS/);
-
-  const savedBeforeOff = filesBelow(pluginData);
-  const forcedOffLarge = invoke('postToolUse', {
-    hook_event_name: 'PostToolUse', model: 'gpt-6-astra',
-    session_id: 'mode-session', tool_use_id: 'forced-off-tool', tool_name: 'exec',
-    tool_response: { status: 'ok', output: 'F'.repeat(9000) },
-  });
-  assert.equal(forcedOffLarge.status, 0, forcedOffLarge.stderr);
-  assert.equal(forcedOffLarge.stdout, '');
-  assert.deepEqual(filesBelow(pluginData), savedBeforeOff);
 
   const offSpawn = invoke('preToolUse', {
     hook_event_name: 'PreToolUse', session_id: 'mode-session', tool_name: 'spawn_agent',
@@ -294,7 +228,7 @@ try {
   assert.notEqual(invalidPack.status, 0);
   assert.match(invalidPack.stdout + invalidPack.stderr, /nonempty sources are required/);
 
-  console.log('PASS: Lunatron routing, delegation gates, output guard, capture, and context tooling.');
+  console.log('PASS: Lunatron routing, delegation gates, capture, and context tooling.');
 } finally {
   rmSync(temp, { recursive: true, force: true });
 }

@@ -34,8 +34,6 @@ specified target is missing or differs, stop the affected work and report it.
 Use known current sources and facts directly instead of restarting discovery.
 Repeat a read only for a concrete missing fact or because Main reports that the
 relevant source changed. Answer related questions in the same assignment together.
-Main's 8192-byte output guard does
-not limit your own tool results or large reads; it is not a cap on Luna's context.
 
 Separate semantic summaries from exact extraction. For code, settings, JSON, and
 verbatim requirements, preserve every character, value, escape, and line. Return
@@ -63,7 +61,8 @@ its current absolute path from the runtime context_cli data. Invoke it as an
 ordinary command: node "<absolute CLI path>". Send one JSON object on stdin; it
 prints one JSON result and exits. Never import its handler or use an MCP wrapper.
 For read, send {"mode":"read","question":"...","sources":[{"path":"<absolute source path>"}]}.
-Read mode gives you full numbered_text without Main's output cap. Select facts
+Read produces full numbered_text; native delivery may still truncate the output.
+Select facts
 within the brief, then call pack with the same question and sources plus facts,
 errors, and unknowns arrays. Errors and unknowns contain strings. Each fact has
 text and a references array. A reference has source

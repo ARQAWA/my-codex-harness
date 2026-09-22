@@ -38,8 +38,7 @@ CBM CLI с identity/index/graph operations и `rg --engine auto`.
 `codex plugin --help`.
 
 Existing marketplace переиспользуй. Не создавай второй источник или global
-skill. Соблюдай repository release contract; этот файл сам не делает bump,
-commit или push.
+skill. Эта инструкция не выполняет bump, commit или push.
 
 После `codex plugin add` установи или синхронизируй в
 `<active-codex-home>/AGENTS.md` управляемый глобальный блок
@@ -50,7 +49,8 @@ region; если markers нет, преобразуй старый точный 
 блок перед `<!-- codebase-memory-mcp:start -->`, а без этого anchor допиши его в
 конец файла. Partial или duplicate markers — остановись с конфликтом. Запись
 делай атомарно; сохрани encoding, newline style и весь текст вне managed region.
-Канонический блок:
+Глобальный `AGENTS.md` здесь — целевой файл установленного блока,
+не источник дополнительных шагов установки. Канонический блок:
 
 ```markdown
 <!-- BEGIN FILESYSTEM_SEARCH_GLOBAL_ROUTING -->

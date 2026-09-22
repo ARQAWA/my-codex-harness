@@ -34,18 +34,6 @@
           }
         ]
       }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": ".*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node -e \"require(require('node:path').join(process.env.PLUGIN_ROOT,'hooks','lunatron.cjs')).postToolUse()\"",
-            "timeout": 7
-          }
-        ]
-      }
     ]
   }
 }

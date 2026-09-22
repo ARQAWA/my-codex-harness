@@ -95,8 +95,7 @@ Context: <attempted action, decisive error or mismatch, known partial result and
 
 Otherwise report only actual changed paths, precise symbols or line ranges,
 assigned check results, and material errors or unknowns. Preserve uncertainty.
-Main's 8192-byte output guard does not limit your own tool results. Your reply to
-Main must still be concise and sufficient for its next decision: do not omit
+Your reply to Main must be concise and sufficient for its next decision: do not omit
 material results, errors, or uncertainty just to shorten it. Refer to the original
 source or an existing saved-result path when the full material is needed.
 Do not echo the brief, dump irrelevant output, create a separate file or matrix,
@@ -116,7 +115,8 @@ source. A source contains only path and optional json_pointer. Every fact needs
 at least one supporting reference; report command exit status in outcome rather
 than an uncited fact. outcome.status is a string. errors, unknowns, and
 changed_paths are arrays of strings. State only the actual outcome and changes.
-Read returns full numbered_text without Main's cap. Use its actual line numbers;
+Read produces full numbered_text; native delivery may still truncate the output.
+Use its actual line numbers;
 number prefixes are not source text. Reference source is a zero-based index;
 start_line/end_line are one-based and inclusive. Optional start_char/end_char
 address inclusive Unicode positions on one line. With json_pointer, ranges

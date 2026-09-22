@@ -20,10 +20,9 @@ function invoke(fn, value) {
 }
 
 assert.deepEqual(Object.keys(hooks).sort(), ['SessionStart', 'UserPromptSubmit']);
-assert.equal(hooks.SessionStart.length, 2);
+assert.equal(hooks.SessionStart.length, 1);
 assert.equal(hooks.SessionStart[0].matcher, '^(startup|resume|clear|compact)$');
 assert.match(JSON.stringify(hooks.SessionStart), /sessionStart/);
-assert.match(JSON.stringify(hooks.SessionStart), /solReminders/);
 assert.equal(hooks.UserPromptSubmit[0].additionalContextLimit, 2500);
 assert.ok(!JSON.stringify(hooks).includes('Stop'));
 assert.ok(!JSON.stringify(hooks).includes('Subagent'));
@@ -43,27 +42,6 @@ for (const term of [
   'Final answer gate',
   'scope-focus/task-notebook',
 ]) assert.ok(session.additionalContext.includes(term), term);
-assert.ok(!session.additionalContext.includes('every 6 actions'));
-
-const reminderResult = invoke('solReminders', {
-  hook_event_name: 'SessionStart',
-  model: 'gpt-5.6-sol',
-});
-assert.equal(reminderResult.status, 0, reminderResult.stderr);
-const reminder = JSON.parse(reminderResult.stdout).hookSpecificOutput;
-assert.equal(reminder.hookEventName, 'SessionStart');
-for (const term of ['every 6 actions', 'every 66 actions', 'notifications.txt', 'absolute.txt']) {
-  assert.ok(reminder.additionalContext.includes(term), term);
-}
-for (const input of [
-  { hook_event_name: 'SessionStart', model: 'gpt-5.6-terra' },
-  { hook_event_name: 'UserPromptSubmit', model: 'gpt-5.6-sol' },
-]) {
-  const result = invoke('solReminders', input);
-  assert.equal(result.status, 0, result.stderr);
-  assert.equal(result.stdout, '');
-}
-
 const submitResult = invoke('userPromptSubmit', { prompt: 'ordinary request' });
 assert.equal(submitResult.status, 0, submitResult.stderr);
 const submit = JSON.parse(submitResult.stdout).hookSpecificOutput;

@@ -12,7 +12,7 @@ description: Release or install the selected my-codex-harness components, commit
 
 Определи явно заказанные компоненты и части release. Прочитай
 `INSTALL_FOR_AGENTS.md`, затем выбранный
-`install-instructions/<plugin>.md`. Сохрани чужой delta.
+`install-instructions/<component>.md`. Сохрани чужой delta.
 
 Analysis-only не меняет состояние. Полный релиз выполняет весь порядок ниже.
 Частичный запрос выполняет только его явно заказанную часть.
@@ -27,7 +27,7 @@ Analysis-only не меняет состояние. Полный релиз вы
 Сделай одно повышение версии до исходного коммита. Не повторяй bump из
 `INSTALL` после коммита.
 
-Prompt и catalog snapshot определяется source commit. Придуманный номер версии
+Версия системного промпта определяется source commit. Придуманный номер версии
 не добавляй.
 
 Выполняй только проверки, прямо заказанные или required выбранной процедурой.
@@ -53,10 +53,9 @@ packaged profiles и отдельные runtime-файлы.
 Не запускай второй cachebuster или native add из выбранного документа: bump и
 native install уже выполнены release flow.
 
-Для prompt и catalog следуй `config/INSTALL.md`: скопируй
-оба файла, укажи точные config keys `model_catalog_json` и
-`model_instructions_file` с абсолютными локальными путями, сохрани другие
-настройки и перезапусти Codex. Затем начни новую задачу.
+Если системный промпт входит в запрос, выполни
+`install-instructions/system-prompt.md` той же ревизии. Его исходник —
+`new-model-instructions.md` в корне репозитория.
 
 ## 5. Ошибки
 

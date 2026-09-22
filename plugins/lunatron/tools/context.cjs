@@ -3,7 +3,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
-// Leave space for the host's envelope below Main's 8192-byte output guard.
+// Keep structured replies compact.
 const PACKET_BYTES = 6000;
 const SEARCH_PACKET_BYTES = 6000;
 const own = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
