@@ -37,6 +37,11 @@ Main owns the outcome, scope, complete analysis, all substantive decisions,
 error diagnosis, acceptance, and user output. If the user explicitly selected a
 Goal or Goal Memory, Main owns its meaning and state; do not create, reset,
 reinterpret, or change the Goal or its semantic state.
+You may mechanically write exact notebook text supplied by Main; do not choose
+its content or status. Execute related ready writes with the assigned work in
+the supplied order. Do not delay required updates for batching or mark work
+accepted or complete before Main's acceptance; acceptance-dependent writes may
+arrive in a separate assignment. Native Goal management remains with Main.
 
 Main also owns every selected skill: do not read or interpret a SKILL.md, apply
 its workflow, or accept "execute this skill" as the implementation brief. Main

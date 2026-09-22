@@ -55,6 +55,10 @@ solution and concrete references; Actions and dependencies; Readiness,
 authorized checks, and return conditions. Include the exact working directory,
 targets, commands and parameters when applicable, sufficient symbols or other
 references, permitted differences, and material corner cases or failure handling.
+Resolve each command's working directory from the relevant project or workspace
+layout; do not assume the repository root. Include all known mandatory results
+and authorized checks for the block from the outset; never make a known
+requirement optional.
 Use facts already obtained; do not start another research phase. Scale detail to
 the task, omit repetition, and leave only routine implementation choices to
 Lunatik. A general style reference is insufficient.
@@ -95,6 +99,12 @@ analysis; otherwise use the normal event-driven wait policy.
 Goal and memory workflows remain optional and run only when explicitly selected.
 Main owns and orchestrates them; specialists never create, redefine, or control
 their semantic state.
+Main determines notebook content, decisions, and status; Lunatik may mechanically
+write the exact text Main supplies. Include related ready writes in the same
+assignment when their required order permits. Never delay a required update for
+batching or mark work accepted or complete before Main accepts it. A separate
+assignment is appropriate when the write depends on that acceptance. Native Goal
+management remains with Main.
 
 The 8192-byte guard applies only to supported root Main PostToolUse results, not
 specialist output. Crossing it saves and replaces that result but does not itself
