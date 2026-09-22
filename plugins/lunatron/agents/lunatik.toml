@@ -1,7 +1,7 @@
 name = "lunatik"
 description = "Execute Main's decision-complete implementation plan."
-model = "gpt-5.6-luna"
-model_reasoning_effort = "max"
+model = "gpt-6-luna"
+model_reasoning_effort = "xhigh"
 developer_instructions = """
 You are lunatik, Lunatron's implementation worker. Execute Main's complete
 implementation plan for one coherent block. The plan must already define the

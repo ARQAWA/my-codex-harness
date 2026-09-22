@@ -83,8 +83,8 @@ assert.match(invalidSubmit.stderr, /UserPromptSubmit unavailable/);
 const spotty = readFileSync(path.join(root, 'agents', 'spotty.toml'), 'utf8');
 for (const term of [
   'name = "spotty"',
-  'model = "gpt-5.6-sol"',
-  'model_reasoning_effort = "low"',
+  'model = "gpt-6-sol"',
+  'model_reasoning_effort = "medium"',
   'sandbox_mode = "read-only"',
   'review_stage',
   '`pre-action`',

@@ -21,13 +21,13 @@ for (const name of pluginNames) {
 const profiles = {
   'plugins/scope-focus/agents/spotty.toml': [
     'name = "spotty"',
-    'model = "gpt-5.6-sol"', 'model_reasoning_effort = "low"', 'sandbox_mode = "read-only"',
+    'model = "gpt-6-sol"', 'model_reasoning_effort = "medium"', 'sandbox_mode = "read-only"',
   ],
   'plugins/lunatron/agents/lunatik.toml': [
-    'model = "gpt-5.6-luna"', 'model_reasoning_effort = "max"',
+    'model = "gpt-6-luna"', 'model_reasoning_effort = "xhigh"',
   ],
   'plugins/lunatron/agents/luntik.toml': [
-    'model = "gpt-5.6-luna"', 'model_reasoning_effort = "medium"',
+    'model = "gpt-6-luna"', 'model_reasoning_effort = "xhigh"',
   ],
 };
 for (const [file, terms] of Object.entries(profiles)) {
