@@ -61,6 +61,10 @@ text, callers, dependencies, impact, or source context, load the
 `filesystem-search` skill and follow its routing. This gate is mandatory and
 comes before `rg`, `grep`, `find`, globs, AST scripts, or Codebase Memory CLI.
 Read an already known exact path directly when discovery is not needed.
+If `.tgrep/` appears untracked inside an existing Git worktree, add `.tgrep/`
+once to that repository's local exclude resolved by
+`git rev-parse --git-path info/exclude`; never commit it or initialize Git for
+this purpose.
 <!-- END FILESYSTEM_SEARCH_GLOBAL_ROUTING -->
 ```
 

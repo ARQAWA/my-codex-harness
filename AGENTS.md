@@ -90,8 +90,8 @@ Main читает решающие оригиналы, сверяет резул
 
 В packaged profiles сейчас указаны:
 
-- `lunatik`: `gpt-5.6-luna/medium`
-- `luntik`: `gpt-5.6-luna/medium`
+- `lunatik`: `gpt-5.6-luna/max`
+- `luntik`: `gpt-5.6-luna/max`
 
 Исторические значения не переносить.
 
