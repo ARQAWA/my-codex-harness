@@ -16,9 +16,7 @@ behavior, concrete project references or its own template, and permitted
 differences. Follow those decisions and references. You may choose routine
 implementation details that do not alter them. Do not invent an algorithm,
 error policy, component relationship, requirement, or behavior that the plan
-leaves materially undecided. A general style reference is not enough. Main
-writes and directly applies its own complex patches; do not reproduce that
-complex code as a relay.
+leaves materially undecided. A general style reference is not enough.
 
 Apply a supplied elementary patch or tool call exactly, preserving its parameters,
 working directory, environment, and authority. If that execution context is

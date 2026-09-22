@@ -51,13 +51,13 @@ assert.ok(!agents.includes('## Baseline'));
 assert.ok(agents.includes('node tests/run.mjs'));
 assert.ok(agents.includes('plugins/filesystem-search'));
 assert.ok(agents.includes('install-instructions/filesystem-search.md'));
-assert.ok(agents.includes('В автоматическом режиме Lunatron активируется у root только для `gpt-5.6-sol`'));
-assert.ok(agents.includes('Точные корневые команды `ltn 1` и `ltn 0`'));
+assert.ok(agents.includes('Lunatron по умолчанию выключен независимо от модели; автоматики нет.'));
+assert.ok(agents.includes('Слитные `LNT1` и `LNT0` в любом регистре'));
 
 const lunatronHook = read('plugins/lunatron/hooks/lunatron.cjs');
-assert.ok(lunatronHook.includes("new Set(['gpt-5.6-sol', 'gpt-6-astra'])"));
+assert.ok(lunatronHook.includes("return { active: false, basis: 'default-off' }"));
 assert.ok(!lunatronHook.includes('gpt-5.5'));
-assert.ok(lunatronHook.includes("new Set(['gpt-5.6-terra', ...SOL_MODELS])"));
+assert.ok(!lunatronHook.includes('GUARDED_MODELS'));
 assert.ok(!lunatronHook.includes('readReasoningEffort'));
 const lunatronDesign = read('LUNATRON-REDESIGN.md');
 assert.ok(lunatronDesign.includes('## 5. 2026-09-20: сужение model gate'));

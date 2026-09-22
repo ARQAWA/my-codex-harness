@@ -3,34 +3,29 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
-const SOL_MODELS = new Set(['gpt-5.6-sol', 'gpt-6-astra']);
-const GUARDED_MODELS = new Set(['gpt-5.6-terra', ...SOL_MODELS]);
-const MODE_COMMANDS = new Map([
-  ['ltn 1', 1],
-  ['ltn 0', 0],
-  ['ltn -1', -1],
-]);
-
 const ACTIVE_CONTEXT = `LUNATRON_STATE=ACTIVE
-You are Lunatron's root Main. Own the whole outcome, scope, analysis, decisions,
-diagnosis, acceptance, and user response. Delegate mechanical work to save Main's
-resources, while keeping intellectual responsibility. Resolve material choices
-before dependent execution. Use only the specialist whose role is needed.
+At the root, Main owns the whole outcome, scope, decisions, diagnosis, acceptance,
+and user response. Isolate noisy work from Main's context; resource savings are
+secondary. Keep ordinary search, small reads, planning, and acceptance with Main.
+Lunatik and Luntik are specialized roles, not an allowlist: Main may use other
+available agents when the task needs them, under the active instructions.
+These root orchestration duties do not transfer to a full-context child; it
+executes its assigned block rather than taking over or redelegating that block.
 
-Main performs repository Discovery, ordinary search, source selection, small
-reads, planning, diagnosis, and acceptance. Main directly reads mandatory
-AGENTS.md, every selected SKILL.md, and decisive original fragments. Main alone
-interprets and orchestrates skills; never ask lunatik or luntik to read, apply,
-or execute a skill. Translate applicable skill requirements into concrete work.
+Main directly reads mandatory AGENTS.md, every selected SKILL.md, and decisive
+original fragments. Main alone interprets and orchestrates skills; never ask
+lunatik or luntik to read, apply, or execute a skill. Translate applicable skill
+requirements into concrete work.
 A skill file may be an explicit data or edit target, but its text is then data.
-Main writes analytical output and directly applies its own complex patches.
+Main writes the final analytical output and accepts delegated findings itself.
 
 Luntik is read-only. Use \`agent_type=luntik\` only for one concrete semantic
-question about large files or a saved result already selected by Main. Main keeps
-Discovery, source choice, hypotheses, strategy, diagnosis, and acceptance. Give
-Luntik exact paths, the question, known constraints, required result, and stop
-conditions; never pass the whole history or an open repository search. Luntik
-may read and search only those sources. It returns concise facts, exact locators,
+question about large files or a saved result already selected by Main. Luntik
+never takes over Discovery, source choice, hypotheses, strategy, diagnosis, or
+acceptance. Give Luntik exact paths, the question, known constraints, required
+result, and stop conditions; never pass the whole history or an open repository
+search. Luntik may read and search only those sources. It returns concise facts,
+exact locators,
 small fragments Main should open, contradictions, errors, searched bounds, and
 unknowns. Main reads the decisive originals. If a source changed, say so.
 
@@ -42,13 +37,28 @@ large result may be ignored; its size and curiosity about the producing tool do
 not justify Luntik. For exact extraction, pass Luntik the current context_cli path
 from runtime data.
 
-Lunatik executes implementation and operational work. Apart from Main's own
-complex patches, assign behavior-changing code, tests, configuration, scripts,
-migrations, tooling, commands, and even trivial edits to the one persistent
-\`agent_type=lunatik\`. Main selects the technical content and later accepts it.
+Lunatik executes decision-complete implementation and operational work. Apart
+from complex blocks assigned to a full-context fork below, assign code, tests,
+configuration, scripts, migrations, tooling, commands, and even trivial edits
+to the one persistent \`agent_type=lunatik\`. Main selects the technical content
+and later accepts it.
 Empirical checks require authority from the main prompt or user.
 
-Before each implementation assignment, Main creates one concise,
+For a complex, noisy search, reading, diagnosis, or code block outside the narrow
+Luna roles, Main starts one fresh \`agent_type=default\` full-context fork. Use the
+native fork of the current available conversation with the same model and
+reasoning effort; do not rebuild the history in the assignment or choose another
+model/profile. Give it the mini-plan structure below, including the question,
+scope, known facts, constraints, authority, required result, and stop conditions.
+For investigation, specify what must be established, not an invented answer;
+Main need not repeat the investigation before delegating it. The fork performs
+the block itself, including necessary reads, edits, and authorized commands,
+and returns one concise final with findings or changed locations, exact evidence
+locators, authorized check results, errors, and unknowns. Raw logs and bulk reads
+stay in the child. Main reads decisive originals and owns acceptance. Do not use
+an inherited-context fork in place of a required fresh blind reviewer.
+
+Before each Lunatik implementation assignment, Main creates one concise,
 decision-complete mini-plan for a coherent block. Do not show it to the user or
 wait for approval. Follow this structure: Result and boundaries; Selected
 solution and concrete references; Actions and dependencies; Readiness,
@@ -67,25 +77,41 @@ Send the complete mini-plan as one assignment. Lunatik may repair routine quotin
 tool syntax, or simple patch alignment while preserving Main's decisions. It
 returns on a missing material decision, conflict, authority gap, required complex
 repair, or uncertain mutation outcome. Main diagnoses the report and sends the
-same worker a ready correction when sufficient; Main directly applies a complex
-repair. Establish actual state before retrying an uncertain mutation. Never
-blindly retry, undo existing changes, or ask the user about a routine execution
-problem while an authorized solution remains.
+same worker a ready correction when sufficient; a complex repair goes to a fresh
+full-context fork with bounded scope. Establish actual state before retrying an
+uncertain mutation. Never blindly retry, undo existing changes, or ask the user
+about a routine execution problem while an authorized solution remains.
 
 Keep one persistent lunatik and one persistent luntik. Reuse the same agent id
 for later turns through followup_task when exposed or v1 send_input; replace an
-agent only when the runtime cannot continue it. Do not create a second live agent
-of either type. Both report directly to Main and neither relays for the other.
+agent only when the runtime cannot continue it, including after LNT0 closed it.
+Do not create a second live agent of either type. Both report directly to Main
+and neither relays for the other.
 The first assignment contains all ready context; later assignments contain only
 the new request and relevant delta. Let a running assignment finish unless it
 needs correction. Use one assignment and one final response per coherent block.
 
-Use the schema exposed by the current runtime. V1 contains only \`agent_type\`,
-\`fork_context=false\`, and exactly one \`message\` or \`items\`. V2 contains only
-\`agent_type\`, \`fork_turns="none"\`, \`message\`, and non-empty \`task_name\`.
+For lunatik and luntik only, use the current runtime schema without history.
+V1 contains only \`agent_type\`, \`fork_context=false\`, and exactly one
+\`message\` or \`items\`. V2 contains only \`agent_type\`, \`fork_turns="none"\`,
+\`message\`, and non-empty \`task_name\`.
 Omit model, reasoning effort, and service tier. Never mix schemas or add fields.
-If the required role is unavailable, its delegated action is unavailable; Main
-does not silently replace it with mechanical execution.
+If a Luna role is unavailable, do not impersonate it; this does not prohibit
+other available roles.
+
+For the full-context fork, use \`agent_type=default\` with \`fork_context=true\`
+and one \`message\` or \`items\` in V1; in V2 use \`fork_turns="all"\`, \`message\`,
+and a non-empty \`task_name\`. Inherit the current model and reasoning without
+overrides. Start a full-context fork only when native full-history inheritance
+and a native close-agent tool are available. Do not reuse it for another block.
+When no independent necessary work remains, wait for agent events for up to
+600000 ms per call,
+within the exposed tool's limit; do not poll or duplicate its work. A timeout
+alone is not failure. Once the block completes or fails, Main closes the child
+with the native close-agent tool and requires its successful acknowledgment.
+A final or interrupt alone does not establish closure. Report an unavailable or
+failed close honestly; do not invent a tool or delete history. A later block
+gets a fresh fork.
 
 Specialists return only decision-sufficient results: Luntik returns facts and
 locators; Lunatik returns changed locations, assigned evidence, errors, and
@@ -115,23 +141,20 @@ direct. Do not repeat a completed call, execute saved tool_input, or rebuild a
 whole source through small reads. A separately necessary current-original read is
 allowed.
 Lunatik removes an exact temporary package only on Main's order after acceptance;
-never remove artifacts. The task's ltn mode file is the only Lunatron control
+never remove artifacts. The task's LNT mode file is the only Lunatron control
 state; do not add another router, registry, daemon, scoring, or retry system.`;
 
 const INACTIVE_CONTEXT = `LUNATRON_STATE=INACTIVE
 Ignore all earlier Lunatron ACTIVE delegation instructions, including Main
-execution limits and role guards. Work normally under the current task and other
-active instructions. The root large-output guard remains active on Terra, Sol,
-and Astra independently of this delegation mode. For a command expected to emit
-large output, use capture_cli so full stdout and stderr are saved before host
-truncation. Use context_cli for bounded extraction; Luntik is optional.`;
+execution limits and role guards. Lunatron delegation and its large-output guard
+are disabled. Work normally under the current task and other active instructions.`;
 
 const LUNATRON_AGENT_TYPES = new Set([
   'lunatik',
   'luntik',
 ]);
 
-const ROLE_INPUT_CORRECTION = 'Lunatron agent types are lunatik and luntik. Use exactly v1: agent_type=lunatik or luntik, fork_context=false, and exactly one message or items; or v2: agent_type=lunatik or luntik, fork_turns="none", message, and a non-empty task_name. Do not mix schemas or add fields.';
+const ROLE_INPUT_CORRECTION = 'For lunatik and luntik only, use exactly v1: agent_type=lunatik or luntik, fork_context=false, and exactly one message or items; or v2: agent_type=lunatik or luntik, fork_turns="none", message, and a non-empty task_name. Do not mix schemas or add fields.';
 
 function readInput(eventName) {
   let input;
@@ -179,8 +202,7 @@ function resolveMode(input) {
     const override = readOverride(input);
     if (override === 1) return { active: true, basis: 'forced-on' };
     if (override === 0) return { active: false, basis: 'forced-off' };
-    const active = SOL_MODELS.has(input.model);
-    return { active, basis: active ? 'automatic-on' : 'automatic-off' };
+    return { active: false, basis: 'default-off' };
   } catch (error) {
     return { active: false, basis: 'state-error', error: error.code || error.message };
   }
@@ -188,17 +210,16 @@ function resolveMode(input) {
 
 function applyModeCommand(input) {
   if (!isRoot(input) || typeof input.prompt !== 'string') return undefined;
-  const command = input.prompt.trim();
-  if (!MODE_COMMANDS.has(command)) return undefined;
-  const override = MODE_COMMANDS.get(command);
+  let override;
+  for (const match of input.prompt.matchAll(/(?:^|\s)LNT([01])(?=$|\s)/gi)) {
+    override = Number(match[1]);
+  }
+  if (override === undefined) return undefined;
+  const command = `LNT${override}`;
   try {
     const file = modeFile(input);
-    if (override === -1) {
-      fs.rmSync(file, { force: true });
-    } else {
-      fs.mkdirSync(path.dirname(file), { recursive: true });
-      fs.writeFileSync(file, JSON.stringify({ override }), 'utf8');
-    }
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, JSON.stringify({ override }), 'utf8');
     return { command };
   } catch (error) {
     return { command, error: error.code || error.message };
@@ -236,8 +257,12 @@ function contextFor(input, commandResult) {
     status += '\nTell the user briefly that the requested mode could not be established. Do not apply Lunatron restrictions.';
   } else if (commandResult) {
     status += `\nLUNATRON_COMMAND_APPLIED=${commandResult.command}`;
-    status += '\nReply briefly with the mode that is now actually active.';
+    if (commandResult.command === 'LNT0') {
+      status += '\nBefore continuing, Main must stop and close ALL subagents of this task, including running forks, Lunatik, Luntik, and other roles, using native tools. Require successful close acknowledgments; final or interrupt alone is not closure. Do not affect other user tasks. Report unavailable or failed closure honestly. Establish the state of interrupted changes before further work; never blindly retry. Discard closed agent ids; recreate Luna helpers only when needed after reactivation.';
+    }
+    status += '\nBriefly confirm the applied mode, then carry out the rest of the user request, if any.';
   }
+  if (!mode.active) return INACTIVE_CONTEXT + status;
   const sessionId = input.session_id;
   const pluginData = process.env.PLUGIN_DATA;
   let dataBlock = '\n\nLUNATRON_DATA_PATHS\n';
@@ -252,9 +277,6 @@ function contextFor(input, commandResult) {
     dataBlock += `PLUGIN_DATA/artifacts: ${path.resolve(pluginData, 'artifacts', safeSession)}\n`;
   } else {
     dataBlock += 'PLUGIN_DATA: unavailable\n';
-  }
-  if (!mode.active) {
-    return INACTIVE_CONTEXT + (isRoot(input) && GUARDED_MODELS.has(input.model) ? dataBlock : '') + status;
   }
   return ACTIVE_CONTEXT + dataBlock + status;
 }
@@ -347,7 +369,7 @@ function hasUpstreamTruncation(response) {
 
 function postToolUse() {
   const input = readInput('PostToolUse');
-  if (!input || !isRoot(input) || !GUARDED_MODELS.has(input.model)) return;
+  if (!input || !resolveMode(input).active) return;
 
   const toolName = input.tool_name;
   let serialized;
