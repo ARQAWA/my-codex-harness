@@ -71,4 +71,8 @@ const freshTask = install.indexOf('После настройки environment о�
 const checks = install.indexOf('## Проверка после установки');
 assert.ok(pathConfig >= 0 && freshTask > pathConfig && checks > freshTask);
 
+const fsSearchDesign = read('FILESYSTEM-SEARCH-DESIGN.md');
+assert.ok(fsSearchDesign.includes('root-дисциплина'));
+assert.ok(fsSearchDesign.includes('2026-09-24'));
+
 console.log('PASS: repository plugin, profile, install, and policy consistency.');

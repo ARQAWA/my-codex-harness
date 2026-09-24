@@ -2,7 +2,10 @@
 
 const fs = require('node:fs');
 
-const REASON = 'Прямой tgrep serve/index запрещён; используй filesystem-search wrapper от корня текущего проекта';
+const TGREP_REASON = 'Прямой tgrep serve/index запрещён; используй filesystem-search wrapper от корня текущего проекта';
+const CBM_REASON = 'Прямой lifecycle/index codebase-memory-mcp запрещён; индексация — только через wrapper cbm-index.cjs от корня текущего проекта';
+const ASTGREP_REASON = 'Прямой ast-grep запрещён; используй filesystem-search wrapper ast-grep-search.cjs от корня текущего проекта';
+const HELP_FLAGS = new Set(['-h', '--help', '-V', '--version']);
 
 function readInput(eventName) {
   let input;
@@ -51,31 +54,54 @@ function tokenize(command) {
   return tokens;
 }
 
-function isTgrepToken(token) {
-  if (token === 'tgrep' || token === 'tgrep.exe') return true;
+function isExec(token, name) {
   const normalized = token.replace(/\\/g, '/');
-  return normalized.endsWith('/tgrep') || normalized.endsWith('/tgrep.exe');
+  return normalized === name || normalized === `${name}.exe`
+    || normalized.endsWith(`/${name}`) || normalized.endsWith(`/${name}.exe`);
 }
 
-function hasForbiddenTgrepLifecycle(tokens) {
+const isTgrep = token => isExec(token, 'tgrep');
+const isCbm = token => isExec(token, 'codebase-memory-mcp');
+const isAstGrep = token => isExec(token, 'ast-grep') || isExec(token, 'sg');
+
+function denyReason(tokens) {
   for (let i = 0; i < tokens.length; i += 1) {
-    if (!isTgrepToken(tokens[i])) continue;
-    for (let j = i + 1; j < tokens.length; j += 1) {
-      const token = tokens[j];
-      if (token.startsWith('-')) continue;
-      if (token === 'serve' || token === 'index') return true;
-      break;
+    const token = tokens[i];
+    const rest = tokens.slice(i + 1);
+    if (isTgrep(token)) {
+      for (const next of rest) {
+        if (next.startsWith('-')) continue;
+        if (next === 'serve' || next === 'index') return TGREP_REASON;
+        break;
+      }
+      continue;
+    }
+    if (isCbm(token)) {
+      const first = rest.find(next => !next.startsWith('-'));
+      if (first === 'cli') {
+        const tool = rest.slice(rest.indexOf('cli') + 1).find(next => !next.startsWith('-'));
+        if (tool === 'index_repository') return CBM_REASON;
+        continue;
+      }
+      if (first === 'config') continue;
+      if (first === undefined && rest.some(next => HELP_FLAGS.has(next))) continue;
+      return CBM_REASON;
+    }
+    if (isAstGrep(token)) {
+      const first = rest.find(next => !next.startsWith('-'));
+      if (first !== undefined) return ASTGREP_REASON;
+      if (!rest.some(next => HELP_FLAGS.has(next))) return ASTGREP_REASON;
     }
   }
-  return false;
+  return null;
 }
 
-function denyRoleInput() {
+function denyRoleInput(reason) {
   process.stdout.write(JSON.stringify({
     hookSpecificOutput: {
       hookEventName: 'PreToolUse',
       permissionDecision: 'deny',
-      permissionDecisionReason: REASON,
+      permissionDecisionReason: reason,
     },
   }));
 }
@@ -83,8 +109,8 @@ function denyRoleInput() {
 function preToolUse() {
   const input = readInput('PreToolUse');
   if (!input || !input.tool_input || !input.tool_input.command) return;
-  const tokens = tokenize(input.tool_input.command);
-  if (hasForbiddenTgrepLifecycle(tokens)) denyRoleInput();
+  const reason = denyReason(tokenize(input.tool_input.command));
+  if (reason) denyRoleInput(reason);
 }
 
 exports.preToolUse = preToolUse;

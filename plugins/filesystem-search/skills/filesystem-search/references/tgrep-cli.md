@@ -10,7 +10,7 @@ node "<skill-root>/scripts/tgrep-search.cjs" "<absolute-root>" [one or more -e/-
 node "<skill-root>/scripts/tgrep-search.cjs" "<absolute-root>" --files [file-options] -- <explicit-scope>...
 ```
 
-`--` is mandatory. Scopes are existing root-relative paths; `.` is reserved for an intentional repository-wide query. Tokens after `--` are never parsed as flags or lifecycle words. The expression form accepts `-e/--regexp` or `-f/--file`, with only scopes after `--`; `-f/--file` always routes to rg because its file-pattern semantics are not indexed. `--files` cannot combine with either option. Invalid grammar/root/scope exits `2`.
+`--` is mandatory. Scopes are existing root-relative paths; `.` is reserved for an intentional project-wide query. Tokens after `--` are never parsed as flags or lifecycle words. The expression form accepts `-e/--regexp` or `-f/--file`, with only scopes after `--`; `-f/--file` always routes to rg because its file-pattern semantics are not indexed. `--files` cannot combine with either option. Invalid grammar/root/scope exits `2`.
 
 Ordinary indexed content is `tgrep search --index-path "<active-codex-home>/tgrep/index/<hash>/" ... -- <pattern> <scope>...`; files mode is `tgrep --index-path "<active-codex-home>/tgrep/index/<hash>/" --files ... -- <scope>...`. The wrapper never adds `--no-index` and does not claim the backend is absolutely index-only.
 

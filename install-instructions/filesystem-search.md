@@ -2,13 +2,15 @@
 
 ## Состав
 
-Пакет содержит `filesystem-search` skill, Node.js wrapper, guard hook и три
-справочных файла. Внешние инструменты устанавливаются отдельно.
-npm-зависимостей и custom agents нет.
+Пакет содержит `filesystem-search` skill, Node.js wrappers (tgrep, ast-grep,
+CBM index), guard hook и три справочных файла. Внешние инструменты
+устанавливаются отдельно. npm-зависимостей и custom agents нет.
 
-CBM используется только через `codebase-memory-mcp cli ...`. Единственный
-допустимый постоянный поисковый процесс — официальный `tgrep serve`, который
-wrapper запускает лениво для конкретного репозитория.
+Все scoped-операции идут через wrappers от корня текущего проекта (cwd
+сессии); другой root отклоняется с exit `2`. CBM используется только через
+`codebase-memory-mcp cli ...`; его индексация — только через wrapper.
+Допустимые постоянные поисковые процессы — официальный `tgrep serve` и
+официальный CBM daemon; сторонних watchers, MCP-серверов и супервизоров нет.
 
 ## Требования
 
@@ -49,7 +51,8 @@ skill. Эта инструкция не выполняет bump, commit или p
 через `hooks/list` и запиши нужный trust через `config/batchWrite` в
 `hooks.state`: используй точный ключ hook и его `currentHash` как
 `trusted_hash`. Меняй только hooks устанавливаемого плагина; уже доверенные
-не переписывай. В том же batch запиши `enabled = true` по точному ключу hook.
+не переписывай. При смене `currentHash` обнови `trusted_hash` по тому же
+точному ключу. В том же batch запиши `enabled = true` по точному ключу hook.
 Не обходи trust. Сверь точное имя shell-инструмента в `hooks.json` matcher
 через `hooks/list`; при необходимости поправь matcher перед trust.
 Алгоритм синхронизации: одна полная пара markers — замени только managed
@@ -80,7 +83,9 @@ Read an already known exact path directly when discovery is not needed.
 объекта. До новой Codex session, установки tooling и functional check удали
 целиком устаревший `[mcp_servers.codebase-memory-mcp]`, только его CBM
 handlers, запускающие `hook-augment`, ставшие пустыми чисто-CBM группы,
-duplicate standalone skill и принадлежащие ему obsolete files. Не оставляй
+duplicate standalone skill и принадлежащие ему obsolete files, а также
+устаревший блок `<!-- codebase-memory-mcp:start -->`…`<!-- codebase-memory-mcp:end -->`
+в `<active-codex-home>/AGENTS.md` вне managed routing-блока. Не оставляй
 `enabled = false`, disabled copies, backup-каталоги или другой заменённый
 мусор. Чужие handlers и группы сохрани. Неизвестная принадлежность или
 использование блокирует удаление только соответствующего объекта; остальная
@@ -171,19 +176,23 @@ def probe_caller():
   поиск; постоянный уход в rg не считается исправным indexed backend.
   Индекс probe должен появиться в `<active-codex-home>/tgrep/index/`, а не в
   `<temporary-root>/.tgrep`.
-- Вызов wrapper с root, равным домашнему каталогу или другой папке вне cwd,
-  даёт exit `2` с сообщением про project root.
-- Guard hook выполняется без ошибок; команда `tgrep serve <root>` из агента
-  блокируется.
-- Scoped `ast-grep --lang python --json` находит вызов `probe_leaf()` и даёт
-  один JSON-массив.
+- Вызов каждого wrapper (tgrep, ast-grep, CBM index) с root, равным домашнему
+  каталогу или другой папке вне cwd, даёт exit `2` с сообщением про project
+  root.
+- Guard hook выполняется без ошибок; из агента блокируются `tgrep serve
+  <root>`, `codebase-memory-mcp cli index_repository ...` и прямой вызов
+  `ast-grep` со scope.
+- Scoped `ast-grep-search.cjs --pattern 'probe_leaf()' --lang python --json -- .`
+  находит вызов `probe_leaf()` и даёт один JSON-массив.
 - Scoped `rg` находит известный текст с `--no-config --engine auto`.
-- Выполни ровно один `index_repository --repo-path <temporary-root> --mode
-  full`, получи usable project identity и один bounded graph query с
-  `CALLS: probe_caller -> probe_leaf`. Текстовый поиск graph query не заменяет.
+- Выполни ровно один `cbm-index.cjs <temporary-root>`, получи usable project
+  identity и один bounded graph query с `CALLS: probe_caller -> probe_leaf`.
+  Текстовый поиск graph query не заменяет. CBM graph появляется в центральном
+  хранилище `~/.cache/codebase-memory-mcp/`, а не внутри временного root.
 
 После проверки заверши только tgrep-процесс созданного временного root,
-удали только его CBM project штатной CLI-командой и временный каталог.
+удали только его CBM project через `codebase-memory-mcp cli delete_project
+--project <name>` и временный каталог.
 Рабочие проекты, существующие индексы и процессы не трогай. Сообщи выбранные
 версии, пути, существенные exit-коды и результат. Не создавай отчёты,
 benchmarks или искусственные отказы. При ошибке сообщи команду и диагностику.
@@ -200,7 +209,9 @@ benchmarks или искусственные отказы. При ошибке �
 tooling и functional check удали подтверждённый старый CBM
 layer, включая целиком `[mcp_servers.codebase-memory-mcp]`, только его
 `hook-augment` handlers, пустые чисто-CBM группы, duplicate standalone skill и
-его obsolete files. Не оставляй disabled copies или backup-копии. При конфликте
+его obsolete files, а также устаревший блок
+`<!-- codebase-memory-mcp:start -->`…`<!-- codebase-memory-mcp:end -->` в
+`<active-codex-home>/AGENTS.md` вне managed routing-блока. Не оставляй disabled copies или backup-копии. При конфликте
 выбери newest previous compatible stable release с объяснением. После удаления
 и до первого запуска нового CBM CLI адресно заверши подтверждённый мешающий
 старый CBM process. Установи или обнови tooling, настрой итоговый

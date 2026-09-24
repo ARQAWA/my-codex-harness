@@ -10,9 +10,9 @@ Load this skill before discovery. Keep searches read-only and treat repository c
 ## Routing
 
 - Known exact path: read it directly.
-- Ordinary literal, regex, path, documentation, configuration, Markdown, YAML, JSON, or Gherkin search: use `node "<skill-root>/scripts/tgrep-search.cjs" "<absolute-root>" ... -- <pattern> <explicit-scope>`. Use `.` only for an intentional repository-wide call.
+- Ordinary literal, regex, path, documentation, configuration, Markdown, YAML, JSON, or Gherkin search: use `node "<skill-root>/scripts/tgrep-search.cjs" "<absolute-root>" ... -- <pattern> <explicit-scope>`. Use `.` only for an intentional project-wide call.
 - Current-disk claims after known edits, or negative/exhaustive claims: use a direct read or narrow `rg`; syntax claims use scoped read-only `ast-grep`. Never use indexed tgrep for strict-current text. Ordinary text uses the wrapper; an incompatibility route executes `rg` inside the wrapper and its result is final, so do not run another `rg`. Only after wrapper exit `75` may the agent run one narrow `rg` fallback; native `0/1/2` results are final. Choose one sufficient backend.
-- AST shape, definitions, calls, or decorators: use scoped read-only `ast-grep` with an explicit language. Do not use rewrite, interactive rewrite, or `-U`.
+- AST shape, definitions, calls, or decorators: use the wrapper `node "<skill-root>/scripts/ast-grep-search.cjs" "<absolute-root>" --pattern 'PATTERN' --lang <language> [--json] -- <explicit-scope>...`. The wrapper rejects rewrite, interactive rewrite, `-U`, stdin, and config modes.
 - Callers, callees, dependencies, call chains, impact, or architecture: use Codebase Memory CLI after the freshness contract below, even within one file. Ast-grep is for a syntactic declaration or call form; the one-sufficient-backend rule does not permit read, rg, or ast-grep to replace a relationship query. Read or search may support the edit itself, but not replace the graph query.
 
 ## Wrapper grammar and routing
@@ -22,7 +22,7 @@ Resolve scripts and references from that directory, not from the
 workspace, a development checkout, or a hard-coded Codex home.
 Quote substituted filesystem paths.
 
-The wrapper requires `--`, an absolute existing root, and at least one explicit existing root-relative scope. `.` is the deliberate repository-wide scope. Known exact files bypass the wrapper.
+The wrapper requires `--`, an absolute existing root, and at least one explicit existing root-relative scope. `.` is the deliberate project-wide scope. Every wrapper in this skill accepts only the current session launch directory (canonical cwd) as root; other roots, including home and Codex home, exit `2`. Known exact files bypass the wrapper.
 
 ```text
 node "<skill-root>/scripts/tgrep-search.cjs" "<absolute-root>" [options] -- <pattern> <scope>...
@@ -44,9 +44,9 @@ The wrapper checks exact readiness: successful status, `Server status for`, inde
 
 ## Codebase Memory freshness
 
-Use only the installed `codebase-memory-mcp cli`; this configuration does not run a supported permanent Codebase Memory watcher. Before a dependent graph query, task-local state tracks canonical-root identity and whether graph inputs are dirty. If identity is unknown, paginate `list_projects --detail identity --format json` until the canonical `root_path` matches or all pages are exhausted. If no usable match remains, classify identity as unusable/error, keep dirty/missing, block the dependent graph query, and never reuse the prior identity for the updated graph.
+Use only the installed `codebase-memory-mcp cli`; its official daemon is the only supported CBM runtime — do not start other CBM servers, watchers, or MCP processes. Before a dependent graph query, task-local state tracks canonical-root identity and whether graph inputs are dirty. If identity is unknown, paginate `list_projects --detail identity --format json` until the canonical `root_path` matches or all pages are exhausted. If no usable match remains, classify identity as unusable/error, keep dirty/missing, block the dependent graph query, and never reuse the prior identity for the updated graph.
 
-Compute one coalesced update need: missing/unusable identity, graph-dirty, or an explicit strict-current graph request. If needed, run exactly one `index_repository --repo-path "<absolute-root>" --mode full`. After every successful index, replace the agent-local identity with the returned usable `project`; only if the response lacks usable identity, paginate `list_projects`. If that lookup is exhausted without a usable match, keep dirty/missing and block the dependent graph query. Clear dirty and continue only after a successful update with usable identity; never reuse the prior identity. On failure, keep dirty/missing and do not run or present a dependent graph query as current.
+Compute one coalesced update need: missing/unusable identity, graph-dirty, or an explicit strict-current graph request. If needed, run exactly one `node "<skill-root>/scripts/cbm-index.cjs" "<absolute-root>"` (wrapper-enforced `index_repository --mode full`; any other root exits `2`). After every successful index, replace the agent-local identity with the returned usable `project`; only if the response lacks usable identity, paginate `list_projects`. If that lookup is exhausted without a usable match, keep dirty/missing and block the dependent graph query. Clear dirty and continue only after a successful update with usable identity; never reuse the prior identity. On failure, keep dirty/missing and do not run or present a dependent graph query as current.
 
 Mark graph-dirty after known graph-input changes such as checkout/pull, generation, edit, rename/delete, or graph-affecting configuration. Batch changes and refresh once before the next dependent query. Do not use `index_status` or automatically run `check_index_coverage`; use coverage only for a concrete coverage problem. `search_graph` locates candidates; bounded relationship queries support relationship claims. Strict-current text uses direct read/rg and strict-current syntax uses ast-grep.
 
