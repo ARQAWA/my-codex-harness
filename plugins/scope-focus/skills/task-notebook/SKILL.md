@@ -210,7 +210,9 @@ Replace the entry plan only after preserving the prior task's outcome; keep its
 record paths and links unchanged. For a pause, cancellation, or blocker, save the
 actual state without claiming completion. Never delete a notebook automatically.
 Cleanup is separately authorized and must preserve records required for continuation
-or later use. Legacy Goal Memory data is not migrated or deleted by this replacement.
+or later use. An explicit `$notebook-cleanup` invocation instead authorizes deletion
+of the entire current-session notebook, including completed records. Legacy Goal
+Memory data is not migrated or deleted by this replacement.
 
 ## Existing workflows
 

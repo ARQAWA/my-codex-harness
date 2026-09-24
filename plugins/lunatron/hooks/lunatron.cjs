@@ -40,18 +40,24 @@ large result may be ignored; its size and curiosity about the producing tool do
 not justify Luntik. For exact extraction, pass Luntik the current context_cli path
 from runtime data.
 
-Lunatik executes decision-complete implementation and operational work. Apart
-from complex blocks assigned to a full-context fork below, assign code, tests,
-configuration, scripts, migrations, tooling, commands, and even trivial edits
-to the one persistent \`agent_type=lunatik\`. Main selects the technical content
-and later accepts it.
+Lunatik executes simple implementation and mechanical work. Apart from complex
+blocks assigned to a full-context fork below, give each coherent block to a
+fresh full-context \`agent_type=lunatik\` fork. Main selects the technical content
+and later accepts it. The packaged profile fixes Luna at medium reasoning.
 Empirical checks require authority from the main prompt or user.
 
-For a complex, noisy search, reading, diagnosis, or code block outside the narrow
-Luna roles, Main starts one fresh \`agent_type=default\` full-context fork. Use the
-native fork of the current available conversation with the same model and
-reasoning effort; do not rebuild the history in the assignment or choose another
-model/profile. Give it the mini-plan structure below, including the question,
+For a complex, noisy search, reading, diagnosis, code, documentation, or skill
+block, Main starts one fresh full-context fork, normally \`agent_type=default\`.
+With Luna or Sol Main, use the same model and reasoning effort: native inheritance
+when it preserves both, or pass both explicitly when global agent defaults would
+change them. With Astra Main, explicitly pass \`model=gpt-6-sol\` and the current
+Main reasoning effort; choosing the model alone resets effort to that model's
+default. If a custom \`default\` profile overrides the required settings, use an
+unshadowed built-in \`worker\` only when it supports the same full fork and exact
+settings. If explicit selection needs an unknown Main effort, or the required
+effective settings cannot be established, report the incompatibility rather
+than silently substituting.
+Give the fork the mini-plan structure below, including the question,
 scope, known facts, constraints, authority, required result, and stop conditions.
 For investigation, specify what must be established, not an invented answer;
 Main need not repeat the investigation before delegating it. The fork performs
@@ -61,7 +67,7 @@ locators, authorized check results, errors, and unknowns. Raw logs and bulk read
 stay in the child. Main reads decisive originals and owns acceptance. Do not use
 an inherited-context fork in place of a required fresh blind reviewer.
 
-Before each Lunatik implementation assignment, Main creates one concise,
+Before each Lunatik assignment, Main creates one concise,
 decision-complete mini-plan for a coherent block. Do not show it to the user or
 wait for approval. Follow this structure: Result and boundaries; Selected
 solution and concrete references; Actions and dependencies; Readiness,
@@ -78,41 +84,35 @@ Use facts already obtained; do not start another research phase. Scale detail to
 the task, omit repetition, and leave only routine implementation choices to
 Lunatik. A general style reference is insufficient.
 
-Send the complete mini-plan as one assignment. Lunatik may repair routine quoting,
-tool syntax, or simple patch alignment while preserving Main's decisions. It
-returns on a missing material decision, conflict, authority gap, required complex
-repair, or uncertain mutation outcome. Main diagnoses the report and sends the
-same worker a ready correction when sufficient; a complex repair goes to a fresh
-full-context fork with bounded scope. Establish actual state before retrying an
-uncertain mutation. Never blindly retry, undo existing changes, or ask the user
-about a routine execution problem while an authorized solution remains.
+Send the complete mini-plan as one assignment. Each fork finishes its assigned
+block independently, including routine errors and repairs within the authorized
+scope. Return a blocked result only for a missing essential decision or authority,
+or when no safe authorized path remains. Establish actual state before retrying
+an uncertain mutation. Never blindly retry or undo existing changes.
 
-Keep one persistent lunatik and one persistent luntik. Reuse the same agent id
-for later turns through followup_task when exposed or v1 send_input; replace an
-agent only when the runtime cannot continue it, including after LNT0 closed it.
-Do not create a second live agent of either type. Both report directly to Main
-and neither relays for the other.
-The first assignment contains all ready context; later assignments contain only
-the new request and relevant delta. Let a running assignment finish unless it
-needs correction. Use one assignment and one final response per coherent block.
+Keep one persistent luntik for selected large-data questions. Give each Lunatik
+block a new full-context fork; never reuse its id for another block. Both report
+directly to Main and neither relays for the other. Let a running assignment
+finish unless it needs correction. Use one assignment and one final response per
+coherent block.
 
-For lunatik and luntik only, use the current runtime schema without history.
-V1 contains only \`agent_type\`, \`fork_context=false\`, and exactly one
-\`message\` or \`items\`. V2 contains only \`agent_type\`, \`fork_turns="none"\`,
-\`message\`, and non-empty \`task_name\`.
-Omit model, reasoning effort, and service tier. Never mix schemas or add fields.
-If a Luna role is unavailable, do not impersonate it; this does not prohibit
-other available roles.
+For lunatik, use \`agent_type=lunatik\` with \`fork_context=true\` and exactly
+one \`message\` or \`items\` in V1; in V2 use \`fork_turns="all"\`, \`message\`,
+and a non-empty \`task_name\`. For luntik, use \`fork_context=false\` in V1 or
+\`fork_turns="none"\` in V2 with the corresponding message fields. Do not pass
+model, reasoning effort, or service tier to these pinned roles. Never mix schemas.
+If a Luna role is unavailable, do not impersonate it.
 
-For the full-context fork, use \`agent_type=default\` with \`fork_context=true\`
-and one \`message\` or \`items\` in V1; in V2 use \`fork_turns="all"\`, \`message\`,
-and a non-empty \`task_name\`. Inherit the current model and reasoning without
-overrides. Start a full-context fork only when native full-history inheritance
+For the complex full-context fork, use \`agent_type=default\` with
+\`fork_context=true\` and one \`message\` or \`items\` in V1; in V2 use
+\`fork_turns="all"\`, \`message\`, and a non-empty \`task_name\`. Apply the model
+and effort selection above using fields supported by the current runtime.
+Start either kind of full-context fork only when native full-history inheritance
 and a native close-agent tool are available. Do not reuse it for another block.
 When no independent necessary work remains, wait for agent events for up to
-600000 ms per call,
-within the exposed tool's limit; do not poll or duplicate its work. A timeout
-alone is not failure. Once the block completes or fails, Main closes the child
+1200000 ms per call, within the exposed tool's limit; do not poll or duplicate
+its work. A timeout alone is not failure. Once the block completes or fails,
+Main closes the child
 with the native close-agent tool and requires its successful acknowledgment.
 A final or interrupt alone does not establish closure. Report an unavailable or
 failed close honestly; do not invent a tool or delete history. A later block
@@ -158,7 +158,7 @@ const LUNATRON_AGENT_TYPES = new Set([
   'luntik',
 ]);
 
-const ROLE_INPUT_CORRECTION = 'For lunatik and luntik only, use exactly v1: agent_type=lunatik or luntik, fork_context=false, and exactly one message or items; or v2: agent_type=lunatik or luntik, fork_turns="none", message, and a non-empty task_name. Do not mix schemas or add fields.';
+const ROLE_INPUT_CORRECTION = 'For lunatik use a full fork: v1 fork_context=true or v2 fork_turns="all". For luntik use v1 fork_context=false or v2 fork_turns="none". Include exactly one message or items in v1, or message and a non-empty task_name in v2. Do not mix schemas or add fields.';
 
 function readInput(eventName) {
   let input;
@@ -304,13 +304,14 @@ function sessionStart() {
 function isRoleInput(toolInput) {
   if (!toolInput || typeof toolInput !== 'object' || Array.isArray(toolInput)) return false;
   if (!LUNATRON_AGENT_TYPES.has(toolInput.agent_type)) return false;
+  const fullFork = toolInput.agent_type === 'lunatik';
 
   const hasForkContext = Object.hasOwn(toolInput, 'fork_context');
   const hasForkTurns = Object.hasOwn(toolInput, 'fork_turns');
   if (hasForkContext === hasForkTurns) return false;
 
   if (hasForkContext) {
-    if (toolInput.fork_context !== false) return false;
+    if (toolInput.fork_context !== fullFork) return false;
 
     const hasMessage = Object.hasOwn(toolInput, 'message');
     const hasItems = Object.hasOwn(toolInput, 'items');
@@ -324,7 +325,8 @@ function isRoleInput(toolInput) {
     return Object.keys(toolInput).every((key) => allowedKeys.has(key));
   }
 
-  if (toolInput.fork_turns !== 'none' || typeof toolInput.message !== 'string') return false;
+  if (toolInput.fork_turns !== (fullFork ? 'all' : 'none')
+      || typeof toolInput.message !== 'string') return false;
   if (typeof toolInput.task_name !== 'string' || toolInput.task_name.length === 0) return false;
 
   const allowedKeys = new Set(['agent_type', 'fork_turns', 'message', 'task_name']);
