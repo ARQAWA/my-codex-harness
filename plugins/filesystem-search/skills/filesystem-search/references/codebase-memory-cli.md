@@ -1,21 +1,21 @@
-# Codebase Memory CLI reference
+# Codebase Memory CLI
 
-Use only the installed `codebase-memory-mcp cli` one-shot commands. The official CBM daemon is the only supported CBM runtime; do not start other CBM servers, watchers, or MCP processes. Graphs live in CBM's own central store (`~/.cache/codebase-memory-mcp/`), never inside the project.
+Run searches through:
 
-Indexing goes only through the wrapper; direct `index_repository`, `allow-root`, install/update commands, and bare server starts are denied by the guard hook. The wrapper accepts only the current Codex session working directory as root (home, Codex home, and the filesystem root exit `2`):
+```text
+node "<skill-root>/scripts/cbm-search.cjs" "<absolute-root>" <tool> [--flag value | --flag=value]...
+```
+
+Allowed tools: `search_graph`, `query_graph`, `trace_path`, `get_code_snippet`, `get_file_outline`, `get_graph_schema`, `get_architecture`, `search_code`, `check_index_coverage`. Arguments retain native CLI meanings. The wrapper owns `project`; raw JSON, args files, root/project overrides, and mutation commands are rejected. Explicit file paths must be root-relative and contained. Select candidates with `search_graph`; support relationship claims with bounded graph/path queries.
+
+The wrapper handles paginated root-to-project identity lookup, first-index readiness, and one Node daemon per canonical root. An existing graph is usable while the daemon refreshes it. No agent-local dirty flags or repeated `list_projects` calls are needed. To wait for an explicit refresh:
 
 ```text
 node "<skill-root>/scripts/cbm-index.cjs" "<absolute-root>"
 ```
 
-It runs exactly one `index_repository --repo-path <root> --mode full` and exits with the CLI status. Read-only CLI calls (`list_projects`, `search_graph`, `trace_path`, bounded relationship queries) run directly. Remove a project only with `codebase-memory-mcp cli delete_project --project <name>`.
+The daemon runs one `index_repository --repo-path <root> --mode full` at a time, without `--persistence`. Its central graph remains in CBM's store. Git detection follows CBM's watcher algorithm: HEAD plus porcelain status and size/mtime, with `min(60, 5 + floor(N/500))` seconds between polls. Successful updates commit the pre-run observation; changes during indexing stay pending. Non-Git uses recursive filesystem events and a five-second coalescing delay. Startup reconciles a saved graph once. Failed updates retry next cycle and queries warn `CBM_INDEX_STALE`; no usable graph gives exit `75`. Removing the root stops its daemon without deleting the graph.
 
-Before a dependent graph query, keep task-local canonical-root identity and graph-dirty state. If identity is unknown, paginate:
+Node's built-in SQLite transaction owns the daemon across crashes and concurrent starts; local IPC carries ready/refresh/query requests. Runtime state is under `<active-codex-home>/filesystem-search/cbm/<hash>/`. Unix sockets are in `/tmp`; Windows uses a named pipe. No MCP is used. Direct daemon launches are not an agent-facing interface.
 
-```text
-codebase-memory-mcp cli list_projects --detail identity --format json
-```
-
-Match the canonical `root_path`; follow `has_more`/`next_offset` until a match or the final page. If pagination ends without a usable match, classify identity as unusable/error, keep dirty/missing, block the dependent graph query, and never reuse the prior identity. Compute one coalesced update need when identity is missing/unusable, graph inputs are dirty, or the graph request is explicitly strict-current; then run exactly one wrapper call above. The CLI decides its internal no-op/incremental/full work. On every successful index, use the returned usable `project` identity and replace the agent-local identity; paginate only if that response lacks usable identity. If that lookup is exhausted without a usable match, retain dirty/missing and block the dependent graph query; never reuse the prior identity. Clear dirty and continue only after successful update with usable identity. If indexing fails, retain dirty/missing state and do not run or present dependent graph results as current.
-
-Mark graph-dirty after known graph-input changes such as checkout/pull, generation, edit, rename/delete, or graph-affecting configuration. Batch changes and refresh once before the next dependent graph query. Do not use `index_status` or automatically call `check_index_coverage`; use coverage only for a concrete coverage problem. `search_graph` locates candidates, while bounded relationship queries support relationship claims. Strict-current text uses direct read/rg; strict-current syntax uses the ast-grep wrapper.
+Administrative identity inspection and explicitly requested `delete_project --project <name>` remain native CLI operations. Deletion is never automatic. CBM's native coverage exclusions remain; tgrep covers ignored text. Indexed answers permit short background lag; strict-current graph work explicitly refreshes first.

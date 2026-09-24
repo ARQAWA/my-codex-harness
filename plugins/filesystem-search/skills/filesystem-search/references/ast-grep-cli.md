@@ -1,6 +1,6 @@
 # ast-grep reference
 
-All AST search goes through the wrapper; direct `ast-grep`/`sg` invocation is denied by the guard hook. The wrapper accepts only the current Codex session working directory as root (home, Codex home, and the filesystem root exit `2`), and every scope is an existing root-relative path:
+Use AST as a scoped syntax fallback when indexed answers are insufficient, or for strict-current syntax. All AST search goes through the wrapper; direct `ast-grep`/`sg` invocation is denied by the guard hook. The wrapper accepts only the current Codex session working directory supplied by the hook as root (home, Codex home, and the filesystem root exit `2`), and every scope is an existing root-relative path:
 
 ```text
 node "<skill-root>/scripts/ast-grep-search.cjs" "<absolute-root>" --pattern 'PATTERN' --lang python -- <scope>...

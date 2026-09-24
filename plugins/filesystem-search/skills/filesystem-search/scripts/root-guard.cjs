@@ -41,14 +41,18 @@ function parseRoot(rootArg) {
   let rp;
   try { rp = fs.realpathSync.native(rootArg); } catch { fail('root cannot be canonicalized'); }
   const crp = canon(rp);
-  if (!isAllowedRoot(crp) || crp !== canon(process.cwd())) fail('root must be the current project root (session cwd)', 2);
+  const sessionRoot = process.env.FSSEARCH_SESSION_ROOT;
+  if (!sessionRoot || !path.isAbsolute(sessionRoot) || !fs.existsSync(sessionRoot)
+      || !isAllowedRoot(crp) || crp !== canon(sessionRoot)) {
+    fail('root must be the current project root (session cwd from FSSEARCH_SESSION_ROOT)', 2);
+  }
   return rp;
 }
 
 function validateScopes(root, scopes) {
   if (!scopes.length) fail('at least one explicit scope is required');
   return scopes.map((scope) => {
-    if (!scope || path.isAbsolute(scope) || scope === '..' || scope.startsWith(`..${path.sep}`) || scope.includes('\0')) fail(`invalid scope: ${scope}`);
+    if (!scope || path.isAbsolute(scope) || scope.split(/[\\/]/).includes('..') || scope.includes('\0')) fail(`invalid scope: ${scope}`);
     const candidate = scope === '.' ? root : `${root}${path.sep}${scope}`;
     let real;
     try { real = fs.realpathSync.native(candidate); } catch { fail(`scope does not exist: ${scope}`); }

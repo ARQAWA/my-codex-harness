@@ -1,17 +1,17 @@
-# tgrep reference
+# tgrep CLI
 
-`tgrep` maintains a trigram index. The filesystem-search wrapper owns a central index directory under `<active-codex-home>/tgrep/index/<hash>/` and invokes supported `--index-path` syntax for status, serve, search, and files mode. It starts at most one official detached `tgrep serve`; the official `serve.lock` owns singleton behavior. The wrapper only accepts the current Codex session working directory as root.
-
-Use the wrapper with one of its three disjoint forms:
+Use one disjoint form with a mandatory `--` and at least one existing relative scope:
 
 ```text
-node "<skill-root>/scripts/tgrep-search.cjs" "<absolute-root>" [options] -- <pattern> <explicit-scope>...
-node "<skill-root>/scripts/tgrep-search.cjs" "<absolute-root>" [one or more -e/--regexp or -f/--file] -- <explicit-scope>...
-node "<skill-root>/scripts/tgrep-search.cjs" "<absolute-root>" --files [file-options] -- <explicit-scope>...
+node "<skill-root>/scripts/tgrep-search.cjs" "<absolute-root>" [options] -- <pattern> <scope>...
+node "<skill-root>/scripts/tgrep-search.cjs" "<absolute-root>" -e <pattern> [more -e/-f options] -- <scope>...
+node "<skill-root>/scripts/tgrep-search.cjs" "<absolute-root>" --files [options] -- <scope>...
 ```
 
-`--` is mandatory. Scopes are existing root-relative paths; `.` is reserved for an intentional project-wide query. Tokens after `--` are never parsed as flags or lifecycle words. The expression form accepts `-e/--regexp` or `-f/--file`, with only scopes after `--`; `-f/--file` always routes to rg because its file-pattern semantics are not indexed. `--files` cannot combine with either option. Invalid grammar/root/scope exits `2`.
+`-e/-f` expressions and `--files` cannot be combined. Known exact files may be read directly. File scopes, `-f`, and incompatible modes use rg; directory scopes use the index. `--hidden`, positive `--glob/--iglob`, and `--no-ignore` use the indexed corpus, including hidden/ignored files. Query `--no-ignore` is absorbed, not forwarded to native tgrep. Native file-type and size limits remain.
 
-Ordinary indexed content is `tgrep search --index-path "<active-codex-home>/tgrep/index/<hash>/" ... -- <pattern> <scope>...`; files mode is `tgrep --index-path "<active-codex-home>/tgrep/index/<hash>/" --files ... -- <scope>...`. The wrapper never adds `--no-index` and does not claim the backend is absolutely index-only.
+Compatibility routes: `--no-index`, non-auto encoding/no-encoding, unrestricted and granular no-ignore options, binary/text, one-file-system, custom ignore-file, explicit size limits, files-mode ignore-file-case-insensitive, zip search, and pattern files. `--follow` is rejected. Input files cannot escape root. rg receives `--no-config --hidden --no-ignore` and defaults to `--engine auto`; final size policy and multiline-dotall semantics are preserved. Native output and exit status are final; do not run a second rg.
 
-The wrapper routes incompatible requests to `rg` before lifecycle for `--no-index`, `--hidden`, `--no-encoding`, `--no-require-git`, unrestricted/no-ignore options except `--no-ignore-messages`, `--text`/`--binary`, non-auto `--encoding`, positive `--glob`/`--iglob`, `-L`/`--follow`, `--one-file-system`, custom `--ignore-file`, explicit size-limit options, files-mode `--ignore-file-case-insensitive`, `-z`/`--search-zip`, and every `-f`. The wrapper executes this rg route internally and its result is final; do not run another rg. Only wrapper exit `75` permits one narrow agent fallback. Native `0/1/2` results are final. It preserves native rg output and exit status, always adds `--no-config`, defaults to `--engine auto`, absorbs `--no-index`, applies the final left-to-right size policy, and expands tgrep `--multiline-dotall` to both `--multiline --multiline-dotall`. Backend readiness failure exits `75` with `TGREP_BACKEND_UNAVAILABLE:`; retry the wrapper on the next ordinary query.
+The wrapper owns `<active-codex-home>/tgrep/index/<hash>/` and always supplies `--index-path`. Native `serve.lock` prevents duplicate servers; it is never removed. A built-in SQLite lifecycle lock serializes concurrent wrapper starts and corpus migration. On corpus-policy change, the wrapper confirms the old server via native status, serve metadata, and index root, terminates that exact PID, performs one native corpus rebuild, and starts `serve --no-ignore`. A marker records corpus version/root/PID; subsequent calls reuse the daemon and index.
+
+First readiness requires complete indexing, complete hidden coverage, and an active native/auto watcher or polling mode. Index construction has no one-second cutoff; status calls are individually bounded. Native errors or daemon exit give `75` with `TGREP_BACKEND_UNAVAILABLE`. Ordinary empty results keep native exit `1`. Only `75` permits an agent's narrow rg fallback; try the wrapper again for the next ordinary query. Exceptional native fallbacks are not an absolute index-only guarantee.

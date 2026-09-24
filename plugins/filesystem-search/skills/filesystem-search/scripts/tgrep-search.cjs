@@ -5,11 +5,11 @@ const fs = require('node:fs');
 const path = require('node:path');
 const cp = require('node:child_process');
 const crypto = require('node:crypto');
-const { performance } = require('node:perf_hooks');
-const { codexHome, fail, parseRoot, validateScopes } = require('./root-guard.cjs');
+const { tryLock } = require('./process-lock.cjs');
+const { canon, codexHome, fail, parseRoot, validateScopes } = require('./root-guard.cjs');
 
 const BACKEND_UNAVAILABLE = 75;
-const DEADLINE_MS = 1000;
+const CORPUS_VERSION = 1;
 const VALUE_LONG = new Set([
   'encoding', 'glob', 'iglob', 'type', 'type-not', 'type-add', 'type-clear',
   'max-filesize', 'max-count', 'after-context', 'before-context', 'context',
@@ -126,7 +126,7 @@ function routeToRg(parsed, mode, query) {
     }
     routed.push(item.token, item.value);
   }
-  const args = ['--no-config'];
+  const args = ['--no-config', '--hidden', '--no-ignore'];
   if (mode === 'files') args.push('--files');
   if (!engine) args.push('--engine', 'auto');
   args.push(...routed);
@@ -137,71 +137,97 @@ function routeToRg(parsed, mode, query) {
 
 function shouldRouteRg(parsed, mode) {
   return parsed.some((item) => {
-    if (item.name === 'no-index' || item.name === 'hidden' || item.name === 'no-encoding' || item.name === 'unrestricted' || item.name === 'text' || item.name === 'binary' || (item.name === 'encoding' && item.value !== 'auto') || item.name === 'follow' || item.name === 'one-file-system' || item.name === 'ignore-file' || item.name === 'max-filesize' || item.name === 'no-max-filesize' || item.name === 'no-require-git' || item.name === 'search-zip' || item.name === 'file') return true;
+    if (item.name === 'no-index' || item.name === 'no-encoding' || item.name === 'unrestricted' || item.name === 'text' || item.name === 'binary' || (item.name === 'encoding' && item.value !== 'auto') || item.name === 'one-file-system' || item.name === 'ignore-file' || item.name === 'max-filesize' || item.name === 'no-max-filesize' || item.name === 'no-require-git' || item.name === 'search-zip' || item.name === 'file') return true;
     if (item.name === 'ignore-file-case-insensitive' && mode === 'files') return true;
-    if (item.name === 'glob' || item.name === 'iglob') return !String(item.value || '').startsWith('!');
-    if (item.name.startsWith('no-ignore') && item.name !== 'no-ignore-messages') return true;
+    if (item.name.startsWith('no-ignore') && !['no-ignore', 'no-ignore-messages'].includes(item.name)) return true;
     return false;
   });
 }
 
 function sleep(ms) { return new Promise((resolve) => setTimeout(resolve, ms)); }
 
-function runStatus(root, indexDir, timeout) {
-  return cp.spawnSync('tgrep', ['status', '--index-path', indexDir, root], { cwd: root, encoding: 'utf8', timeout, windowsHide: true });
+function runNative(args, root, timeout) {
+  return new Promise((resolve, reject) => {
+    cp.execFile('tgrep', args, { cwd: root, encoding: 'utf8', timeout, shell: false,
+      windowsHide: true, maxBuffer: 4 * 1024 * 1024 }, (error, stdout, stderr) => {
+      if (error) reject(new Error(stderr.trim() || error.message));
+      else resolve(stdout + '\n' + stderr);
+    });
+  });
 }
 
-function statusInfo(result) {
-  const text = `${result && result.stdout || ''}\n${result && result.stderr || ''}`;
+function statusInfo(text) {
   const header = /^\s*Server status for\b/m.test(text);
-  const indexing = text.match(/^\s*Indexing\s*:\s*([^\r\n]+)\s*$/im);
-  const watcherActive = /^\s*Watcher\s*:\s*active\s*$/im.test(text);
-  const watch = text.match(/^\s*Watch mode\s*:\s*(native|auto|poll)\b/im);
-  const mode = watch ? watch[1].toLowerCase() : null;
-  const starting = /^\s*Watch mode\s*:\s*starting\b/im.test(text);
-  const complete = Boolean(indexing && indexing[1].trim().toLowerCase() === 'complete');
-  const ready = Boolean(header && indexing && complete && ((watcherActive && (mode === 'native' || mode === 'auto')) || mode === 'poll'));
+  const complete = /^\s*Indexing\s*:\s*complete\s*$/im.test(text);
+  const coverage = /^\s*Hidden coverage\s*:\s*complete\s*$/im.test(text);
+  const active = /^\s*Watcher\s*:\s*active\s*$/im.test(text);
+  const watch = text.match(/^\s*Watch mode\s*:\s*(native|auto|poll|starting)\b/im);
+  const mode = watch && watch[1].toLowerCase();
+  const error = text.match(/^\s*Last reconcile error:\s*(.+)$/im);
+  if (error) throw new Error(error[1]);
   const absent = /No index found|No server running|server is not running|^\s*Server\s*:\s*not running\s*$/im.test(text);
-  const validState = Boolean(header && indexing && ((mode && (watcherActive || mode === 'poll')) || starting));
-  return { ready, absent, validState };
+  if (!header && !absent) throw new Error('unrecognized tgrep status');
+  return { ready: header && complete && coverage && ((active && ['native', 'auto'].includes(mode)) || mode === 'poll'),
+    alive: header, pid: Number(text.match(/^\s*PID:\s*(\d+)/m)?.[1]) };
+}
+
+function readJson(file) {
+  try { return JSON.parse(fs.readFileSync(file, 'utf8')); }
+  catch (error) { if (error.code === 'ENOENT') return null; throw error; }
 }
 
 async function ensureReady(root, indexDir) {
-  const deadline = performance.now() + DEADLINE_MS;
-  let started = false;
-  let launchError = null;
-  while (performance.now() < deadline) {
-    const remaining = Math.max(1, deadline - performance.now());
-    const result = runStatus(root, indexDir, Math.max(1, Math.floor(Math.min(250, remaining))));
-    if (performance.now() >= deadline) break;
-    if (result.error || result.status !== 0) return false;
-    const info = statusInfo(result);
-    if (info.ready) return true;
-    if (!info.absent && (!info.validState || result.error || result.status !== 0)) return false;
-    if (!started && info.absent) {
-      if (performance.now() >= deadline) break;
-      started = true;
-      let fd = null;
-      try {
-        fs.mkdirSync(indexDir, { recursive: true });
-        fd = fs.openSync(path.join(indexDir, 'serve.log'), 'a');
-        const child = cp.spawn('tgrep', ['serve', '--index-path', indexDir, root], { cwd: root, detached: true, shell: false, windowsHide: true, stdio: ['ignore', fd, fd] });
-        const launchWait = Math.max(0, Math.floor(Math.min(50, deadline - performance.now())));
-        await new Promise((resolve) => { let done = false; const finish = (err) => { if (!done) { done = true; launchError = err || null; resolve(); } }; child.once('spawn', () => finish(null)); child.once('error', finish); setTimeout(() => finish(null), launchWait); });
-        if (launchError) return false;
-        child.unref();
-      } catch { return false; } finally {
-        if (fd !== null) {
-          try { fs.closeSync(fd); } catch (error) { launchError = error; }
-        }
+  fs.mkdirSync(indexDir, { recursive: true });
+  let release;
+  while (!(release = tryLock(path.join(indexDir, 'lifecycle.sqlite')))) await sleep(250);
+  try {
+    const status = async () => statusInfo(await runNative(['status', '--index-path', indexDir, root], root, 30000));
+    let info = await status();
+    const markerFile = path.join(indexDir, 'corpus.json');
+    const marker = readJson(markerFile);
+    const meta = readJson(path.join(indexDir, 'meta.json'));
+    if (meta && canon(meta.root_path) !== canon(root)) throw new Error('tgrep index belongs to another root');
+    const policyMatches = marker?.version === CORPUS_VERSION && marker.root === canon(root);
+    if (info.ready && policyMatches && marker.pid === info.pid) return true;
+    if (info.alive && (!policyMatches || marker.pid !== info.pid)) {
+      const native = readJson(path.join(indexDir, 'serve.json'));
+      if (!meta || !native || native.pid !== info.pid || !Number.isInteger(info.pid) || info.pid <= 1) {
+        throw new Error('cannot confirm ownership of the old tgrep daemon');
       }
-      if (launchError) return false;
+      process.kill(info.pid, 'SIGTERM');
+      const until = Date.now() + 30000;
+      for (;;) {
+        try { process.kill(info.pid, 0); }
+        catch (error) { if (error.code === 'ESRCH') break; throw error; }
+        if (Date.now() >= until) throw new Error('old tgrep daemon has not stopped');
+        await sleep(250);
+      }
+      info = await status();
     }
-    const remainingAfter = deadline - performance.now();
-    if (remainingAfter <= 0) break;
-    await sleep(Math.floor(Math.min(50, remainingAfter)));
-  }
-  return false;
+    let child;
+    let exited = false;
+    if (!info.alive) {
+      // A corpus-policy change needs one native rebuild, never a lock deletion.
+      if (meta && !policyMatches) await runNative(['index', '--no-ignore', '--index-path', indexDir, root], root);
+      const fd = fs.openSync(path.join(indexDir, 'serve.log'), 'a');
+      try {
+        child = cp.spawn('tgrep', ['serve', '--no-ignore', '--index-path', indexDir, root], {
+          cwd: root, detached: true, shell: false, windowsHide: true, stdio: ['ignore', fd, fd],
+        });
+        await new Promise((resolve, reject) => { child.once('spawn', resolve); child.once('error', reject); });
+        child.once('exit', () => { exited = true; });
+        child.unref();
+        fs.writeFileSync(markerFile, JSON.stringify({ version: CORPUS_VERSION, root: canon(root), pid: child.pid }) + '\n');
+      } finally { fs.closeSync(fd); }
+    }
+    for (;;) {
+      if (exited) throw new Error('tgrep daemon exited before readiness');
+      info = await status();
+      if (info.ready) return true;
+      if (!info.alive && !child) throw new Error('tgrep daemon stopped');
+      await sleep(250);
+    }
+  } finally { release(); }
 }
 
 (async () => {
@@ -218,20 +244,28 @@ async function ensureReady(root, indexDir) {
     if (!post.length || (mode === 'positional' && post.length < 2)) fail('pattern and explicit scope are required');
     const scopes = validateScopes(root, mode === 'positional' ? post.slice(1) : post);
     const query = mode === 'positional' ? [post[0], ...scopes] : scopes;
-    const routeRg = shouldRouteRg(parsed.parsed, mode);
+    if (parsed.parsed.some(x => x.name === 'follow')) fail('--follow is forbidden by the project-root boundary');
+    for (const item of parsed.parsed) {
+      if (item.name === 'file' || item.name === 'ignore-file') {
+        validateScopes(root, [item.value]);
+        if (!fs.statSync(path.join(root, item.value)).isFile()) fail('option input must be a file inside root');
+      }
+    }
+    const routeRg = shouldRouteRg(parsed.parsed, mode) || scopes.some(x => fs.statSync(path.join(root, x)).isFile());
     if (routeRg) {
       const result = cp.spawnSync('rg', routeToRg(parsed.parsed, mode, query), { cwd: root, stdio: 'inherit', shell: false, windowsHide: true });
       process.exitCode = result.error ? 2 : (result.status == null ? 2 : result.status);
       return;
     }
     const indexDir = indexDirFor(root);
-    if (!(await ensureReady(root, indexDir))) {
-      console.error('TGREP_BACKEND_UNAVAILABLE: tgrep watcher/index is not ready');
+    try { await ensureReady(root, indexDir); } catch (error) {
+      console.error('TGREP_BACKEND_UNAVAILABLE: ' + error.message);
       process.exitCode = BACKEND_UNAVAILABLE;
       return;
     }
     const forward = (x) => x.value !== undefined && ((x.token.startsWith('--') && x.token.includes('=')) || (x.token.startsWith('-') && !x.token.startsWith('--') && x.token.length > 2)) ? [x.token] : [x.token, ...(x.value === undefined ? [] : [x.value])];
-    const forwarded = parsed.parsed.filter((x) => x.name !== 'files').flatMap(forward);
+    const forwarded = parsed.parsed.filter((x) => !['files', 'no-ignore', 'hidden'].includes(x.name)).flatMap(forward);
+    forwarded.unshift('--hidden');
     const command = mode === 'files' ? ['--index-path', indexDir, '--files', ...forwarded, '--', ...scopes] : ['search', '--index-path', indexDir, ...forwarded, '--', ...query];
     const result = cp.spawnSync('tgrep', command, { cwd: root, stdio: 'inherit', shell: false, windowsHide: true });
     if (result.error) { console.error(`TGREP_BACKEND_UNAVAILABLE: ${result.error.message}`); process.exitCode = BACKEND_UNAVAILABLE; return; }

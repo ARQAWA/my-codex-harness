@@ -3,18 +3,20 @@
 ## Состав
 
 Пакет содержит `filesystem-search` skill, Node.js wrappers (tgrep, ast-grep,
-CBM index), guard hook и три справочных файла. Внешние инструменты
+CBM index/search), Node CLI watcher CBM, guard hook и три справочных файла. Внешние инструменты
 устанавливаются отдельно. npm-зависимостей и custom agents нет.
 
 Все scoped-операции идут через wrappers от корня текущего проекта (cwd
 сессии); другой root отклоняется с exit `2`. CBM используется только через
 `codebase-memory-mcp cli ...`; его индексация — только через wrapper.
-Допустимые постоянные поисковые процессы — официальный `tgrep serve` и
-официальный CBM daemon; сторонних watchers, MCP-серверов и супервизоров нет.
+Постоянные процессы — официальный `tgrep serve` и один packaged Node watcher
+CBM на canonical root. CBM запускается только как one-shot CLI; MCP нет.
+Обёртки сами готовят индексы и поддерживают их в фоне.
 
 ## Требования
 
-Нужны Codex с поддержкой плагинов, Node.js, `tgrep`, `ast-grep`,
+Нужны Codex с PreToolUse `cwd` и `updatedInput.command`, Node.js >= 22.13
+со встроенным `node:sqlite`, Git, `tgrep`, `ast-grep`,
 `codebase-memory-mcp` и `rg` с PCRE2. Windows — только Git Bash и native
 Windows executable. PowerShell и WSL не используются.
 
@@ -28,7 +30,7 @@ newest выбери новейший предыдущий совместимый
 Runtime не перепроектируй.
 
 Совместимость означает сохранение packaged-контрактов: `tgrep
-search/files/status/serve` и полей readiness, JSON-массив `ast-grep`, one-shot
+search/files/status/serve`, complete hidden coverage и полей readiness, JSON-массив `ast-grep`, one-shot
 CBM CLI с identity/index/graph operations и `rg --engine auto`.
 
 ## Первая установка
@@ -91,8 +93,8 @@ duplicate standalone skill и принадлежащие ему obsolete files, 
 использование блокирует удаление только соответствующего объекта; остальная
 миграция продолжается. Примени удаление и затем, до первого запуска нового
 CBM CLI, адресно заверши подтверждённый мешающий старый CBM process. До общей
-перезагрузки task ниже новый CBM CLI не запускай. Не создавай новый MCP, hooks
-или watcher, не делай mass kill, reset графов, CBM install/uninstall scripts.
+перезагрузки task ниже новый CBM CLI не запускай. Не создавай MCP или отдельные host hooks/watchers сверх packaged runtime.
+Не делай mass kill, reset графов, CBM install/uninstall scripts.
 Штатное удаление approval не требует.
 
 Выбирай assets только из официальных release-источников:
@@ -157,8 +159,9 @@ codebase-memory-mcp cli list_projects --detail identity --format json
 Пустой список допустим.
 
 Для функциональной проверки создай один временный каталог ОС с `probe.py` и
-работай из него (cwd должен равняться root, иначе guard wrapper'а отклонит
-вызов):
+работай из него. Для этих прямых Node-проб передай `FSSEARCH_SESSION_ROOT`
+равным canonical temporary root. В обычной задаче переменную задаёт только
+trusted PreToolUse hook из cwd сессии:
 
 ```python
 def probe_leaf():
@@ -171,28 +174,31 @@ def probe_caller():
 Проверь только эти операции:
 
 - Packaged wrapper находит `FILESYSTEM_SEARCH_PROBE`, в `files` mode возвращает
-  `probe.py`, а отсутствующий шаблон даёт native exit 1. Начальный exit 75
-  допускает status-only fallback, но нужен последующий успешный обычный tgrep
-  поиск; постоянный уход в rg не считается исправным indexed backend.
+  `probe.py`, а отсутствующий шаблон даёт native exit 1. Первый вызов ждёт
+  готовый индекс и watcher. Проверь hidden/ignored файл и положительный glob
+  через индекс (`--stats`: via server), затем повторный запрос с тем же PID.
   Индекс probe должен появиться в `<active-codex-home>/tgrep/index/`, а не в
   `<temporary-root>/.tgrep`.
-- Вызов каждого wrapper (tgrep, ast-grep, CBM index) с root, равным домашнему
+- Вызов каждого wrapper (tgrep, ast-grep, CBM index/search) с root, равным домашнему
   каталогу или другой папке вне cwd, даёт exit `2` с сообщением про project
   root.
 - Guard hook выполняется без ошибок; из агента блокируются `tgrep serve
   <root>`, `codebase-memory-mcp cli index_repository ...` и прямой вызов
-  `ast-grep` со scope.
+  `ast-grep` со scope и прямой CBM поиск. Отдельный packaged wrapper получает
+  `FSSEARCH_SESSION_ROOT` из hook; смена shell cwd не разрешает другой root.
 - Scoped `ast-grep-search.cjs --pattern 'probe_leaf()' --lang python --json -- .`
   находит вызов `probe_leaf()` и даёт один JSON-массив.
 - Scoped `rg` находит известный текст с `--no-config --engine auto`.
-- Выполни ровно один `cbm-index.cjs <temporary-root>`, получи usable project
-  identity и один bounded graph query с `CALLS: probe_caller -> probe_leaf`.
+- Выполни `cbm-search.cjs <temporary-root> query_graph` с bounded запросом
+  `CALLS: probe_caller -> probe_leaf`. Первый поиск сам создаёт индекс;
+  повторный использует тот же демон. Явное обновление — `cbm-index.cjs`.
   Текстовый поиск graph query не заменяет. CBM graph появляется в центральном
   хранилище `~/.cache/codebase-memory-mcp/`, а не внутри временного root.
 
-После проверки заверши только tgrep-процесс созданного временного root,
-удали только его CBM project через `codebase-memory-mcp cli delete_project
---project <name>` и временный каталог.
+После проверки заверши только tgrep-процесс созданного временного root.
+Удали этот temporary root: это останавливает его CBM watcher без удаления графа.
+Дождись остановки, затем удали только его CBM project через
+`codebase-memory-mcp cli delete_project --project <name>`.
 Рабочие проекты, существующие индексы и процессы не трогай. Сообщи выбранные
 версии, пути, существенные exit-коды и результат. Не создавай отчёты,
 benchmarks или искусственные отказы. При ошибке сообщи команду и диагностику.
@@ -225,6 +231,10 @@ layer, включая целиком `[mcp_servers.codebase-memory-mcp]`, тол
 конфликт; остальная миграция продолжается. Не перемещай, не дублируй и не
 меняй location, format или value secrets; общие каталоги и пакеты целиком не
 удаляй. Неизвестная принадлежность блокирует только соответствующее удаление.
+
+При обновлении корпуса tgrep обёртка сама подтверждает старый PID, завершает
+его и один раз перестраивает сохранённый центральный индекс с новой политикой.
+`serve.lock` не удалять. Нужные графы CBM сохраняются.
 
 Повтори только проверки затронутых частей. Если изменился лишь этот repo-level документ,
 а runtime и tooling не изменились, достаточно проверить обновлённую копию;

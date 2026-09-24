@@ -42,7 +42,7 @@ function parsePreArgs(tokens) {
     const scopes = validateScopes(root, argv.slice(delimiter + 1));
     const args = ['--pattern', pattern, '--lang', lang];
     if (json) args.push(json);
-    args.push(...scopes);
+    args.push('--', ...scopes);
     const result = cp.spawnSync('ast-grep', args, { cwd: root, stdio: 'inherit', shell: false, windowsHide: true });
     if (result.error) { console.error(`ast-grep unavailable: ${result.error.message}`); process.exitCode = 2; return; }
     process.exitCode = result.status == null ? 2 : result.status;
