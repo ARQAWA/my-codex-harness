@@ -1,0 +1,38 @@
+{
+  "name": "scope-focus-kimi",
+  "version": "0.1.0",
+  "description": "Помогает точно выполнить запрос без лишней работы. Kimi-порт Scope Focus.",
+  "author": {
+    "name": "A. Chukavin"
+  },
+  "license": "MIT",
+  "skills": "./skills/",
+  "agents": "./agents/",
+  "commands": "./commands/",
+  "systemPromptPath": "./SYSTEM.md",
+  "sessionStart": {
+    "skill": "scope-focus-bootstrap"
+  },
+  "skillInstructions": "Scope Focus skills activate only on explicit user selection for the current task. A retained notebook or a header lookup never activates them. Blind-check skills run only on explicit invocation.",
+  "hooks": [
+    {
+      "event": "UserPromptSubmit",
+      "command": "node ./hooks/submit.cjs",
+      "timeout": 7
+    }
+  ],
+  "interface": {
+    "displayName": "Scope Focus Kimi",
+    "shortDescription": "Помогает точно выполнить запрос без лишней работы.",
+    "longDescription": "Kimi-порт Scope Focus: точный scope, глубокое понимание, минимальное действие. Контракт, Task Notebook, blind review Spotty.",
+    "developerName": "A. Chukavin",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Помоги точно выполнить задачу без лишней работы."
+    ]
+  }
+}
