@@ -1,6 +1,6 @@
 {
   "name": "filesystem-search",
-  "version": "0.0.0+codex.20260924180759",
+  "version": "0.0.0+codex.20260924232815",
   "description": "Поиск по файлам, синтаксису и связям кода через локальные CLI.",
   "author": {
     "name": "A. Chukavin"
