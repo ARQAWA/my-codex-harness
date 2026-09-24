@@ -54,6 +54,9 @@ try {
   assert.match(forcedOn.stdout, /LUNATRON_STATE=ACTIVE/);
   assert.match(forcedOn.stdout, /LUNATRON_MODE=forced-on/);
   assert.match(forcedOn.stdout, /LUNATRON_COMMAND_APPLIED=LNT1/);
+  assert.match(forcedOn.stdout, /This selection explicitly requests delegation/);
+  assert.match(forcedOn.stdout, /absence\\nof parallel work does not waive this workflow/);
+  assert.match(forcedOn.stdout, /Do not silently execute that block in Main/);
   assert.match(forcedOn.stdout, /carry out the rest of the user request/);
   assert.match(forcedOn.stdout, /native close-agent tool are available/);
   assert.match(forcedOn.stdout, /final or interrupt alone does not establish closure/);
@@ -77,7 +80,7 @@ try {
     session_id: 'mode-session',
     tool_name: 'spawn_agent',
     tool_input: {
-      agent_type: 'lunatik', fork_turns: 'none', message: 'do work', task_name: 'test',
+      agent_type: 'lunatik', fork_turns: 'all', message: 'do work', task_name: 'test',
     },
   });
   assert.equal(validSpawn.status, 0, validSpawn.stderr);

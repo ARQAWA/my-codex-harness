@@ -80,7 +80,7 @@ skill с описанием для нативного неявного выбо�
 Утверждённый план реализован в исходниках: контракт и проверка схем fork —
 [`lunatron.cjs`](plugins/lunatron/hooks/lunatron.cjs), модель и самостоятельность
 простого исполнителя — [`lunatik.toml`](plugins/lunatron/agents/lunatik.toml),
-согласованная история решений — [`LUNATRON-REDESIGN.md`](LUNATRON-REDESIGN.md),
+согласованная история решений — [`LUNATRON-DESIGN.md`](LUNATRON-DESIGN.md),
 подключение — [`install-instructions/lunatron.md`](install-instructions/lunatron.md).
 В Scope Focus добавлены [`working-standards`](plugins/scope-focus/skills/working-standards/SKILL.md)
 и [`notebook-cleanup`](plugins/scope-focus/skills/notebook-cleanup/SKILL.md),

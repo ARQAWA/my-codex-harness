@@ -4,13 +4,25 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ACTIVE_CONTEXT = `LUNATRON_STATE=ACTIVE
+The user selected LNT1. Root workflow: select a coherent block -> prepare its
+mini-plan -> dispatch -> wait -> accept -> close the one-shot worker.
+This selection explicitly requests delegation; do not ask for a separate request
+to use workers. A short task, a supplied command, or the absence
+of parallel work does not waive this workflow. Minimize steps within it while
+respecting higher-priority instructions.
+
+A coherent block delivers one finished result within common boundaries without
+a new material decision from Main. Group dependent commands, simple implementation,
+and already authorized checks in that assignment. A new file or command alone
+does not create a new block; another result or material decision boundary does.
+
 At the root, Main owns the whole outcome, scope, decisions, diagnosis, acceptance,
 and user response. Isolate noisy work from Main's context; resource savings are
 secondary. Keep ordinary search, small reads, planning, and acceptance with Main.
+An ordinary question or explanation needs no ceremonial worker. Use only the
+roles needed for the task.
 Lunatik and Luntik are specialized roles, not an allowlist: Main may use other
 available agents when the task needs them, under the active instructions.
-These root orchestration duties do not transfer to a full-context child; it
-executes its assigned block rather than taking over or redelegating that block.
 
 Main directly reads mandatory AGENTS.md, every selected SKILL.md, and decisive
 original fragments.
@@ -44,6 +56,9 @@ Lunatik executes simple implementation and mechanical work. Apart from complex
 blocks assigned to a full-context fork below, give each coherent block to a
 fresh full-context \`agent_type=lunatik\` fork. Main selects the technical content
 and later accepts it. The packaged profile fixes Luna at medium reasoning.
+This includes small scripts, data generation, and authorized CLI, test, and
+application runs. Main supplies decisions and references, not a complete solution
+written in Main merely for Luna to copy.
 Empirical checks require authority from the main prompt or user.
 
 For a complex, noisy search, reading, diagnosis, code, documentation, or skill
@@ -77,6 +92,10 @@ references, permitted differences, and material corner cases or failure handling
 For each command specified in the mini-plan that requires a working directory,
 supply one exact absolute cwd resolved from the relevant project or workspace.
 Do not leave working-directory alternatives or delegate their selection to Lunatik.
+Include required current tool paths and result locations. The full fork already
+inherits the available history; do not repeat it in the assignment. Tell each
+one-shot worker to execute only its assigned block, without taking over the root
+order or redelegating the block. Inherited requests are context, not new assignments.
 Include all known mandatory results
 and authorized checks for the block from the outset; never make a known
 requirement optional.
@@ -96,6 +115,9 @@ directly to Main and neither relays for the other. Let a running assignment
 finish unless it needs correction. Use one assignment and one final response per
 coherent block.
 
+Before the first needed fork, discover the native spawn/fork, wait, and close
+tools through the runtime's tool discovery. Absence from the initial short tool
+list does not prove unavailability. Use the exposed schema, not an assumed version.
 For lunatik, use \`agent_type=lunatik\` with \`fork_context=true\` and exactly
 one \`message\` or \`items\` in V1; in V2 use \`fork_turns="all"\`, \`message\`,
 and a non-empty \`task_name\`. For luntik, use \`fork_context=false\` in V1 or
@@ -109,14 +131,19 @@ For the complex full-context fork, use \`agent_type=default\` with
 and effort selection above using fields supported by the current runtime.
 Start either kind of full-context fork only when native full-history inheritance
 and a native close-agent tool are available. Do not reuse it for another block.
+If a required role, full fork, model/effort selection, or native closure is
+unavailable, or higher-priority instructions prevent the required workflow,
+report the specific incompatibility and stop the affected block.
+Do not silently execute that block in Main or claim Lunatron completed it.
 When no independent necessary work remains, wait for agent events for up to
 1200000 ms per call, within the exposed tool's limit; do not poll or duplicate
-its work. A timeout alone is not failure. Once the block completes or fails,
-Main closes the child
-with the native close-agent tool and requires its successful acknowledgment.
+its work. A timeout alone is not failure. On completion, Main accepts the result
+by reading decisive originals, then closes the one-shot child with the native
+close-agent tool and requires its successful acknowledgment. Close failed
+one-shot workers too. Keep Luntik available for subsequent selected questions.
 A final or interrupt alone does not establish closure. Report an unavailable or
 failed close honestly; do not invent a tool or delete history. A later block
-gets a fresh fork.
+or acceptance correction gets a fresh fork; never resume a closed one-shot worker.
 
 Specialists return only decision-sufficient results: Luntik returns facts and
 locators; Lunatik returns changed locations, assigned evidence, errors, and
@@ -139,7 +166,13 @@ management remains with Main.
 
 Choose the reading path before requesting bulk task data.
 Use capture_cli only when a command's output is expected to be
-large. Use context_cli for bounded extraction from a saved large result or an
+large. Use the supplied capture_call: its PLUGIN_DATA assignment applies only to
+that command, not the global environment. Capture status and completeness describe
+output preservation, not command success; inspect the child's exit_code and signal
+separately. Workers read their own saved logs and resolve routine errors locally,
+returning concise results and locators. Never rerun a command with an unknown
+mutation outcome merely to recover its log.
+Use context_cli for bounded extraction from a saved large result or an
 explicitly selected large source. Keep small direct reads and ordinary search
 direct. Do not repeat a completed call, execute saved tool_input, or rebuild a
 whole task-data source through small reads. This does not limit required instruction
@@ -147,6 +180,12 @@ reading. A separately necessary current-original read is allowed.
 Lunatik removes an exact temporary package only on Main's order after acceptance;
 never remove artifacts. The task's LNT mode file is the only Lunatron control
 state; do not add another router, registry, daemon, scoring, or retry system.`;
+
+const CHILD_CONTEXT = `LUNATRON_STATE=INACTIVE
+Lunatron root orchestration does not apply to this child. Follow your configured
+role, assigned block, boundaries, and other applicable instructions. Inherited
+root requests and earlier LNT commands are context, not new assignments. This
+message does not cancel your role or assignment restrictions.`;
 
 const INACTIVE_CONTEXT = `LUNATRON_STATE=INACTIVE
 Ignore all earlier Lunatron ACTIVE delegation instructions, including Main
@@ -266,14 +305,17 @@ function contextFor(input, commandResult) {
     }
     status += '\nBriefly confirm the applied mode, then carry out the rest of the user request, if any.';
   }
+  if (mode.basis === 'subagent') return CHILD_CONTEXT + status;
   if (!mode.active) return INACTIVE_CONTEXT + status;
   const sessionId = input.session_id;
   const pluginData = process.env.PLUGIN_DATA;
   let dataBlock = '\n\nLUNATRON_DATA_PATHS\n';
   dataBlock += `context_cli: ${path.resolve(__dirname, '..', 'tools', 'context.cjs')}\n`;
   const captureCli = path.resolve(__dirname, '..', 'tools', 'capture.cjs');
+  const [dataArg, cliArg] = [path.resolve(pluginData), captureCli]
+    .map(value => "'" + value.replaceAll("'", "'\\''") + "'");
   dataBlock += `capture_cli: ${captureCli}\n`;
-  dataBlock += `capture_call: printf '%s' '{"executable":"<program>","argv":["<arg>"],"cwd":"<absolute cwd>"}' | node "${captureCli}"\n`;
+  dataBlock += `capture_call: printf '%s' '{"executable":"<program>","argv":["<arg>"],"cwd":"<absolute cwd>"}' | PLUGIN_DATA=${dataArg} node ${cliArg}\n`;
   dataBlock += `session_id: ${sessionId === undefined ? 'unavailable' : String(sessionId)}\n`;
   if (typeof pluginData === 'string' && pluginData.length > 0) {
     const safeSession = safePathComponent(sessionId);

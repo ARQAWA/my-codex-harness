@@ -24,7 +24,7 @@ const profiles = {
     'model = "gpt-6-sol"', 'model_reasoning_effort = "medium"', 'sandbox_mode = "read-only"',
   ],
   'plugins/lunatron/agents/lunatik.toml': [
-    'model = "gpt-6-luna"', 'model_reasoning_effort = "xhigh"',
+    'model = "gpt-6-luna"', 'model_reasoning_effort = "medium"',
   ],
   'plugins/lunatron/agents/luntik.toml': [
     'model = "gpt-6-luna"', 'model_reasoning_effort = "xhigh"',
@@ -59,7 +59,7 @@ assert.ok(lunatronHook.includes("return { active: false, basis: 'default-off' }"
 assert.ok(!lunatronHook.includes('gpt-5.5'));
 assert.ok(!lunatronHook.includes('GUARDED_MODELS'));
 assert.ok(!lunatronHook.includes('readReasoningEffort'));
-const lunatronDesign = read('LUNATRON-REDESIGN.md');
+const lunatronDesign = read('LUNATRON-DESIGN.md');
 assert.ok(lunatronDesign.includes('## 5. 2026-09-20: сужение model gate'));
 assert.ok(lunatronDesign.includes('Это исторический контракт, заменённый решением от 2026-09-20 ниже.'));
 
