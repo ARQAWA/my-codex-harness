@@ -1,6 +1,0 @@
-interface:
-  display_name: "Mixed Blind Check Cycle"
-  short_description: "Single intermediate checks, double final check"
-  default_prompt: "Use $mixed-blind-check-cycle to check the task automatically."
-policy:
-  allow_implicit_invocation: false
