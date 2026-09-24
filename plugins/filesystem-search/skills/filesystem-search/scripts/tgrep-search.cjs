@@ -4,6 +4,8 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const cp = require('node:child_process');
+const crypto = require('node:crypto');
+const os = require('node:os');
 const { performance } = require('node:perf_hooks');
 
 const BACKEND_UNAVAILABLE = 75;
@@ -18,6 +20,35 @@ const VALUE_LONG = new Set([
 const VALUE_SHORT = new Set(['e', 'f', 'E', 'g', 't', 'T', 'm', 'A', 'B', 'C', 'M', 'j', 'r']);
 const WRAPPER_OWNED = new Set(['--index', '--index-path', '--root']);
 
+function canon(p) {
+  let real;
+  try {
+    real = fs.realpathSync.native(p);
+  } catch {
+    return process.platform === 'win32' ? String(p).toLowerCase() : String(p);
+  }
+  if (process.platform === 'win32') return real.toLowerCase();
+  return real;
+}
+
+function codexHome() {
+  return process.env.CODEX_HOME || path.join(os.homedir(), '.codex');
+}
+
+function isAllowedRoot(root) {
+  const fsRoot = path.parse(root).root;
+  if (root === canon(os.homedir())) return false;
+  if (root === canon(codexHome())) return false;
+  if (root === fsRoot) return false;
+  return true;
+}
+
+function indexDirFor(root) {
+  const key = process.platform === 'win32' ? root.toLowerCase() : root;
+  const hash = crypto.createHash('sha1').update(key).digest('hex').slice(0, 12);
+  return path.join(codexHome(), 'tgrep', 'index', hash);
+}
+
 function fail(message, code = 2) {
   console.error(message);
   process.exitCode = code;
@@ -29,7 +60,11 @@ function parseRoot(rootArg) {
   let stat;
   try { stat = fs.statSync(rootArg); } catch { fail('root must exist and be a directory'); }
   if (!stat.isDirectory()) fail('root must be an existing directory');
-  try { return fs.realpathSync.native(rootArg); } catch { fail('root cannot be canonicalized'); }
+  let rp;
+  try { rp = fs.realpathSync.native(rootArg); } catch { fail('root cannot be canonicalized'); }
+  const crp = canon(rp);
+  if (!isAllowedRoot(crp) || crp !== canon(process.cwd())) fail('root must be the current project root (session cwd)', 2);
+  return rp;
 }
 
 function parsePreArgs(tokens) {
@@ -243,7 +278,7 @@ async function ensureReady(root, indexDir) {
       process.exitCode = result.error ? 2 : (result.status == null ? 2 : result.status);
       return;
     }
-    const indexDir = path.join(root, '.tgrep');
+    const indexDir = indexDirFor(root);
     if (!(await ensureReady(root, indexDir))) {
       console.error('TGREP_BACKEND_UNAVAILABLE: tgrep watcher/index is not ready');
       process.exitCode = BACKEND_UNAVAILABLE;

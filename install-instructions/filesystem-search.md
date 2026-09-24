@@ -2,9 +2,9 @@
 
 ## Состав
 
-Пакет содержит `filesystem-search` skill, Node.js wrapper и три справочных
-файла. Внешние инструменты устанавливаются отдельно. npm-зависимостей,
-hooks и custom agents нет.
+Пакет содержит `filesystem-search` skill, Node.js wrapper, guard hook и три
+справочных файла. Внешние инструменты устанавливаются отдельно.
+npm-зависимостей и custom agents нет.
 
 CBM используется только через `codebase-memory-mcp cli ...`. Единственный
 допустимый постоянный поисковый процесс — официальный `tgrep serve`, который
@@ -44,6 +44,14 @@ skill. Эта инструкция не выполняет bump, commit или p
 `<active-codex-home>/AGENTS.md` управляемый глобальный блок
 `FILESYSTEM_SEARCH_GLOBAL_ROUTING` из канонического текста ниже. При update
 пересинхронизируй этот блок всегда, даже если runtime и tooling не изменились.
+
+Настрой доверие к hooks через штатный Codex app-server. Получи определения
+через `hooks/list` и запиши нужный trust через `config/batchWrite` в
+`hooks.state`: используй точный ключ hook и его `currentHash` как
+`trusted_hash`. Меняй только hooks устанавливаемого плагина; уже доверенные
+не переписывай. В том же batch запиши `enabled = true` по точному ключу hook.
+Не обходи trust. Сверь точное имя shell-инструмента в `hooks.json` matcher
+через `hooks/list`; при необходимости поправь matcher перед trust.
 Алгоритм синхронизации: одна полная пара markers — замени только managed
 region; если markers нет, преобразуй старый точный unmarked body, иначе вставь
 блок перед `<!-- codebase-memory-mcp:start -->`, а без этого anchor допиши его в
@@ -61,10 +69,6 @@ text, callers, dependencies, impact, or source context, load the
 `filesystem-search` skill and follow its routing. This gate is mandatory and
 comes before `rg`, `grep`, `find`, globs, AST scripts, or Codebase Memory CLI.
 Read an already known exact path directly when discovery is not needed.
-If `.tgrep/` appears untracked inside an existing Git worktree, add `.tgrep/`
-once to that repository's local exclude resolved by
-`git rev-parse --git-path info/exclude`; never commit it or initialize Git for
-this purpose.
 <!-- END FILESYSTEM_SEARCH_GLOBAL_ROUTING -->
 ```
 
@@ -147,7 +151,9 @@ codebase-memory-mcp cli list_projects --detail identity --format json
 
 Пустой список допустим.
 
-Для функциональной проверки создай один временный каталог ОС с `probe.py`:
+Для функциональной проверки создай один временный каталог ОС с `probe.py` и
+работай из него (cwd должен равняться root, иначе guard wrapper'а отклонит
+вызов):
 
 ```python
 def probe_leaf():
@@ -163,6 +169,12 @@ def probe_caller():
   `probe.py`, а отсутствующий шаблон даёт native exit 1. Начальный exit 75
   допускает status-only fallback, но нужен последующий успешный обычный tgrep
   поиск; постоянный уход в rg не считается исправным indexed backend.
+  Индекс probe должен появиться в `<active-codex-home>/tgrep/index/`, а не в
+  `<temporary-root>/.tgrep`.
+- Вызов wrapper с root, равным домашнему каталогу или другой папке вне cwd,
+  даёт exit `2` с сообщением про project root.
+- Guard hook выполняется без ошибок; команда `tgrep serve <root>` из агента
+  блокируется.
 - Scoped `ast-grep --lang python --json` находит вызов `probe_leaf()` и даёт
   один JSON-массив.
 - Scoped `rg` находит известный текст с `--no-config --engine auto`.

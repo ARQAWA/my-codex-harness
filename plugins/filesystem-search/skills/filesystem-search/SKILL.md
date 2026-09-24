@@ -32,7 +32,7 @@ node "<skill-root>/scripts/tgrep-search.cjs" "<absolute-root>" --files [file-opt
 
 The three forms are disjoint. The expression form accepts one or more `-e/--regexp` or `-f/--file` options; their query comes from the option and only scopes follow `--`. `-f/--file` always routes to `rg` because file-pattern semantics are not indexed. `--files` cannot be combined with `-e/--regexp` or `-f/--file`. Tokens after `--` are scopes/operands, never flags or lifecycle words. Before `--`, only options and their values are valid. Wrapper-owned index/root options are rejected. Invalid grammar, root, scope, or values exits `2`; it never silently falls back.
 
-Ordinary indexed content uses the fixed `<root>/.tgrep` index and the wrapper's lifecycle. The wrapper does not add `--no-index` and does not promise absolute index-only behavior. It uses the supported `--index-path` option for every tgrep query and lifecycle call.
+Ordinary indexed content uses the wrapper-owned central index at `<active-codex-home>/tgrep/index/<hash>/` and the wrapper's lifecycle. The wrapper does not add `--no-index` and does not promise absolute index-only behavior. It uses the supported `--index-path` option for every tgrep query and lifecycle call.
 
 The wrapper routes to `rg` before lifecycle for `--no-index`, `--hidden`, `--no-encoding`, `--no-require-git`, unrestricted/no-ignore options (except `--no-ignore-messages`), binary/text options, non-auto encoding, positive glob options, follow/one-file-system/custom ignore-file, explicit size-limit options, files-mode `--ignore-file-case-insensitive`, zip search, and every `-f`. The rg conversion always uses `--no-config`, adds `--engine auto` when absent, absorbs `--no-index`, applies the final left-to-right size policy, and converts `--multiline-dotall` to both `--multiline --multiline-dotall`. Native rg exit/stdout/stderr are preserved. A wrapper backend-unavailable exit is `75` with `TGREP_BACKEND_UNAVAILABLE:`; retry the wrapper on the next ordinary query.
 
@@ -40,7 +40,7 @@ Read [references/tgrep-cli.md](references/tgrep-cli.md) for option details and l
 
 ## tgrep lifecycle contract
 
-The wrapper checks exact readiness: successful status, `Server status for`, indexing `complete`, and native watcher `native`/`auto` or explicit `poll`. It does not wait for reconcile-idle or invented coverage labels. It has a monotonic one-second lifecycle budget with status calls capped at 250 ms and polling sleeps capped at 50 ms. If needed it creates `.tgrep`, starts exactly one official detached `tgrep serve` using the official `serve.lock`, and lets the daemon continue indexing after a `75` timeout. It uses no custom lock, supervisor, registry, MCP server, or background helper.
+The wrapper checks exact readiness: successful status, `Server status for`, indexing `complete`, and native watcher `native`/`auto` or explicit `poll`. It does not wait for reconcile-idle or invented coverage labels. It has a monotonic one-second lifecycle budget with status calls capped at 250 ms and polling sleeps capped at 50 ms. If needed it creates the central index directory, starts exactly one official detached `tgrep serve` using the official `serve.lock`, and lets the daemon continue indexing after a `75` timeout. It uses no custom lock, supervisor, registry, MCP server, or background helper.
 
 ## Codebase Memory freshness
 
