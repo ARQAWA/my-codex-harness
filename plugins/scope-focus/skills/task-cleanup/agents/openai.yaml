@@ -1,6 +1,0 @@
-interface:
-  display_name: "Task Cleanup"
-  short_description: "Remove proven temporary task artifacts"
-  default_prompt: "Use $task-cleanup to remove only proven task-created temporary artifacts."
-policy:
-  allow_implicit_invocation: false

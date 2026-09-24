@@ -1,0 +1,6 @@
+interface:
+  display_name: "Cleanup Notebook"
+  short_description: "Delete the current session's Task Notebook"
+  default_prompt: "Use $cleanup-notebook to delete this session's entire Task Notebook."
+policy:
+  allow_implicit_invocation: false

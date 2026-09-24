@@ -1,9 +1,9 @@
 ---
-name: task-cleanup
+name: cleanup-task
 description: Explicitly remove only proven task-created temporary artifacts after the result, evidence, and selected checks are complete.
 ---
 
-# Task Cleanup
+# Cleanup Task
 
 Use only when explicitly invoked. Defer cleanup until the result, required evidence, and every explicitly selected check are complete.
 

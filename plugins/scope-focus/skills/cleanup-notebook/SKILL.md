@@ -1,9 +1,9 @@
 ---
-name: notebook-cleanup
+name: cleanup-notebook
 description: Delete the entire Task Notebook for the current Codex session when explicitly invoked, including older completed task records.
 ---
 
-# Notebook Cleanup
+# Cleanup Notebook
 
 Use only on explicit invocation. The invocation authorizes removing the whole
 Task Notebook directory for this Codex session, including completed records.

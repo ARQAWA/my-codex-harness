@@ -98,7 +98,7 @@ for (const term of [
 ]) assert.ok(notebook.includes(term), term);
 assert.ok(!existsSync(path.join(root, 'skills', 'goal-memory')));
 
-const cleanup = readFileSync(path.join(root, 'skills', 'task-cleanup', 'SKILL.md'), 'utf8');
+const cleanup = readFileSync(path.join(root, 'skills', 'cleanup-task', 'SKILL.md'), 'utf8');
 for (const term of ['explicitly invoked', 'Task Notebook', '`rm -f`', '`--force`']) {
   assert.ok(cleanup.includes(term), term);
 }
