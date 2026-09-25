@@ -5,7 +5,7 @@ const path = require('node:path');
 
 const ACTIVE_CONTEXT = `LUNATRON_STATE=ACTIVE
 The user selected LNT1. Root workflow: select a coherent block -> prepare its
-mini-plan -> dispatch -> wait -> accept -> close the one-shot worker.
+mini-plan -> dispatch -> wait -> accept -> close the one-shot worker when supported.
 This selection explicitly requests delegation; do not ask for a separate request
 to use workers. A short task, a supplied command, or the absence
 of parallel work does not waive this workflow. Minimize steps within it while
@@ -62,16 +62,15 @@ written in Main merely for Luna to copy.
 Empirical checks require authority from the main prompt or user.
 
 For a complex, noisy search, reading, diagnosis, code, documentation, or skill
-block, Main starts one fresh full-context fork, normally \`agent_type=default\`.
-With Luna or Sol Main, use the same model and reasoning effort: native inheritance
-when it preserves both, or pass both explicitly when global agent defaults would
-change them. With Astra Main, explicitly pass \`model=gpt-6-sol\` and the current
-Main reasoning effort; choosing the model alone resets effort to that model's
-default. If a custom \`default\` profile overrides the required settings, use an
-unshadowed built-in \`worker\` only when it supports the same full fork and exact
-settings. If explicit selection needs an unknown Main effort, or the required
-effective settings cannot be established, report the incompatibility rather
-than silently substituting.
+block, Main starts one fresh full-context fork using an available worker role.
+With Luna or Sol Main, preserve Main's model and reasoning effort. With Astra
+Main, select gpt-6-sol with Main's reasoning effort when the tools support it.
+If changing the model is incompatible with a full-context fork, preserve the full
+context and inherit Main's model and reasoning instead. This exception applies
+only to complex workers; the fixed Luna profiles remain unchanged. Use current
+tool descriptions to select supported settings. If the required effective
+settings cannot be established under these rules, report the incompatibility
+rather than silently substituting.
 Give the fork the mini-plan structure below, including the question,
 scope, known facts, constraints, authority, required result, and stop conditions.
 For investigation, specify what must be established, not an invented answer;
@@ -115,35 +114,30 @@ directly to Main and neither relays for the other. Let a running assignment
 finish unless it needs correction. Use one assignment and one final response per
 coherent block.
 
-Before the first needed fork, discover the native spawn/fork, wait, and close
-tools through the runtime's tool discovery. Absence from the initial short tool
-list does not prove unavailability. Use the exposed schema, not an assumed version.
-For lunatik, use \`agent_type=lunatik\` with \`fork_context=true\` and exactly
-one \`message\` or \`items\` in V1; in V2 use \`fork_turns="all"\`, \`message\`,
-and a non-empty \`task_name\`. For luntik, use \`fork_context=false\` in V1 or
-\`fork_turns="none"\` in V2 with the corresponding message fields. Do not pass
-model, reasoning effort, or service tier to these pinned roles. Never mix schemas.
+Before the first needed fork, discover the available native tools for starting,
+waiting for, stopping, and closing helpers. Absence from the initial short tool
+list does not prove unavailability. Choose calls and parameters from their current
+descriptions. Give Lunatik the full available conversation context; give Luntik
+only its assignment and selected sources. Preserve both pinned Luna profiles.
 If a Luna role is unavailable, do not impersonate it.
 
-For the complex full-context fork, use \`agent_type=default\` with
-\`fork_context=true\` and one \`message\` or \`items\` in V1; in V2 use
-\`fork_turns="all"\`, \`message\`, and a non-empty \`task_name\`. Apply the model
-and effort selection above using fields supported by the current runtime.
-Start either kind of full-context fork only when native full-history inheritance
-and a native close-agent tool are available. Do not reuse it for another block.
-If a required role, full fork, model/effort selection, or native closure is
-unavailable, or higher-priority instructions prevent the required workflow,
-report the specific incompatibility and stop the affected block.
-Do not silently execute that block in Main or claim Lunatron completed it.
+Create complex workers with the full available context and model selection above.
+If a required role or full-context fork is unavailable, or higher-priority
+instructions prevent the required workflow, report the specific incompatibility
+and stop the affected block. Do not silently execute that block in Main or claim
+Lunatron completed it. Missing closure support does not prevent starting a worker.
 When no independent necessary work remains, wait for agent events for up to
 1200000 ms per call, within the exposed tool's limit; do not poll or duplicate
-its work. A timeout alone is not failure. On completion, Main accepts the result
-by reading decisive originals, then closes the one-shot child with the native
-close-agent tool and requires its successful acknowledgment. Close failed
-one-shot workers too. Keep Luntik available for subsequent selected questions.
-A final or interrupt alone does not establish closure. Report an unavailable or
-failed close honestly; do not invent a tool or delete history. A later block
-or acceptance correction gets a fresh fork; never resume a closed one-shot worker.
+its work. A timeout alone is not failure. Every helper returns a final response
+and ends its turn. Main accepts the result by reading decisive originals.
+After completion, Main must close the one-shot helper if a supported native
+closure operation is available, and require its successful acknowledgment before
+claiming closure. This includes one-shot workers that returned an error.
+If no supported closure operation exists, continue without closing the helper.
+Completion or interruption alone does not establish closure. Report failed
+closure honestly; do not invent a tool or delete history. Keep Luntik available
+for subsequent selected questions. A later block or acceptance correction gets
+a fresh fork; do not reuse a one-shot worker for another block.
 
 Specialists return only decision-sufficient results: Luntik returns facts and
 locators; Lunatik returns changed locations, assigned evidence, errors, and
@@ -191,13 +185,6 @@ const INACTIVE_CONTEXT = `LUNATRON_STATE=INACTIVE
 Ignore all earlier Lunatron ACTIVE delegation instructions, including Main
 execution limits and role guards. Lunatron delegation is disabled.
 Work normally under the current task and other active instructions.`;
-
-const LUNATRON_AGENT_TYPES = new Set([
-  'lunatik',
-  'luntik',
-]);
-
-const ROLE_INPUT_CORRECTION = 'For lunatik use a full fork: v1 fork_context=true or v2 fork_turns="all". For luntik use v1 fork_context=false or v2 fork_turns="none". Include exactly one message or items in v1, or message and a non-empty task_name in v2. Do not mix schemas or add fields.';
 
 function readInput(eventName) {
   let input;
@@ -282,16 +269,6 @@ function blockModeCommand(commandResult) {
   }));
 }
 
-function denyRoleInput() {
-  process.stdout.write(JSON.stringify({
-    hookSpecificOutput: {
-      hookEventName: 'PreToolUse',
-      permissionDecision: 'deny',
-      permissionDecisionReason: ROLE_INPUT_CORRECTION,
-    },
-  }));
-}
-
 function contextFor(input, commandResult) {
   const mode = resolveMode(input);
   let status = `\nLUNATRON_MODE=${mode.basis}`;
@@ -301,7 +278,7 @@ function contextFor(input, commandResult) {
   } else if (commandResult) {
     status += `\nLUNATRON_COMMAND_APPLIED=${commandResult.command}`;
     if (commandResult.command === 'LNT0') {
-      status += '\nBefore continuing, Main must stop and close ALL subagents of this task, including running forks, Lunatik, Luntik, and other roles, using native tools. Require successful close acknowledgments; final or interrupt alone is not closure. Do not affect other user tasks. Report unavailable or failed closure honestly. Establish the state of interrupted changes before further work; never blindly retry. Discard closed agent ids; recreate Luna helpers only when needed after reactivation.';
+      status += '\nBefore continuing, Main must stop all running subagents of this task, including forks, Lunatik, Luntik, and other roles, using supported native tools and establish that their work has stopped. Close all helpers of this task when a supported closure operation is available; require successful acknowledgment before claiming closure. If no closure operation exists, continue without it; this does not block disabling Lunatron. Completion or interruption alone is not closure. Do not affect other user tasks. Report failed closure honestly. Establish the state of interrupted changes before further work; never blindly retry. Discard closed agent ids; recreate Luna helpers only when needed after reactivation.';
     }
     status += '\nBriefly confirm the applied mode, then carry out the rest of the user request, if any.';
   }
@@ -343,46 +320,6 @@ function sessionStart() {
   if (context) emitContext('SessionStart', context);
 }
 
-function isRoleInput(toolInput) {
-  if (!toolInput || typeof toolInput !== 'object' || Array.isArray(toolInput)) return false;
-  if (!LUNATRON_AGENT_TYPES.has(toolInput.agent_type)) return false;
-  const fullFork = toolInput.agent_type === 'lunatik';
-
-  const hasForkContext = Object.hasOwn(toolInput, 'fork_context');
-  const hasForkTurns = Object.hasOwn(toolInput, 'fork_turns');
-  if (hasForkContext === hasForkTurns) return false;
-
-  if (hasForkContext) {
-    if (toolInput.fork_context !== fullFork) return false;
-
-    const hasMessage = Object.hasOwn(toolInput, 'message');
-    const hasItems = Object.hasOwn(toolInput, 'items');
-    if (hasMessage === hasItems) return false;
-    if (hasMessage && typeof toolInput.message !== 'string') return false;
-    if (hasItems && !Array.isArray(toolInput.items)) return false;
-
-    const allowedKeys = hasMessage
-      ? new Set(['agent_type', 'fork_context', 'message'])
-      : new Set(['agent_type', 'fork_context', 'items']);
-    return Object.keys(toolInput).every((key) => allowedKeys.has(key));
-  }
-
-  if (toolInput.fork_turns !== (fullFork ? 'all' : 'none')
-      || typeof toolInput.message !== 'string') return false;
-  if (typeof toolInput.task_name !== 'string' || toolInput.task_name.length === 0) return false;
-
-  const allowedKeys = new Set(['agent_type', 'fork_turns', 'message', 'task_name']);
-  return Object.keys(toolInput).every((key) => allowedKeys.has(key));
-}
-
-function preToolUse() {
-  const input = readInput('PreToolUse');
-  if (!input || !resolveMode(input).active || input.tool_name !== 'spawn_agent') return;
-  if (!LUNATRON_AGENT_TYPES.has(input.tool_input?.agent_type)) return;
-
-  if (!isRoleInput(input.tool_input)) denyRoleInput();
-}
-
 function safePathComponent(value) {
   if (value === undefined || value === null || value === '') return 'unavailable';
   let identity;
@@ -400,4 +337,3 @@ function hasNonEmpty(value) {
 
 exports.userPromptSubmit = userPromptSubmit;
 exports.sessionStart = sessionStart;
-exports.preToolUse = preToolUse;

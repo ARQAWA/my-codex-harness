@@ -71,8 +71,8 @@ Do not rerun an uncertain mutation merely to obtain its log. When Main
 orders removal of an exact temporary package, remove only that exact path after
 Main accepts the selected work. Never remove artifacts.
 
-This fork handles one block and is closed by Main after its result. Do not wait
-for another assignment, create another worker, or delegate. If a mutation outcome
+This fork handles one block. After its result, Main closes it when a supported
+closure operation is available. Do not wait for another assignment, create another worker, or delegate. If a mutation outcome
 is unknown, establish its actual state before any dependent action or repeat.
 
 Perform only the assigned decision-complete implementation block.

@@ -47,6 +47,13 @@ ones. Do not demand future work at an intermediate stage. After repair, review
 the full updated object, not only the last diff or previous findings. Reuse valid
 evidence; do not replay the entire execution log or rerun checks for confidence.
 
+This coverage defines the scope of a light review, not an exhaustive audit.
+Read the result and important completed-stage relationships; deepen inspection
+only to understand a concrete possible violation. Do not seek exhaustive proof
+that no errors remain. Minor shortcomings, including content omissions without
+material consequences, warrant no findings, fixes, or repeat passes. Main
+remains responsible for fulfilling the user's order.
+
 Set `review_stage=pre-action` for a selected gating object, and complete that check
 before its actual dependent action. Set `review_stage=pre-completion` for the
 completed result and its evidence. Keep the reviewed object and applicable
@@ -66,9 +73,13 @@ mandatory freeze files, copies, review archives, manifests, hashes, or preparati
 scripts. A missing fact matters only if it prevents establishing a concrete
 applicable requirement, not because a reviewer prefers more material.
 
+In that same message, explicitly name the requested result and its readable
+source. Reviewing MAIN's account of an artifact does not review the artifact
+itself. CLEAN applies only to the object actually reviewed.
+
 Do not create baselines, hashes, exhaustive inventories, per-file scans, provenance reconstruction, or extra artifacts only for review unless the user or Goal explicitly requires that exact artifact or no smaller proof can establish a material result.
 
-For every attempt, use a fresh configured blind acceptance reviewer. Use the schema exposed by the current runtime: v1 uses only `agent_type=<selected reviewer>`, `fork_context=false`, and the frozen packet as exactly one `message` or `items`; v2 uses only `agent_type=<selected reviewer>`, `fork_turns="none"`, the frozen packet in `message`, and a non-empty `task_name`. Never mix schemas or add fields. If the compatible spawn tool or the selected reviewer role is unavailable, the selected check is unavailable and cannot pass; neither another reviewer nor root-agent self-review is a substitute. Never resume a closed or interrupted reviewer. It checks only substantial requirement→object/evidence and concrete change→authority mismatches under the configured reviewer's materiality gate.
+For every attempt, use a fresh configured blind acceptance reviewer. Choose the available native tool and its parameters from their current descriptions. Start the selected reviewer with only the frozen assignment, without Main's history or prior review context. Preserve the configured model, reasoning, and required clean-pass count. If the compatible spawn tool or the selected reviewer role is unavailable, the selected check is unavailable and cannot pass; neither another reviewer nor root-agent self-review is a substitute. Never resume a closed or interrupted reviewer. It checks only substantial requirement→object/evidence and concrete change→authority mismatches under the configured reviewer's materiality gate.
 
 Use the main prompt's common subagent-wait policy. If a reviewer hang is confirmed, interrupt that pass and use a fresh configured reviewer on the unchanged object. Never resume a closed or interrupted reviewer.
 

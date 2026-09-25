@@ -58,8 +58,8 @@ try {
   assert.match(forcedOn.stdout, /absence\\nof parallel work does not waive this workflow/);
   assert.match(forcedOn.stdout, /Do not silently execute that block in Main/);
   assert.match(forcedOn.stdout, /carry out the rest of the user request/);
-  assert.match(forcedOn.stdout, /native close-agent tool are available/);
-  assert.match(forcedOn.stdout, /final or interrupt alone does not establish closure/);
+  assert.match(forcedOn.stdout, /Missing closure support does not prevent starting a worker/);
+  assert.match(forcedOn.stdout, /Completion or interruption alone does not establish closure/);
 
   const childCommand = invoke('userPromptSubmit', {
     hook_event_name: 'UserPromptSubmit', model: 'gpt-5.6-luna',
@@ -74,42 +74,6 @@ try {
   assert.equal(resumed.status, 0, resumed.stderr);
   assert.match(resumed.stdout, /LUNATRON_MODE=forced-on/);
 
-  const validSpawn = invoke('preToolUse', {
-    hook_event_name: 'PreToolUse',
-    model: 'gpt-5.6-sol',
-    session_id: 'mode-session',
-    tool_name: 'spawn_agent',
-    tool_input: {
-      agent_type: 'lunatik', fork_turns: 'all', message: 'do work', task_name: 'test',
-    },
-  });
-  assert.equal(validSpawn.status, 0, validSpawn.stderr);
-  assert.equal(validSpawn.stdout, '');
-
-  const invalidSpawn = invoke('preToolUse', {
-    hook_event_name: 'PreToolUse',
-    model: 'gpt-5.6-sol',
-    session_id: 'mode-session',
-    tool_name: 'spawn_agent',
-    tool_input: {
-      agent_type: 'lunatik', fork_turns: 'none', message: 'do work', task_name: 'test', extra: true,
-    },
-  });
-  assert.equal(invalidSpawn.status, 0, invalidSpawn.stderr);
-  assert.match(invalidSpawn.stdout, /"permissionDecision":"deny"/);
-
-  for (const tool_input of [
-    { agent_type: 'default', fork_context: true, message: 'bounded block' },
-    { agent_type: 'default', fork_turns: 'all', message: 'bounded block', task_name: 'fork' },
-  ]) {
-    const result = invoke('preToolUse', {
-      hook_event_name: 'PreToolUse', session_id: 'mode-session',
-      tool_name: 'spawn_agent', tool_input,
-    });
-    assert.equal(result.status, 0, result.stderr);
-    assert.equal(result.stdout, '');
-  }
-
   const forcedOff = invoke('userPromptSubmit', {
     hook_event_name: 'UserPromptSubmit', model: 'gpt-6-astra',
     session_id: 'mode-session', prompt: 'Продолжай самостоятельно LNT0',
@@ -117,17 +81,10 @@ try {
   assert.equal(forcedOff.status, 0, forcedOff.stderr);
   assert.match(forcedOff.stdout, /LUNATRON_STATE=INACTIVE/);
   assert.match(forcedOff.stdout, /LUNATRON_MODE=forced-off/);
-  assert.match(forcedOff.stdout, /stop and close ALL subagents of this task/);
+  assert.match(forcedOff.stdout, /stop all running subagents of this task/);
   assert.match(forcedOff.stdout, /Establish the state of interrupted changes/);
   assert.match(forcedOff.stdout, /carry out the rest of the user request/);
   assert.doesNotMatch(forcedOff.stdout, /LUNATRON_DATA_PATHS/);
-
-  const offSpawn = invoke('preToolUse', {
-    hook_event_name: 'PreToolUse', session_id: 'mode-session', tool_name: 'spawn_agent',
-    tool_input: { agent_type: 'lunatik', fork_context: true, message: 'ordinary delegation' },
-  });
-  assert.equal(offSpawn.status, 0, offSpawn.stderr);
-  assert.equal(offSpawn.stdout, '');
 
   for (const [index, [prompt, expected]] of [
     ['LNT1', 1], ['lnt1 task', 1], ['task LnT1 next', 1], ['task LNT1', 1],
@@ -146,7 +103,7 @@ try {
     } else {
       assert.ok(result.stdout.includes(`LUNATRON_COMMAND_APPLIED=LNT${expected}`));
       assert.ok(result.stdout.includes(`LUNATRON_MODE=forced-${expected ? 'on' : 'off'}`));
-      assert.equal(result.stdout.includes('stop and close ALL subagents'), expected === 0);
+      assert.equal(result.stdout.includes('stop all running subagents'), expected === 0);
     }
   }
 
@@ -231,7 +188,7 @@ try {
   assert.notEqual(invalidPack.status, 0);
   assert.match(invalidPack.stdout + invalidPack.stderr, /nonempty sources are required/);
 
-  console.log('PASS: Lunatron routing, delegation gates, capture, and context tooling.');
+  console.log('PASS: Lunatron routing, capture, and context tooling.');
 } finally {
   rmSync(temp, { recursive: true, force: true });
 }
