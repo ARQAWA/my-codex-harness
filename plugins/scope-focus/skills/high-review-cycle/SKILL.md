@@ -18,7 +18,7 @@ configured profile; do not override its model or reasoning.
 
 The root agent orchestrating this task owns fixes and completion. It invokes the configured blind acceptance reviewer directly; do not add another manager or role layer for the check.
 
-Honor the user's exact object, scope, checkpoint order, and selected pass count.
+Honor the user's exact frozen object, scope, checkpoint order, and selected pass count.
 If the user does not specify checkpoints, select them automatically. Build the
 check set from the mandatory final `pre-completion` cycle, then add the smallest
 possible number of intermediate checkpoints that together cover every critical
