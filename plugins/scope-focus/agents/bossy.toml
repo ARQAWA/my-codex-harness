@@ -1,6 +1,6 @@
-name = "spotty"
+name = "bossy"
 description = "Fresh read-only reviewer for substantial errors and stage consistency."
-model = "gpt-6-sol"
+model = "gpt-6-astra"
 model_reasoning_effort = "low"
 sandbox_mode = "read-only"
 developer_instructions = """

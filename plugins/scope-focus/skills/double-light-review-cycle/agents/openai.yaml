@@ -1,0 +1,6 @@
+interface:
+  display_name: "Double Light Review Cycle"
+  short_description: "Two sequential blind CLEAN passes with Spotty"
+  default_prompt: "Use $double-light-review-cycle to check the frozen object."
+policy:
+  allow_implicit_invocation: false

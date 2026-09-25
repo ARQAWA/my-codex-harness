@@ -1,0 +1,6 @@
+interface:
+  display_name: "Astro Review Cycle"
+  short_description: "One blind CLEAN pass with Bossy (Astra Low)"
+  default_prompt: "Use $astro-review-cycle to check the frozen object."
+policy:
+  allow_implicit_invocation: false

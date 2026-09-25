@@ -1,0 +1,6 @@
+interface:
+  display_name: "High Review Cycle"
+  short_description: "One blind CLEAN pass with Smarty (Sol High)"
+  default_prompt: "Use $high-review-cycle to check the frozen object."
+policy:
+  allow_implicit_invocation: false

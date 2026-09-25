@@ -21,7 +21,7 @@ for (const name of pluginNames) {
 const profiles = {
   'plugins/scope-focus/agents/spotty.toml': [
     'name = "spotty"',
-    'model = "gpt-6-sol"', 'model_reasoning_effort = "medium"', 'sandbox_mode = "read-only"',
+    'model = "gpt-6-sol"', 'model_reasoning_effort = "low"', 'sandbox_mode = "read-only"',
   ],
   'plugins/lunatron/agents/lunatik.toml': [
     'model = "gpt-6-luna"', 'model_reasoning_effort = "medium"',

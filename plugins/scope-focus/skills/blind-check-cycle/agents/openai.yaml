@@ -1,6 +1,0 @@
-interface:
-  display_name: "Blind Check Cycle"
-  short_description: "One fresh blind CLEAN pass"
-  default_prompt: "Use $blind-check-cycle to check the frozen object."
-policy:
-  allow_implicit_invocation: false

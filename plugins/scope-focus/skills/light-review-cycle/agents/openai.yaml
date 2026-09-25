@@ -1,0 +1,6 @@
+interface:
+  display_name: "Light Review Cycle"
+  short_description: "One blind CLEAN pass with Spotty (Sol Low)"
+  default_prompt: "Use $light-review-cycle to check the frozen object."
+policy:
+  allow_implicit_invocation: false

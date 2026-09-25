@@ -2,9 +2,10 @@
 
 ## Состав
 
-Пакет содержит правила работы, hooks, skills и профиль проверяющего
-`agents/spotty.toml`. Task Notebook хранит план и прогресс длительной
-задачи при явном выборе пользователя. Goal Memory заменён этим skill.
+Пакет содержит правила работы, hooks, skills и профили проверяющих
+`agents/spotty.toml`, `agents/smarty.toml`, `agents/bossy.toml`.
+Task Notebook хранит план и прогресс длительной задачи при явном выборе
+пользователя. Goal Memory заменён этим skill.
 `working-standards` собирает рабочие принципы в исходных формулировках:
 полный результат самым простым, коротким, быстрым и прямым способом.
 Применяется перед анализом, планированием, проектированием, реализацией и
@@ -13,15 +14,29 @@
 `cleanup-notebook` удаляет весь notebook текущей сессии только по явному вызову.
 Notebook и HTML-отчёты создаются только во временной папке ОС.
 
+Review-skills запускаются явно:
+
+| Skill | Профиль и модель | Чистых проходов |
+|---|---|---|
+| `$light-review-cycle` | Spotty: `gpt-6-sol / low` | 1 |
+| `$high-review-cycle` | Smarty: `gpt-6-sol / high` | 1 |
+| `$astro-review-cycle` | Bossy: `gpt-6-astra / low` | 1 |
+| `$double-light-review-cycle` | Spotty: `gpt-6-sol / low` | 2 |
+
+Double Light — самостоятельный двойной Light-цикл, а не модификатор других
+review. Профили имеют одинаковый read-only контракт. После принятых замечаний
+Main исправляет результат и повторяет проверку; Double Light начинает серию
+из двух чистых проходов заново. Старые review-aliases заменены этой четвёркой.
+
 Системный промпт — отдельный компонент поставки, не часть плагина.
 После repo-level setup runtime-пакет самодостаточен и не зависит
 от документации репозитория.
 
 ## Требования
 
-Нужны Codex CLI с поддержкой плагинов, hooks и app-server, Node.js и отдельно подключённый
-профиль `spotty`. Поддерживаются macOS, Linux и Windows; в Windows
-используется только Git Bash, без PowerShell.
+Нужны Codex CLI с поддержкой плагинов, hooks и app-server, Node.js и отдельно
+подключённые профили `spotty`, `smarty`, `bossy`. Поддерживаются macOS, Linux
+и Windows; в Windows используется только Git Bash, без PowerShell.
 
 ## Первая установка
 
@@ -37,7 +52,8 @@ codex plugin marketplace add "<источник>"
 codex plugin add "scope-focus@<marketplace>" --json
 ```
 
-Подключи `agents/spotty.toml` из установленного пакета в каталог `agents`
+Подключи `agents/spotty.toml`, `agents/smarty.toml` и `agents/bossy.toml`
+из установленного пакета в каталог `agents`
 активного Codex home (обычно `~/.codex/agents`). Остальные профили сохраняются.
 После настройки доверия через app-server включи все hooks Scope Focus.
 
@@ -73,8 +89,9 @@ Git Bash. На этом проверка закончена.
 ## Обновление
 
 Обновление из актуального источника использует ту же команду
-`codex plugin add "scope-focus@<marketplace>" --json`. Обнови пакет и отдельно установленный
-`spotty` из одной версии. Если заказано обновление системного промпта, выполни
+`codex plugin add "scope-focus@<marketplace>" --json`. Обнови пакет и отдельно
+установленные профили `spotty`, `smarty`, `bossy` из одной версии.
+Если заказано обновление системного промпта, выполни
 [его инструкцию](system-prompt.md). Если файлы уже совпадают, повторная запись
 не нужна.
 После установки совпадающей версии удали только устаревший активный

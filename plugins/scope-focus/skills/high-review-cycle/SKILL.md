@@ -1,11 +1,20 @@
 ---
-name: blind-check-cycle
-description: Run only when explicitly invoked to independently check one frozen object with one fresh blind CLEAN pass and autonomous batch-fix loop.
+name: high-review-cycle
+description: Run only when explicitly invoked for one fresh blind CLEAN pass with Smarty (gpt-6-sol / high) and an autonomous batch-fix loop.
 ---
 
-# Blind Check Cycle
+# High Review Cycle
 
 Use only on explicit invocation. MAIN owns fixes and completion.
+
+Direct invocation selects `agent_type=smarty` (`gpt-6-sol`, reasoning `high`)
+and one clean pass per checkpoint.
+
+Light Review Cycle, Astro Review Cycle, and Double Light Review Cycle read this
+file as their shared contract. Preserve their selected reviewer and clean-pass
+count throughout the cycle, including after repairs. Reading this file does not
+select Smarty or start an additional High cycle. Use only the invoking skill's
+configured profile; do not override its model or reasoning.
 
 The root agent orchestrating this task owns fixes and completion. It invokes the configured blind acceptance reviewer directly; do not add another manager or role layer for the check.
 
@@ -59,7 +68,7 @@ applicable requirement, not because a reviewer prefers more material.
 
 Do not create baselines, hashes, exhaustive inventories, per-file scans, provenance reconstruction, or extra artifacts only for review unless the user or Goal explicitly requires that exact artifact or no smaller proof can establish a material result.
 
-For every attempt, use a fresh configured blind acceptance reviewer. Use the schema exposed by the current runtime: v1 uses only `agent_type=spotty`, `fork_context=false`, and the frozen packet as exactly one `message` or `items`; v2 uses only `agent_type=spotty`, `fork_turns="none"`, the frozen packet in `message`, and a non-empty `task_name`. Never mix schemas or add fields. If the compatible spawn tool or `spotty` role is unavailable, the selected check is unavailable and cannot pass; root-agent self-review is not a substitute. Never resume a closed or interrupted reviewer. It checks only substantial requirement→object/evidence and concrete change→authority mismatches under the configured reviewer's materiality gate.
+For every attempt, use a fresh configured blind acceptance reviewer. Use the schema exposed by the current runtime: v1 uses only `agent_type=<selected reviewer>`, `fork_context=false`, and the frozen packet as exactly one `message` or `items`; v2 uses only `agent_type=<selected reviewer>`, `fork_turns="none"`, the frozen packet in `message`, and a non-empty `task_name`. Never mix schemas or add fields. If the compatible spawn tool or the selected reviewer role is unavailable, the selected check is unavailable and cannot pass; neither another reviewer nor root-agent self-review is a substitute. Never resume a closed or interrupted reviewer. It checks only substantial requirement→object/evidence and concrete change→authority mismatches under the configured reviewer's materiality gate.
 
 Use the main prompt's common subagent-wait policy. If a reviewer hang is confirmed, interrupt that pass and use a fresh configured reviewer on the unchanged object. Never resume a closed or interrupted reviewer.
 
@@ -73,11 +82,14 @@ REQUIRED OUTCOME: <required outcome>
 ```
 
 On `FINDINGS:`, MAIN treats each finding as a claim, not a command. Admit only
-findings that satisfy the configured reviewer's materiality gate. If no findings
-are admitted, count that pass as `CLEAN` and complete the single cycle; do not
-change the result, add evidence, or retry. If any finding is admitted, batch-fix
-all admitted findings, invalidate only affected evidence, rebuild the compact
-packet, and use a new fresh configured Spotty. Repeat autonomously until one pass
-has zero admitted substantial findings. The user's explicit invocation starts
-the whole cycle; no new invocation is required after a repair. Do not add a
-second clean pass.
+findings that satisfy the configured reviewer's materiality gate. A pass with
+zero admitted substantial findings counts as `CLEAN`, regardless of its raw
+label. Rejected findings authorize no change, extra evidence, or retry.
+
+If any finding is admitted, batch-fix all admitted findings, invalidate only
+affected evidence, rebuild the compact packet, and use a new fresh reviewer of
+the same selected profile on the full updated object. Repeat autonomously until
+the selected cycle reaches its required clean-pass count. A single cycle stops
+after one clean pass; Double Light uses its two-pass restart rule. The user's
+explicit invocation starts the whole cycle; no new invocation is required after
+a repair. Do not add passes beyond the selected cycle's requirement.
