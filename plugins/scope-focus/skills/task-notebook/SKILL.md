@@ -40,7 +40,7 @@ Create only `plan.md` initially. Add other records when their content is needed:
 | Path, relative to the session notebook directory | Purpose |
 | --- | --- |
 | `plan.md` | Header, effective order, user amendments, current step, plan, and links. |
-| `<task-key>/notes.md` | Shared tools, access context, rules, sources, reusable findings. |
+| `<task-key>/notes.md` | Current understanding, shared tools, access context, rules, and sources. |
 | `<task-key>/work/<part-id>.md` | A part's working detail, meaningful chronology, actions, problems, evidence, and eventual report. |
 | `<task-key>/evidence/…` | Required originals that do not already have a suitable durable location. |
 | `<task-key>/report.md` | Final notebook outcome and links, unless a suitable report already exists at the required destination. |
@@ -73,23 +73,59 @@ Records: shared notes, work records, required originals.
 ## Work cycle
 
 1. Capture the result, every known requirement, source, and completion condition.
-   Sketch the overall plan using current understanding. Keep all known mandatory
+   Plan everything already understood, or sketch the overall plan and expand the
+   nearest steps as understanding grows. Keep all known mandatory
    work visible, without pretending to know every future implementation detail.
 2. Before the next action, research and design the work sufficiently to perform it
    correctly. Establish the relevant tools, access, data preparation, rules, and
    expected outcome. Follow documentation links as deeply as this decision needs.
-   Save shared findings once and reuse them while applicable.
+   For the next substantive TODO, record the action and expected result; for
+   research, record the question and what evidence would change the decision.
 3. Revise any affected plan level from those facts, then execute the next sufficiently
    understood step. Future details may remain unknown; concrete actions must be
    understood before execution.
-4. Record meaningful results, necessary evidence, and the next action or wait
-   condition. Continue the cycle with the next required work.
+4. Compare the expectation with the available result. A material mismatch requires
+   reconciling understanding and replanning before dependent work continues.
+   Record meaningful results, necessary evidence, and the next action or wait
+   condition; no separate entry is required for each tool call.
 5. Complete a substantive part's work record before collapsing its plan branch to
    a short status, result, and link. The same work file becomes its report.
 
 Usually expand the nearest branch. Retain multiple active branches only when the
 task requires them, such as useful independent work during a wait. Do not impose
 serial execution, parallelism, a fixed TODO depth, or whole-product research.
+
+## Current understanding and conflicts
+
+When substantive knowledge appears, create `Current understanding` in the task's
+existing `notes.md` (create the file if needed). This is the single current account
+of significant findings and conclusions: retain their sources, grounds, and
+conditions of applicability, and distinguish observations, hypotheses, and
+conclusions. Plans and work records link to this account instead of maintaining
+independent copies of current conclusions. Original evidence and historical
+results remain in their existing records.
+
+Before adding or changing a conclusion, read the related current entries and
+needed grounds. Decide whether the information is complementary, concerns
+different versions or conditions, changes an earlier conclusion, or contradicts
+it under the same conditions. A newer entry does not automatically outweigh
+better evidence. Missing evidence does not refute a hypothesis.
+
+Replace the affected current wording rather than appending a competing fact.
+Keep significant superseded conclusions in the relevant work history, marked
+inactive with the reason and source for the change. Update affected dependent
+conclusions, TODOs, and evaluations of completed parts before the next dependent
+action. Mark superseded statements in existing records so later reading cannot
+mistake them for current guidance; preserve original evidence and executed actions.
+
+If the conflict cannot yet be resolved, keep the competing versions and sources
+in `Current understanding` as unresolved, not established facts. Name affected
+steps and the next authorized way to resolve it. Link to that entry under
+`Open conflicts` in `plan.md` while it remains open. Pause dependent actions and
+continue compatible independent work. Resolve it from sufficient grounds, then
+replace the unresolved entry with the supported conclusion and remove its open
+plan link, preserving significant resolution history. Do not claim successful
+completion while a conflict affecting the requested result remains unresolved.
 
 ## User amendments
 
@@ -121,10 +157,10 @@ facts, design conclusions, dependencies, or user instructions as grounds. Preser
 the effective order and required outcomes, plus the history of actions and evidence.
 An explicitly required method or sequence remains binding until the user changes it.
 
-Identify affected conclusions and branches, revise the necessary part or the whole
-plan, and briefly record why with a source locator. Do not save every plan revision.
-Keep significant abandoned attempts and their reasons in the relevant work record
-so the agent does not rediscover the same failure.
+Reconcile affected conclusions under the rules above, revise the necessary part
+or the whole plan, and briefly record why with a source locator. Do not save every
+plan revision. Keep significant abandoned attempts and their reasons in the
+relevant work record so the agent does not rediscover the same failure.
 
 Reuse results that remain applicable. Mark changed applicability explicitly: an
 executed action stays a historical fact even if its result no longer meets the
@@ -152,12 +188,12 @@ requires an available authorized mechanism.
 
 Within one context, use already-read current information. Reread after resume,
 external changes to a record, or when previously unloaded detail is needed. Read
-the effective order, current branch, and relevant originals rather than the entire
-archive. Keep references from a normal context handoff to this same notebook.
+the effective order, relevant current understanding and open conflicts, current
+branch, and required originals rather than the entire archive. Keep references
+from a normal context handoff to this same notebook.
 
 Reduce repetition and link detail; impose no hard limit on lines, tokens, depth,
-documents, or amendments that would cut required substance. Record findings with
-their sources and applicability, and distinguish confirmed facts from unknowns.
+documents, or amendments that would cut required substance.
 
 ## Evidence and reports
 
@@ -174,7 +210,8 @@ needed originals before they become unavailable. Keep the owner's rules for secr
 values and locations; replacing this skill does not authorize migrating secrets.
 
 A checked TODO means an action is complete. Its evaluation can be PASS, FAIL, or
-insufficient grounds. Required blocked work remains unfinished. A report's existence
+insufficient grounds. Preserve completed actions even when they fail, but keep
+unachieved required outcomes and blocked work unfinished. A report's existence
 is not proof of completion. Evidence depth follows the task: analysis may finish
 through reading and logic, while requested testing requires its actual observations.
 This skill adds no tests, audits, bug fixes, reviews, or external actions.
@@ -186,8 +223,11 @@ selection source, and status against the current request. Load and apply this sk
 only for the same continuing explicitly selected task in `working`, `waiting`, or
 `blocked` status. A complete, cancelled, or unrelated notebook does not restart work
 or enable the skill for a new order. Apply new user amendments before dependent work,
-then load the current branch and required originals. Recheck only material mutable,
-missing, contradicted, or invalidated grounds.
+then load the relevant current understanding, open conflicts, current branch, and
+required originals. Do not restore a historical conclusion as current without
+assessing its applicability. Reconcile existing notebooks for the continuing task
+only as needed for that work; do not migrate unrelated tasks or reread the whole
+history. Recheck only material mutable, missing, contradicted, or invalidated grounds.
 
 Automatic location depends on retained plugin data and the host invoking Scope
 Focus SessionStart for that session on startup, resume, clear, or compact. For a
@@ -199,7 +239,8 @@ problems, solutions, and evidence links. Only after saving those grounds, collap
 the branch into its short status and link. Preserve the detailed completed work.
 
 At whole-task completion, reconcile the actual result with the effective order and
-all applicable amendments. Save the notebook outcome with those conditions, the
+all applicable amendments and current grounds, including unresolved conflicts.
+Save the notebook outcome with those conditions, the
 result, unresolved matters, and links to part records. Reuse a suitable existing
 final report at the user's required destination; otherwise write the task's report
 in its stable task-key directory. Resolve links against their actual locations.
