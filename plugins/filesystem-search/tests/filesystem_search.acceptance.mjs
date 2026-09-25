@@ -3,12 +3,13 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import net from 'node:net';
 import { execFile } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 const require = createRequire(import.meta.url);
 const scripts = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../skills/filesystem-search/scripts');
-const { request, locations } = require(path.join(scripts, 'cbm-runtime.cjs'));
+const { request, locations, watcherExecutable } = require(path.join(scripts, 'cbm-runtime.cjs'));
 const temp = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'fssearch-acceptance-')));
 const root = path.join(temp, 'repo');
 const plain = path.join(temp, 'plain');
@@ -16,6 +17,15 @@ const home = path.join(temp, 'codex');
 for (const dir of [root, plain, home]) fs.mkdirSync(dir);
 process.env.CODEX_HOME = home;
 process.env.FSSEARCH_SESSION_ROOT = root;
+const watcherPath = watcherExecutable();
+const target = process.platform === 'darwin' ? 'aarch64-apple-darwin'
+  : process.platform === 'linux' ? 'x86_64-unknown-linux-musl'
+    : 'x86_64-pc-windows-gnu';
+const watcherSource = path.join(path.dirname(path.dirname(path.dirname(scripts))), 'bin', target,
+  `cbm-watcher${process.platform === 'win32' ? '.exe' : ''}`);
+fs.mkdirSync(path.dirname(watcherPath), { recursive: true });
+fs.copyFileSync(watcherSource, watcherPath);
+if (process.platform !== 'win32') fs.chmodSync(watcherPath, 0o755);
 const projects = new Set();
 const daemons = new Set();
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -52,8 +62,13 @@ try {
   ok(await run('git', ['config', 'user.name', 'Fixture']));
   fs.writeFileSync(path.join(root, 'probe.py'), source('leaf'));
   fs.writeFileSync(path.join(root, '.gitignore'), 'generated/\n');
+  fs.writeFileSync(path.join(root, '.cbmignore'), 'cbm-native-ignored/\n');
   fs.mkdirSync(path.join(root, 'generated'));
-  fs.writeFileSync(path.join(root, 'generated', 'ignored.py'), 'IGNORED_NEEDLE\n');
+  fs.mkdirSync(path.join(root, 'cbm-native-ignored'));
+  fs.writeFileSync(path.join(root, 'cbm-native-ignored', 'ignored.py'), 'def cbm_native_ignored_marker(): return "CBM_NATIVE_IGNORED"\n');
+  fs.writeFileSync(path.join(root, 'generated', 'ignored.py'), 'def cbm_ignored_marker(): return "IGNORED_NEEDLE"\n');
+  fs.writeFileSync(path.join(root, 'generated', 'large-sentinel.txt'), 'IGNORED_BULK_SENTINEL\n'.repeat(32768));
+  fs.writeFileSync(path.join(root, '.git', 'ignored-git-sentinel.py'), 'def cbm_git_internal_marker(): return "GIT_INTERNAL_SENTINEL"\n');
   fs.writeFileSync(path.join(root, '.hidden.py'), 'HIDDEN_NEEDLE\n');
   ok(await run('git', ['add', 'probe.py', '.gitignore']));
   ok(await run('git', ['commit', '-qm', 'fixture']));
@@ -68,20 +83,63 @@ try {
   for (const result of cold) assert.match(ok(result).stdout, /leaf/);
   const cbm = await remember(root);
   assert.equal((await remember(root)).pid, cbm.pid);
+  const socketPath = locations(root).socket;
+  const ipcStarted = Date.now();
+  const fragmented = await new Promise((resolve, reject) => {
+    const client = net.createConnection(socketPath);
+    let text = '';
+    client.setEncoding('utf8');
+    client.once('error', reject);
+    client.on('data', chunk => { text += chunk; });
+    client.on('end', () => { try { resolve(JSON.parse(text)); } catch (error) { reject(error); } });
+    const request = JSON.stringify({ root: fs.realpathSync(root), op: 'query', tool: 'search_graph',
+      args: ['--name-pattern', 'leaf', '--format', 'json'] }) + '\n';
+    client.once('connect', () => {
+      client.write(request.slice(0, Math.floor(request.length / 2)));
+      setTimeout(() => client.write(request.slice(Math.floor(request.length / 2))), 100);
+    });
+  });
+  assert.equal(fragmented.code, 0, fragmented.stderr);
+  assert.equal(fragmented.pid, cbm.pid);
+  assert.match(fragmented.stdout, /leaf/);
+  assert.ok(Date.now() - ipcStarted >= 50, 'IPC response must remain open during a delayed query');
   const relation = ok(await wrapper('cbm-search', ['query_graph', '--query', 'MATCH (a)-[:CALLS]->(b) RETURN a.name, b.name', '--format', 'json']));
   assert.match(relation.stdout, /caller/); assert.match(relation.stdout, /leaf/);
+  const ignoredGraph = ok(await graph('cbm_ignored_marker'));
+  assert.doesNotMatch(ignoredGraph.stdout, /cbm_ignored_marker|IGNORED_NEEDLE|IGNORED_BULK_SENTINEL|GIT_INTERNAL_SENTINEL/);
+  const gitGraph = ok(await graph('cbm_git_internal_marker'));
+  assert.doesNotMatch(gitGraph.stdout, /cbm_git_internal_marker|GIT_INTERNAL_SENTINEL/);
+  const nativeIgnoredGraph = ok(await graph('cbm_native_ignored_marker'));
+  assert.doesNotMatch(nativeIgnoredGraph.stdout, /cbm_native_ignored_marker|CBM_NATIVE_IGNORED/);
   console.log('PASS: CBM cold/concurrent/warm queries and graph relationship.');
 
+  const nestedRoot = path.join(root, 'nested-project'); fs.mkdirSync(nestedRoot);
+  fs.writeFileSync(path.join(nestedRoot, 'nested.py'), 'def nested_old_marker(): return "value"\n');
+  const nestedInitial = ok(await request(nestedRoot, 'query', 'search_graph', ['--name-pattern', 'nested_old_marker', '--format', 'json']));
+  projects.add(nestedInitial.project); daemons.add(nestedInitial.pid);
+  assert.match(nestedInitial.stdout, /nested_old_marker/);
+  fs.writeFileSync(path.join(nestedRoot, 'nested.py'), 'def nested_new_marker(): return "value"\n');
+  await until(async () => /nested_new_marker/.test(ok(await wrapper('cbm-search', ['search_graph', '--name-pattern', 'nested_new_marker', '--format', 'json'], nestedRoot, nestedRoot)).stdout), 'CBM did not reindex a changed file under a nested project root');
+  console.log('PASS: CBM change detection for a project nested inside a Git repository.');
+
   const indexed = await Promise.all([
-    wrapper('tgrep-search', ['--stats', '--', 'IGNORED_NEEDLE', '.']),
+    wrapper('tgrep-search', ['--stats', '--', 'IGNORED_NEEDLE|IGNORED_BULK_SENTINEL|GIT_INTERNAL_SENTINEL', '.']),
+    wrapper('tgrep-search', ['--hidden', '--stats', '--', 'IGNORED_NEEDLE|GIT_INTERNAL_SENTINEL', '.']),
     wrapper('tgrep-search', ['--hidden', '-g', '*.py', '--stats', '--', 'HIDDEN_NEEDLE', '.']),
   ]);
-  for (const result of indexed) { ok(result); assert.match(result.stdout + result.stderr, /via server/); }
-  const listing = ok(await wrapper('tgrep-search', ['--files', '-g', '*.py', '--', '.']));
-  assert.match(listing.stdout, /ignored\.py/); assert.match(listing.stdout, /\.hidden\.py/);
+  for (const result of indexed) assert.match(result.stdout + result.stderr, /via server/);
+  assert.equal(indexed[0].code, 1, indexed[0].stdout + indexed[0].stderr);
+  assert.equal(indexed[1].code, 1, indexed[1].stdout + indexed[1].stderr);
+  assert.doesNotMatch(indexed[1].stdout, /IGNORED_NEEDLE|GIT_INTERNAL_SENTINEL/);
+  assert.equal(indexed[2].code, 0, indexed[2].stderr);
+  const listing = ok(await wrapper('tgrep-search', ['--files', '-g', '*.py', '--stats', '--', '.']));
+  assert.match(listing.stdout + listing.stderr, /via server/);
+  assert.doesNotMatch(listing.stdout, /generated\/ignored\.py|large-sentinel|ignored-git-sentinel|\.git\//);
+  assert.match(listing.stdout, /probe\.py/);
+  assert.doesNotMatch(listing.stdout, /\.hidden\.py/);
   assert.equal((await wrapper('tgrep-search', ['--', 'NO_SUCH_NEEDLE_731', '.'])).code, 1);
   assert.equal((await wrapper('tgrep-search', ['--', '(', '.'])).code, 2);
-  console.log('PASS: tgrep cold/concurrent, ignored/hidden/glob indexed, empty/error distinction.');
+  console.log('PASS: tgrep cold/concurrent, gitignore exclusion, hidden/glob, empty/error distinction.');
 
   fs.writeFileSync(path.join(root, 'probe.py'), source('changed_leaf'));
   await until(async () => /changed_leaf/.test(ok(await graph('changed_leaf')).stdout), 'CBM edit was not indexed');
@@ -102,9 +160,28 @@ try {
   await until(async () => /offline_leaf/.test(ok(await graph('offline_leaf')).stdout), 'CBM restart missed offline edits');
 
   fs.writeFileSync(path.join(plain, 'plain.py'), source('plain_leaf'));
+  fs.writeFileSync(path.join(plain, '.gitignore'), 'plain-gitignored/\n');
+  fs.writeFileSync(path.join(plain, '.cbmignore'), 'plain-cbmignored/\n');
+  fs.writeFileSync(path.join(plain, '.ignore'), 'plain-nativeignored/\n');
+  for (const dir of ['plain-gitignored', 'plain-cbmignored', 'plain-nativeignored']) {
+    fs.mkdirSync(path.join(plain, dir));
+    const marker = `plain_${dir.replaceAll('-', '_')}_marker`;
+    fs.writeFileSync(path.join(plain, dir, 'hidden.py'), `def ${marker}(): return "${marker.toUpperCase()}_SENTINEL"\n`);
+  }
+  fs.writeFileSync(path.join(plain, 'visible.txt'), 'PLAIN_VISIBLE_NEEDLE\n');
   ok(await graph('plain_leaf', plain)); await remember(plain);
+  for (const dir of ['plain-gitignored', 'plain-cbmignored']) {
+    const marker = `plain_${dir.replaceAll('-', '_')}_marker`;
+    assert.doesNotMatch(ok(await graph(marker, plain)).stdout, new RegExp(marker));
+  }
   fs.writeFileSync(path.join(plain, 'plain.py'), source('plain_changed'));
   await until(async () => /plain_changed/.test(ok(await graph('plain_changed', plain)).stdout), 'non-Git change was not indexed');
+  const plainVisible = ok(await wrapper('tgrep-search', ['--', 'PLAIN_VISIBLE_NEEDLE', '.'], plain));
+  assert.match(plainVisible.stdout, /PLAIN_VISIBLE_NEEDLE/);
+  for (const dir of ['plain-gitignored', 'plain-nativeignored']) {
+    const marker = `PLAIN_${dir.replaceAll('-', '_').toUpperCase()}_MARKER`;
+    assert.equal((await wrapper('tgrep-search', ['--', marker, '.'], plain)).code, 1);
+  }
   console.log('PASS: CBM restart/offline edits and non-Git events.');
 
   fs.mkdirSync(path.join(temp, 'outside'));

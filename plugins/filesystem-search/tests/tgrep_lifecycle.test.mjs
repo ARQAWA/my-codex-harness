@@ -16,7 +16,7 @@ const env = { ...process.env, CODEX_HOME: home, FSSEARCH_SESSION_ROOT: root };
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const run = (exe, args) => new Promise(resolve => execFile(exe, args, { cwd: root, env, timeout: 60000, windowsHide: true },
   (error, stdout, stderr) => resolve({ code: error?.code || 0, stdout, stderr })));
-const query = () => run(process.execPath, [script, root, '--no-ignore', '--hidden', '-g', '*.py', '--stats', '--', 'IGNORED_LIFECYCLE', '.']);
+const query = () => run(process.execPath, [script, root, '-g', '*.py', '--stats', '--', 'MAIN_LIFECYCLE', '.']);
 const ok = r => { assert.equal(r.code, 0, r.stderr); return r; };
 const alive = pid => { try { process.kill(pid, 0); return true; } catch (e) { if (e.code === 'ESRCH') return false; throw e; } };
 async function until(fn) {
@@ -30,6 +30,7 @@ try {
   fs.writeFileSync(path.join(root, '.gitignore'), 'ignored.py\n');
   fs.writeFileSync(path.join(root, 'main.py'), 'MAIN_LIFECYCLE\n');
   fs.writeFileSync(path.join(root, 'ignored.py'), 'IGNORED_LIFECYCLE\n');
+  fs.writeFileSync(path.join(root, '.git', 'internal.py'), 'GIT_INTERNAL_LIFECYCLE\n');
   fs.mkdirSync(index, { recursive: true });
   const fd = fs.openSync(path.join(index, 'legacy.log'), 'a');
   const old = spawn('tgrep', ['serve', '--index-path', index, root], { cwd: root, env, windowsHide: true, stdio: ['ignore', fd, fd] });
@@ -39,11 +40,13 @@ try {
   await until(async () => /Indexing:\s+complete/.test((await run('tgrep', ['status', '--index-path', index, root])).stdout));
   const lockInode = fs.statSync(path.join(index, 'serve.lock')).ino;
   const migrated = ok(await query()); assert.match(migrated.stdout + migrated.stderr, /via server/);
+  assert.equal((await run(process.execPath, [script, root, '-g', '*.py', '--', 'IGNORED_LIFECYCLE', '.'])).code, 1);
+  assert.equal((await run(process.execPath, [script, root, '-g', '*.py', '--', 'GIT_INTERNAL_LIFECYCLE', '.'])).code, 1);
   assert.ok(!alive(old.pid)); pids.delete(old.pid);
   const marker = JSON.parse(fs.readFileSync(path.join(index, 'corpus.json'), 'utf8'));
   pids.add(marker.pid);
   assert.notEqual(marker.pid, old.pid);
-  assert.equal(marker.version, 1);
+  assert.equal(marker.version, 3);
   assert.equal(fs.statSync(path.join(index, 'serve.lock')).ino, lockInode);
   ok(await query());
   assert.equal(JSON.parse(fs.readFileSync(path.join(index, 'serve.json'), 'utf8')).pid, marker.pid);
@@ -54,7 +57,7 @@ try {
   pids.add(newPid);
   assert.notEqual(newPid, marker.pid);
   assert.equal(fs.statSync(path.join(index, 'serve.lock')).ino, lockInode);
-  console.log('PASS: tgrep legacy corpus migration, indexed no-ignore/glob, warm reuse, crash/restart and preserved native lock.');
+  console.log('PASS: tgrep legacy corpus migration, gitignore exclusion, warm reuse, crash/restart and preserved native lock.');
 } finally {
   const info = path.join(index, 'serve.json');
   if (fs.existsSync(info)) pids.add(JSON.parse(fs.readFileSync(info, 'utf8')).pid);

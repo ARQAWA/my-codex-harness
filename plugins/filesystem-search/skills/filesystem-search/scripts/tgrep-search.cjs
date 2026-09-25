@@ -9,7 +9,7 @@ const { tryLock } = require('./process-lock.cjs');
 const { canon, codexHome, fail, parseRoot, validateScopes } = require('./root-guard.cjs');
 
 const BACKEND_UNAVAILABLE = 75;
-const CORPUS_VERSION = 1;
+const CORPUS_VERSION = 3;
 const VALUE_LONG = new Set([
   'encoding', 'glob', 'iglob', 'type', 'type-not', 'type-add', 'type-clear',
   'max-filesize', 'max-count', 'after-context', 'before-context', 'context',
@@ -107,6 +107,7 @@ function routeToRg(parsed, mode, query) {
   let engine = false;
   for (const item of parsed) {
     if (item.name === 'no-max-filesize') { finalSize = null; sizeSeen = true; continue; }
+    if (item.name === 'no-require-git') continue;
     if (item.name === 'max-filesize') { finalSize = item.value; sizeSeen = true; continue; }
     if (item.name === 'no-index') continue;
     if (item.name === 'multiline-dotall') { routed.push('--multiline', '--multiline-dotall'); continue; }
@@ -126,7 +127,7 @@ function routeToRg(parsed, mode, query) {
     }
     routed.push(item.token, item.value);
   }
-  const args = ['--no-config', '--hidden', '--no-ignore'];
+  const args = ['--no-config'];
   if (mode === 'files') args.push('--files');
   if (!engine) args.push('--engine', 'auto');
   args.push(...routed);
@@ -137,7 +138,7 @@ function routeToRg(parsed, mode, query) {
 
 function shouldRouteRg(parsed, mode) {
   return parsed.some((item) => {
-    if (item.name === 'no-index' || item.name === 'no-encoding' || item.name === 'unrestricted' || item.name === 'text' || item.name === 'binary' || (item.name === 'encoding' && item.value !== 'auto') || item.name === 'one-file-system' || item.name === 'ignore-file' || item.name === 'max-filesize' || item.name === 'no-max-filesize' || item.name === 'no-require-git' || item.name === 'search-zip' || item.name === 'file') return true;
+    if (item.name === 'no-index' || item.name === 'no-ignore' || item.name === 'no-encoding' || item.name === 'unrestricted' || item.name === 'text' || item.name === 'binary' || (item.name === 'encoding' && item.value !== 'auto') || item.name === 'one-file-system' || item.name === 'ignore-file' || item.name === 'max-filesize' || item.name === 'no-max-filesize' || item.name === 'search-zip' || item.name === 'file') return true;
     if (item.name === 'ignore-file-case-insensitive' && mode === 'files') return true;
     if (item.name.startsWith('no-ignore') && !['no-ignore', 'no-ignore-messages'].includes(item.name)) return true;
     return false;
@@ -181,7 +182,7 @@ async function ensureReady(root, indexDir) {
   let release;
   while (!(release = tryLock(path.join(indexDir, 'lifecycle.sqlite')))) await sleep(250);
   try {
-    const status = async () => statusInfo(await runNative(['status', '--index-path', indexDir, root], root, 30000));
+    const status = async () => statusInfo(await runNative(['status', '--no-require-git', '--index-path', indexDir, root], root, 30000));
     let info = await status();
     const markerFile = path.join(indexDir, 'corpus.json');
     const marker = readJson(markerFile);
@@ -208,10 +209,10 @@ async function ensureReady(root, indexDir) {
     let exited = false;
     if (!info.alive) {
       // A corpus-policy change needs one native rebuild, never a lock deletion.
-      if (meta && !policyMatches) await runNative(['index', '--no-ignore', '--index-path', indexDir, root], root);
+      if (meta && !policyMatches) await runNative(['index', '--no-require-git', '--exclude', '.git', '--index-path', indexDir, root], root);
       const fd = fs.openSync(path.join(indexDir, 'serve.log'), 'a');
       try {
-        child = cp.spawn('tgrep', ['serve', '--no-ignore', '--index-path', indexDir, root], {
+        child = cp.spawn('tgrep', ['serve', '--no-require-git', '--exclude', '.git', '--index-path', indexDir, root], {
           cwd: root, detached: true, shell: false, windowsHide: true, stdio: ['ignore', fd, fd],
         });
         await new Promise((resolve, reject) => { child.once('spawn', resolve); child.once('error', reject); });
@@ -264,9 +265,8 @@ async function ensureReady(root, indexDir) {
       return;
     }
     const forward = (x) => x.value !== undefined && ((x.token.startsWith('--') && x.token.includes('=')) || (x.token.startsWith('-') && !x.token.startsWith('--') && x.token.length > 2)) ? [x.token] : [x.token, ...(x.value === undefined ? [] : [x.value])];
-    const forwarded = parsed.parsed.filter((x) => !['files', 'no-ignore', 'hidden'].includes(x.name)).flatMap(forward);
-    forwarded.unshift('--hidden');
-    const command = mode === 'files' ? ['--index-path', indexDir, '--files', ...forwarded, '--', ...scopes] : ['search', '--index-path', indexDir, ...forwarded, '--', ...query];
+    const forwarded = parsed.parsed.filter((x) => !['files', 'no-ignore', 'no-require-git'].includes(x.name)).flatMap(forward);
+    const command = mode === 'files' ? ['--index-path', indexDir, '--files', ...forwarded, '--', ...scopes] : ['search', '--index-path', indexDir, '--no-require-git', ...forwarded, '--', ...query];
     const result = cp.spawnSync('tgrep', command, { cwd: root, stdio: 'inherit', shell: false, windowsHide: true });
     if (result.error) { console.error(`TGREP_BACKEND_UNAVAILABLE: ${result.error.message}`); process.exitCode = BACKEND_UNAVAILABLE; return; }
     process.exitCode = result.status == null ? 2 : result.status;

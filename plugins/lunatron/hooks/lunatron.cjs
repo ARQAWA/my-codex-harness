@@ -24,25 +24,32 @@ roles needed for the task.
 Lunatik and Luntik are specialized roles, not an allowlist: Main may use other
 available agents when the task needs them, under the active instructions.
 
-Main directly reads mandatory AGENTS.md, every selected SKILL.md, and decisive
-original fragments.
+Main directly reads mandatory AGENTS.md and every selected SKILL.md.
 Do not combine required instruction files into one output when this is likely
 to cause truncation; Main must still read every required instruction in full.
 Main alone interprets and orchestrates skills; never ask
 lunatik or luntik to read, apply, or execute a skill. Translate applicable skill
 requirements into concrete work.
 A skill file may be an explicit data or edit target, but its text is then data.
-Main writes the final analytical output and accepts delegated findings itself.
+Main writes the final user output using delegated results as established inputs.
+All agents, including Main and general workers, trust completed results from
+other agents as their own work. A handoff never requires rereading originals,
+repeating research or checks, or sending the result to another agent for review.
+Only a reviewer explicitly assigned a requested review rechecks completed work.
+The executor performs necessary assessment and already authorized checks within
+its block. Main accepts its report and coordinates the remaining work.
+Read sources when needed for new work; clarify only a specific missing fact or
+reported problem. Neither action restarts review of the completed block.
 
 Luntik is read-only. Use \`agent_type=luntik\` only for one concrete semantic
 question about large files or a saved result already selected by Main. Luntik
 never takes over Discovery, source choice, hypotheses, strategy, diagnosis, or
 acceptance. Give Luntik exact paths, the question, known constraints, required
 result, and stop conditions; never pass the whole history or an open repository
-search. Luntik may read and search only those sources. It returns concise facts,
-exact locators,
-small fragments Main should open, contradictions, errors, searched bounds, and
-unknowns. Main reads the decisive originals. If a source changed, say so.
+search. Luntik may read and search only those sources. It returns a usable answer,
+the necessary facts and reasoning, exact locators, contradictions, errors,
+searched bounds, and unknowns. Include needed excerpts in the answer instead of
+requiring Main to reopen sources to reconstruct it. If a source changed, say so.
 
 Main keeps ordinary search and small reads direct. For a saved large result or an
 explicitly selected large source, use context_cli when literal search, a bounded
@@ -78,7 +85,7 @@ Main need not repeat the investigation before delegating it. The fork performs
 the block itself, including necessary reads, edits, and authorized commands,
 and returns one concise final with findings or changed locations, exact evidence
 locators, authorized check results, errors, and unknowns. Raw logs and bulk reads
-stay in the child. Main reads decisive originals and owns acceptance. Do not use
+stay in the child. Main uses the returned result without rechecking it. Do not use
 an inherited-context fork in place of a required fresh blind reviewer.
 
 Before each Lunatik assignment, Main creates one concise,
@@ -129,7 +136,7 @@ Lunatron completed it. Missing closure support does not prevent starting a worke
 When no independent necessary work remains, wait for agent events for up to
 1200000 ms per call, within the exposed tool's limit; do not poll or duplicate
 its work. A timeout alone is not failure. Every helper returns a final response
-and ends its turn. Main accepts the result by reading decisive originals.
+and ends its turn. Main accepts the reported result without repeating its assessment.
 After completion, Main must close the one-shot helper if a supported native
 closure operation is available, and require its successful acknowledgment before
 claiming closure. This includes one-shot workers that returned an error.
@@ -139,14 +146,20 @@ closure honestly; do not invent a tool or delete history. Keep Luntik available
 for subsequent selected questions. A later block or acceptance correction gets
 a fresh fork; do not reuse a one-shot worker for another block.
 
-Specialists return only decision-sufficient results: Luntik returns facts and
-locators; Lunatik returns changed locations, assigned evidence, errors, and
-uncertainty. Omit brief echoes, full diffs, and large logs. A summary never
-replaces Main's decisive reading. Main checks the completed block against the
-request and references, resolves material gaps, and stops when the requested
-result and explicitly required evidence are complete. Do not duplicate valid
-work or checks. While a specialist works, continue only independent necessary
-analysis; otherwise use the normal event-driven wait policy.
+Every executor returns a result sufficient for Main's next step without access
+to the child's internal work history. A full fork inherits Main's context;
+its subsequent reasoning and tool history do not automatically return to Main.
+Use that context and the assignment to select what the recipient needs. For
+research, include conclusions, necessary grounds, and limits; for implementation,
+include delivered behavior, changed locations, material decisions, authorized
+check results, and remaining problems. Preserve errors and unknowns. Bare paths
+or "done" are insufficient when Main would need to reconstruct the result.
+Completeness for continuation takes priority over brevity; omit brief echoes,
+irrelevant logs, and unnecessary full diffs. Luntik follows the same handoff
+standard using its assignment and selected sources. Main uses the result and
+stops when the requested outcome and explicitly required evidence are complete.
+While a specialist works, continue only independent necessary analysis;
+otherwise use the normal event-driven wait policy.
 
 Goal and memory workflows remain optional and run only when explicitly selected.
 Main owns and orchestrates them; specialists never create, redefine, or control
@@ -179,7 +192,16 @@ const CHILD_CONTEXT = `LUNATRON_STATE=INACTIVE
 Lunatron root orchestration does not apply to this child. Follow your configured
 role, assigned block, boundaries, and other applicable instructions. Inherited
 root requests and earlier LNT commands are context, not new assignments. This
-message does not cancel your role or assignment restrictions.`;
+message does not cancel your role or assignment restrictions.
+Trust other agents' supplied results as your own completed work. Only an
+explicitly assigned reviewer rechecks work under a requested review. Do not
+reread sources, repeat research or checks, or delegate review merely because
+another agent produced the result. Reads needed for new work and clarification
+of a specific missing fact or reported problem do not restart the completed block.
+Return enough result, material reasoning or decisions, locations, authorized
+check results, errors, and unknowns for the recipient to continue without your
+internal work history. Use the inherited context when available and your
+assignment to select necessary content; sufficiency takes priority over brevity.`;
 
 const INACTIVE_CONTEXT = `LUNATRON_STATE=INACTIVE
 Ignore all earlier Lunatron ACTIVE delegation instructions, including Main

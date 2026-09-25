@@ -49,6 +49,20 @@ function connect(socket) {
   });
 }
 
+function watcherExecutable() {
+  const targets = {
+    'darwin-arm64': 'aarch64-apple-darwin',
+    'linux-x64': 'x86_64-unknown-linux-musl',
+    'win32-x64': 'x86_64-pc-windows-gnu',
+  };
+  const target = targets[`${process.platform}-${process.arch}`];
+  if (!target) throw new Error(`CBM watcher is not packaged for ${process.platform}-${process.arch}`);
+  const packageRoot = path.resolve(__dirname, '../../..');
+  const { version } = JSON.parse(fs.readFileSync(path.join(packageRoot, '.codex-plugin/plugin.json'), 'utf8'));
+  const suffix = process.platform === 'win32' ? '.exe' : '';
+  return path.join(codexHome(), 'tools', 'filesystem-search', 'cbm-watcher', version, `cbm-watcher${suffix}`);
+}
+
 async function request(root, op, tool, args = []) {
   const loc = locations(root);
   let client;
@@ -63,6 +77,8 @@ async function request(root, op, tool, args = []) {
         const release = tryLock(path.join(loc.dir, 'owner.sqlite'));
         if (release) {
           release();
+          await sleep(250);
+          try { client = await connect(loc.socket); break; } catch {}
           throw new Error(`CBM daemon could not start (${launchError || 'process exited'}); see ${path.join(loc.dir, 'daemon.log')}`);
         }
       }
@@ -70,12 +86,12 @@ async function request(root, op, tool, args = []) {
         fs.mkdirSync(loc.dir, { recursive: true });
         const fd = fs.openSync(path.join(loc.dir, 'daemon.log'), 'a');
         try {
-          child = cp.spawn(process.execPath, [__filename, root], {
+          child = cp.spawn(watcherExecutable(), [root], {
             cwd: root, env: { ...process.env, FSSEARCH_SESSION_ROOT: root },
             detached: true, shell: false, windowsHide: true, stdio: ['ignore', fd, fd],
           });
           child.once('error', error => { launchError = error.message; exited = true; });
-          child.once('exit', () => { exited = true; });
+          child.once('exit', (code, signal) => { launchError ||= `process exited (${signal || code})`; exited = true; });
           child.unref();
         } finally { fs.closeSync(fd); }
       }
@@ -312,4 +328,4 @@ if (require.main === module) {
   try { daemon(canon(parseRoot(process.argv[2]))).catch(error => { console.error(error.message); process.exit(75); }); }
   catch (error) { if (error.message !== '__wrapper_exit__') console.error(error.message); }
 }
-module.exports = { request, validateQuery, locations };
+module.exports = { request, validateQuery, locations, watcherExecutable };

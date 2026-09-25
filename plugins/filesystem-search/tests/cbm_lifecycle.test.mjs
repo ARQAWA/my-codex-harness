@@ -2,17 +2,33 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 const require = createRequire(import.meta.url);
 const here = path.dirname(fileURLToPath(import.meta.url));
-const { request, locations } = require('../skills/filesystem-search/scripts/cbm-runtime.cjs');
+const { request, locations, watcherExecutable } = require('../skills/filesystem-search/scripts/cbm-runtime.cjs');
+if (process.platform === 'win32') {
+  console.log('SKIP: lifecycle fixture uses a POSIX CLI shim; Windows is covered by native acceptance.');
+  process.exit(0);
+}
 const temp = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'cbm-lifecycle-')));
 const root = path.join(temp, 'root'); const state = path.join(temp, 'state');
-for (const dir of [root, state, path.join(temp, 'home')]) fs.mkdirSync(dir);
-process.env.CODEX_HOME = path.join(temp, 'home');
-process.env.NODE_OPTIONS = `${process.env.NODE_OPTIONS || ''} --require=${JSON.stringify(path.join(here, 'cbm-cli-fixture.cjs'))}`;
+const home = path.join(temp, 'home'); const cliDir = path.join(temp, 'bin');
+for (const dir of [root, state, home, cliDir]) fs.mkdirSync(dir);
+process.env.CODEX_HOME = home;
+process.env.FSSEARCH_SESSION_ROOT = root;
+const fixture = path.join(here, 'cbm-cli-fixture.cjs');
+const quote = value => `'${value.replaceAll("'", "'\\''")}'`;
+const cli = path.join(cliDir, 'codebase-memory-mcp');
+fs.writeFileSync(cli, `#!/bin/sh\nexec ${quote(process.execPath)} ${quote(fixture)} "$@"\n`);
+fs.chmodSync(cli, 0o755);
+process.env.PATH = `${cliDir}${path.delimiter}${process.env.PATH}`;
+const target = process.platform === 'darwin' ? 'aarch64-apple-darwin' : 'x86_64-unknown-linux-musl';
+const suffix = process.platform === 'win32' ? '.exe' : '';
+const source = path.join(path.dirname(here), 'bin', target, `cbm-watcher${suffix}`);
+fs.mkdirSync(path.dirname(watcherExecutable()), { recursive: true });
+fs.copyFileSync(source, watcherExecutable());
+fs.chmodSync(watcherExecutable(), 0o755);
 process.env.FSSEARCH_FIXTURE_STATE = state;
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const calls = () => fs.existsSync(path.join(state, 'calls.jsonl')) ? fs.readFileSync(path.join(state, 'calls.jsonl'), 'utf8').trim().split('\n').map(JSON.parse) : [];
@@ -25,14 +41,13 @@ async function until(fn) {
 }
 let pid;
 try {
-  assert.equal(spawnSync('git', ['init', '-q', root]).status, 0);
   fs.writeFileSync(path.join(root, 'probe.py'), 'first');
   const pair = await Promise.all([query(), query()]);
   pid = pair[0].pid;
   for (const item of pair) { assert.equal(item.code, 0, item.stderr); assert.equal(item.pid, pid); }
-  assert.equal(starts(), 1, 'one cold index for simultaneous callers');
+  assert.equal(starts(), 1, `one cold index for simultaneous callers: ${JSON.stringify(calls())}`);
   await sleep(5500);
-  assert.equal(starts(), 1, 'unchanged dirty tree must not reindex');
+  assert.equal(starts(), 1, 'unchanged project must not reindex');
 
   const crashed = pid;
   process.kill(crashed, 'SIGKILL');
@@ -60,7 +75,7 @@ try {
   assert.equal(old.code, 0); assert.match(old.stderr, /CBM_INDEX_STALE/); assert.match(old.stdout, /third during index/);
   fs.unlinkSync(path.join(state, 'fail'));
   await until(() => JSON.parse(fs.readFileSync(path.join(state, 'graph.json'), 'utf8')).snapshot === 'fourth');
-  assert.doesNotMatch((await query()).stderr, /STALE/);
+  await until(async () => !(await query()).stderr.includes('CBM_INDEX_STALE'));
   fs.rmSync(root, { recursive: true });
   await until(() => { try { process.kill(pid, 0); return false; } catch (e) { return e.code === 'ESRCH'; } });
   assert.ok(fs.existsSync(path.join(state, 'graph.json')), 'root removal preserves graph');

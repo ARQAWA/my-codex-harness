@@ -3,13 +3,13 @@
 ## Состав
 
 Пакет содержит `filesystem-search` skill, Node.js wrappers (tgrep, ast-grep,
-CBM index/search), Node CLI watcher CBM, guard hook и три справочных файла. Внешние инструменты
-устанавливаются отдельно. npm-зависимостей и custom agents нет.
+CBM index/search), Rust CBM watcher с исходниками и тремя готовыми сборками,
+guard hook и три справочных файла. Внешние инструменты устанавливаются отдельно.
 
 Все scoped-операции идут через wrappers от корня текущего проекта (cwd
 сессии); другой root отклоняется с exit `2`. CBM используется только через
 `codebase-memory-mcp cli ...`; его индексация — только через wrapper.
-Постоянные процессы — официальный `tgrep serve` и один packaged Node watcher
+Постоянные процессы — официальный `tgrep serve` и один packaged Rust watcher
 CBM на canonical root. CBM запускается только как one-shot CLI; MCP нет.
 Обёртки сами готовят индексы и поддерживают их в фоне.
 
@@ -30,7 +30,7 @@ newest выбери новейший предыдущий совместимый
 Runtime не перепроектируй.
 
 Совместимость означает сохранение packaged-контрактов: `tgrep
-search/files/status/serve`, complete hidden coverage и полей readiness, JSON-массив `ast-grep`, one-shot
+search/files/status/serve`, readiness полной индексации по штатным ignore rules и её полей, JSON-массив `ast-grep`, one-shot
 CBM CLI с identity/index/graph operations и `rg --engine auto`.
 
 ## Первая установка
@@ -40,6 +40,17 @@ CBM CLI с identity/index/graph operations и `rg --engine auto`.
 операцией Codex CLI; для проверенного CLI это `codex plugin add
 "filesystem-search@<marketplace>"`. Перед запуском сверь синтаксис по
 `codex plugin --help`.
+
+Скопируй сборку из исходников выбранной ревизии в активный Codex home:
+
+- Ubuntu x86-64: `bin/x86_64-unknown-linux-musl/cbm-watcher`
+- macOS M2/M4: `bin/aarch64-apple-darwin/cbm-watcher`
+- Windows 11 VDI x86-64: `bin/x86_64-pc-windows-gnu/cbm-watcher.exe`
+
+Целевой каталог — `<active-codex-home>/tools/filesystem-search/cbm-watcher/<plugin-version>/`.
+Имя файла оставь `cbm-watcher` или `cbm-watcher.exe`. Версию возьми из
+`.codex-plugin/plugin.json` установленной ревизии. Не собирай watcher на целевой
+машине. Если сборки для платформы нет, установка CBM watcher не завершена.
 
 Existing marketplace переиспользуй. Не создавай второй источник или global
 skill. Эта инструкция не выполняет bump, commit или push.
@@ -175,8 +186,12 @@ def probe_caller():
 
 - Packaged wrapper находит `FILESYSTEM_SEARCH_PROBE`, в `files` mode возвращает
   `probe.py`, а отсутствующий шаблон даёт native exit 1. Первый вызов ждёт
-  готовый индекс и watcher. Проверь hidden/ignored файл и положительный glob
-  через индекс (`--stats`: via server), затем повторный запрос с тем же PID.
+  готовый индекс и watcher. Проверь обычный файл и явный запрос `--hidden`
+  через индекс (`--stats`: via server); оба запроса должны исключать sentinel
+  из `.gitignore`, `.ignore` и `.git`, даже с `--hidden`. `.gitignore` проверь
+  в non-Git root. Sentinels из `.gitignore` и `.cbmignore` также должны
+  отсутствовать в CBM graph. Повтори запрос
+  с тем же PID.
   Индекс probe должен появиться в `<active-codex-home>/tgrep/index/`, а не в
   `<temporary-root>/.tgrep`.
 - Вызов каждого wrapper (tgrep, ast-grep, CBM index/search) с root, равным домашнему
@@ -205,7 +220,7 @@ benchmarks или искусственные отказы. При ошибке �
 
 ## Обновление
 
-Перед использованием новой CBM-обёртки адресно заверши подтверждённый старый packaged CBM watcher затронутого root. Следующий вызов запустит новую версию. Индекс и lock вручную не удаляй: старый демон ждёт EOF и несовместим с новым клиентом.
+Перед использованием новой CBM-обёртки адресно заверши подтверждённый старый packaged Node CBM watcher затронутого root. Следующий вызов запустит Rust-версию. Совместимый протокол IPC сохранён. Индекс и lock вручную не удаляй.
 
 Повтори штатную add/update операцию из раздела «Первая установка» для того же
 источника. Не создавай второй marketplace. Сохраняй release contract; этот

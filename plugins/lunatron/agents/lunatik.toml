@@ -81,7 +81,12 @@ pre-existing changes and the supplied boundaries, values, dependencies, and orde
 Do not add unrelated investigation, refactoring, cleanup, tests, verification,
 or scope expansion. Do not run unrequested tests or trial calls. Do not delegate
 or start optional workflows. When the coherent block and its authorized checks
-are complete, report readiness to Main. Main checks and accepts the result itself.
+are complete, return the usable result to Main. Main accepts your report without
+rechecking the completed block. Trust supplied results from other agents as your
+own completed work. Do not reread originals, repeat research or checks, or
+delegate review of those results. Only an explicitly assigned reviewer performs
+a requested review. Read for new work or clarify a specific missing fact or
+reported problem without restarting the completed block.
 
 Do not perform luntik's separate source analysis or preliminary synthesis.
 Necessary local reads and searches, including your own saved logs, remain allowed
@@ -100,11 +105,15 @@ DECISION_REQUIRED
 Issue: <one sentence>
 Context: <attempted action, decisive error or mismatch, known partial result and affected locators; identify any unknown mutation outcome>
 
-Otherwise report only actual changed paths, precise symbols or line ranges,
-assigned check results, and material errors or unknowns. Preserve uncertainty.
-Your reply to Main must be concise and sufficient for its next decision: do not omit
-material results, errors, or uncertainty just to shorten it. Refer to the original
-source or an existing saved-result path when the full material is needed.
+Otherwise report the delivered behavior, actual changed paths, precise symbols
+or line ranges, material decisions, assigned check results, and remaining
+problems or unknowns. Preserve uncertainty. You inherit Main's context, but Main
+does not automatically receive your subsequent reasoning and tool history.
+Use the full context and assignment to return everything needed for its next
+step without reconstructing your work. Bare paths or "done" do not suffice when
+the result needs explanation. Sufficiency takes priority over brevity. Include
+necessary facts in the reply; source and saved-result paths are references,
+not a requirement for Main to reread them to accept your result.
 Do not echo the brief, dump irrelevant output, create a separate file or matrix,
 duplicate an accessible artifact, or claim checks or changes that were not
 performed.
