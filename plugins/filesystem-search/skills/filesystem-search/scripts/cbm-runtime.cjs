@@ -84,13 +84,19 @@ async function request(root, op, tool, args = []) {
   }
   return new Promise((resolve, reject) => {
     let data = '';
+    let ended = false;
     client.setEncoding('utf8');
     client.on('error', reject);
     client.on('data', chunk => { data += chunk; });
     client.on('end', () => {
+      ended = true;
       try { resolve(JSON.parse(data)); } catch { reject(new Error('CBM daemon disconnected before returning a result')); }
+      client.end();
     });
-    client.end(JSON.stringify({ root: canon(root), op, tool, args }) + '\n');
+    client.on('close', () => {
+      if (!ended) reject(new Error('CBM daemon disconnected before returning a result'));
+    });
+    client.write(JSON.stringify({ root: canon(root), op, tool, args }) + '\n');
   });
 }
 
@@ -198,13 +204,28 @@ async function daemon(root) {
 
   const server = net.createServer({ allowHalfOpen: true }, client => {
     let input = '';
+    let accepted = false;
     client.setEncoding('utf8');
     client.on('error', () => {});
-    client.on('data', chunk => { input += chunk; });
-    client.on('end', async () => {
+    client.on('data', chunk => {
+      if (accepted) return;
+      input += chunk;
+      const newline = input.indexOf('\n');
+      if (newline < 0) return;
+      accepted = true;
+      void handleRequest(input.slice(0, newline));
+    });
+    client.on('end', () => {
+      if (accepted) return;
+      accepted = true;
+      client.end(JSON.stringify({ code: 75, pid: process.pid, project, stdout: '',
+        stderr: 'CBM_BACKEND_UNAVAILABLE: request ended before newline\n' }));
+    });
+
+    async function handleRequest(line) {
       let result;
       try {
-        const message = JSON.parse(input);
+        const message = JSON.parse(line);
         if (message.root !== canon(root)) throw new Error('CBM daemon root mismatch');
         if (!['ready', 'refresh', 'query'].includes(message.op)) throw new Error('invalid CBM operation');
         if (message.op === 'query') validateQuery(root, message.tool, message.args);
@@ -231,7 +252,7 @@ async function daemon(root) {
         result = { code: 75, pid: process.pid, project, stdout: '', stderr: `CBM_BACKEND_UNAVAILABLE: ${error.message}\n` };
       }
       client.end(JSON.stringify(result));
-    });
+    }
   });
 
   function stop() {
