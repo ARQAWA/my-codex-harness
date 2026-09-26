@@ -47,8 +47,11 @@ Analysis-only не меняет состояние. Полный релиз вы
 
 Native install выполняй командой `codex plugin add <name>@<marketplace>` только
 когда entry source указывает этот репозиторий и версия соответствует source
-commit. Соблюдай профили из выбранного документа и fresh hook trust: Scope Focus —
-`spotty`, `smarty`, `bossy`, Lunatron — `lunatik` и `luntik`. Trust не обходи.
+commit. Соблюдай профили из выбранного документа: Scope Focus — `spotty`,
+`smarty`, `bossy`; Lunatron — `lunatik` и `luntik`. Scope Focus обновляет три
+профиля без hook trust. Fresh hook trust нужен только для компонентов, чьи
+выбранная инструкция и установленный пакет действительно содержат hooks,
+например Lunatron. Trust не обходи.
 
 После native install выполни только оставшиеся applicable setup/check шаги из
 выбранного документа. Не повторяй cachebuster или native add, уже выполненные

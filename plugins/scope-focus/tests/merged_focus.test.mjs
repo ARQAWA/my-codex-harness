@@ -1,62 +1,9 @@
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
-import os from 'node:os';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const hooks = JSON.parse(readFileSync(path.join(root, 'hooks', 'hooks.json'), 'utf8')).hooks;
-const run = path.join(root, 'hooks', 'run.cjs');
-const temp = mkdtempSync(path.join(os.tmpdir(), 'scope-focus-test-'));
-process.on('exit', () => rmSync(temp, { recursive: true, force: true }));
-
-function invoke(fn, value) {
-  return spawnSync(process.execPath, ['-e', `require(${JSON.stringify(run)}).${fn}()`], {
-    input: value === undefined ? '' : JSON.stringify(value),
-    encoding: 'utf8',
-    env: { ...process.env, TMPDIR: temp, TEMP: temp, TMP: temp },
-  });
-}
-
-assert.deepEqual(Object.keys(hooks).sort(), ['SessionStart', 'UserPromptSubmit']);
-assert.equal(hooks.SessionStart.length, 1);
-assert.equal(hooks.SessionStart[0].matcher, '^(startup|resume|clear|compact)$');
-assert.match(JSON.stringify(hooks.SessionStart), /sessionStart/);
-assert.equal(hooks.UserPromptSubmit[0].additionalContextLimit, 2500);
-assert.ok(!JSON.stringify(hooks).includes('Stop'));
-assert.ok(!JSON.stringify(hooks).includes('Subagent'));
-
-const sessionResult = invoke('sessionStart', {
-  hook_event_name: 'SessionStart',
-  session_id: 'scope-test',
-});
-assert.equal(sessionResult.status, 0, sessionResult.stderr);
-const session = JSON.parse(sessionResult.stdout).hookSpecificOutput;
-assert.equal(session.hookEventName, 'SessionStart');
-for (const term of [
-  'SCOPE FOCUS CONTRACT',
-  'Exact outcome lock',
-  'First-sufficient execution ladder',
-  'Default exclusions',
-  'Final answer gate',
-  'scope-focus/task-notebook',
-]) assert.ok(session.additionalContext.includes(term), term);
-const submitResult = invoke('userPromptSubmit', { prompt: 'ordinary request' });
-assert.equal(submitResult.status, 0, submitResult.stderr);
-const submit = JSON.parse(submitResult.stdout).hookSpecificOutput;
-assert.equal(submit.hookEventName, 'UserPromptSubmit');
-for (const term of [
-  'exact outcome',
-  'mandatory procedure',
-  'first sufficient',
-  'smallest local patch',
-  'mandatory evidence',
-  'Stop immediately',
-]) assert.ok(submit.additionalContext.includes(term), term);
-const invalidSubmit = invoke('userPromptSubmit', {});
-assert.equal(invalidSubmit.status, 1);
-assert.match(invalidSubmit.stderr, /UserPromptSubmit unavailable/);
 
 const spotty = readFileSync(path.join(root, 'agents', 'spotty.toml'), 'utf8');
 for (const term of [
@@ -88,7 +35,8 @@ for (const file of ['SKILL.md', 'agents/openai.yaml', 'LICENSE.txt']) {
 const notebook = readFileSync(path.join(root, 'skills', 'task-notebook', 'SKILL.md'), 'utf8');
 for (const term of [
   'Use only when the user selects Task Notebook',
-  'scope-focus/task-notebook/<session-key>/plan.md',
+  "path.join(os.tmpdir(), 'scope-focus', 'task-notebook'",
+  "Buffer.from(session_id, 'utf8').toString('hex'), 'plan.md')",
   '`working`',
   '`waiting`',
   '`blocked`',
@@ -103,4 +51,4 @@ for (const term of ['explicitly invoked', 'Task Notebook', '`rm -f`', '`--force`
   assert.ok(cleanup.includes(term), term);
 }
 
-console.log('PASS: Scope Focus current hook, review, Goal, and Task Notebook contracts.');
+console.log('PASS: Scope Focus review, Goal, Task Notebook, and cleanup contracts.');
