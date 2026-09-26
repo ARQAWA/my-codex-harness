@@ -4,10 +4,11 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ACTIVE_CONTEXT = `LUNATRON_STATE=ACTIVE
-The user selected LNT1. Root workflow: select a coherent block -> prepare its
+Lunatron is active for this root task by default or through LNT1.
+Root workflow: select a coherent block -> prepare its
 mini-plan -> dispatch -> wait -> accept -> close the one-shot worker when supported.
-This selection explicitly requests delegation; do not ask for a separate request
-to use workers. A short task, a supplied command, or the absence
+Active mode requires delegation; do not ask for a separate request to use workers.
+A short task, a supplied command, or the absence
 of parallel work does not waive this workflow. Minimize steps within it while
 respecting higher-priority instructions.
 
@@ -254,7 +255,7 @@ function resolveMode(input) {
     const override = readOverride(input);
     if (override === 1) return { active: true, basis: 'forced-on' };
     if (override === 0) return { active: false, basis: 'forced-off' };
-    return { active: false, basis: 'default-off' };
+    return { active: true, basis: 'default-on' };
   } catch (error) {
     return { active: false, basis: 'state-error', error: error.code || error.message };
   }

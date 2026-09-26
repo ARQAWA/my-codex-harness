@@ -36,14 +36,15 @@ function captureOutput(input) {
 try {
   for (const model of ['gpt-5.6-sol', 'gpt-6-astra', 'gpt-6-sol', 'gpt-5.6-luna', 'gpt-5.5', 'unrelated-model']) {
     const result = invoke('sessionStart', {
-      hook_event_name: 'SessionStart', model, session_id: `inactive-${model}`,
+      hook_event_name: 'SessionStart', model, session_id: `default-${model}`,
       transcript_path: path.join(temp, 'unused-transcript.jsonl'),
       turn_id: 'unused-turn',
     });
     assert.equal(result.status, 0, result.stderr);
-    assert.match(result.stdout, /LUNATRON_STATE=INACTIVE/);
-    assert.match(result.stdout, /LUNATRON_MODE=default-off/);
-    assert.doesNotMatch(result.stdout, /LUNATRON_DATA_PATHS/);
+    assert.match(result.stdout, /LUNATRON_STATE=ACTIVE/);
+    assert.match(result.stdout, /LUNATRON_MODE=default-on/);
+    assert.doesNotMatch(result.stdout, /LUNATRON_COMMAND_APPLIED/);
+    assert.match(result.stdout, /LUNATRON_DATA_PATHS/);
   }
 
   const forcedOn = invoke('userPromptSubmit', {
@@ -54,7 +55,7 @@ try {
   assert.match(forcedOn.stdout, /LUNATRON_STATE=ACTIVE/);
   assert.match(forcedOn.stdout, /LUNATRON_MODE=forced-on/);
   assert.match(forcedOn.stdout, /LUNATRON_COMMAND_APPLIED=LNT1/);
-  assert.match(forcedOn.stdout, /This selection explicitly requests delegation/);
+  assert.match(forcedOn.stdout, /Active mode requires delegation/);
   assert.match(forcedOn.stdout, /absence\\nof parallel work does not waive this workflow/);
   assert.match(forcedOn.stdout, /Do not silently execute that block in Main/);
   assert.match(forcedOn.stdout, /carry out the rest of the user request/);
@@ -98,7 +99,7 @@ try {
     });
     assert.equal(result.status, 0, result.stderr);
     if (expected === null) {
-      assert.match(result.stdout, /LUNATRON_MODE=default-off/);
+      assert.match(result.stdout, /LUNATRON_MODE=default-on/);
       assert.doesNotMatch(result.stdout, /LUNATRON_COMMAND_APPLIED/);
     } else {
       assert.ok(result.stdout.includes(`LUNATRON_COMMAND_APPLIED=LNT${expected}`));

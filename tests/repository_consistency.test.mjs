@@ -51,11 +51,12 @@ assert.ok(!agents.includes('## Baseline'));
 assert.ok(agents.includes('node tests/run.mjs'));
 assert.ok(agents.includes('plugins/filesystem-search'));
 assert.ok(agents.includes('install-instructions/filesystem-search.md'));
-assert.ok(agents.includes('Lunatron по умолчанию выключен независимо от модели; автоматики нет.'));
+assert.ok(agents.includes('Lunatron по умолчанию включён для корневой задачи независимо от модели;'));
 assert.ok(agents.includes('Слитные `LNT1` и `LNT0` в любом регистре'));
 
 const lunatronHook = read('plugins/lunatron/hooks/lunatron.cjs');
-assert.ok(lunatronHook.includes("return { active: false, basis: 'default-off' }"));
+assert.ok(lunatronHook.includes("return { active: true, basis: 'default-on' }"));
+assert.ok(lunatronHook.includes('Active mode requires delegation; do not ask for a separate request to use workers.'));
 assert.ok(!lunatronHook.includes('gpt-5.5'));
 assert.ok(!lunatronHook.includes('GUARDED_MODELS'));
 assert.ok(!lunatronHook.includes('readReasoningEffort'));
