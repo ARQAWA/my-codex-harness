@@ -43,4 +43,4 @@ a separate first-search indexing step.
 CBM and user-scoped `tgrep` keep persistent indexes in the user's cache;
 `ast-grep` MCP does not keep a persistent search index. Do not use project-scoped
 `tgrep`, CBM graph export into a repository, or plugin-owned search wrappers,
-watchers, hooks, and locks.
+watchers, and locks.
