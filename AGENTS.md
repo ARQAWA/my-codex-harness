@@ -187,8 +187,6 @@ runtime skills.
 
 Всё собственное tooling проекта, кроме packaged CBM watcher filesystem-search,
 включая hooks, реализуется на Node.js и должно работать на macOS, Linux и Windows.
-Vendor-компонент `components/openai-api-server-via-codex` поддерживается на Go;
-это узкое исключение и не меняет правило для остального tooling.
 CBM watcher реализуется на Rust и поставляется сборками Ubuntu x86-64,
 macOS ARM64 и Windows x86-64.
 В Windows работать строго через Git Bash. PowerShell запрещён.

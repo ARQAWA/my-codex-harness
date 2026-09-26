@@ -2,7 +2,7 @@ use crate::{auth::{Auth, Credentials}, request::{self, Mode, Prepared}};
 use eventsource_stream::Eventsource;
 use futures_util::{SinkExt, StreamExt};
 use serde_json::{Value, json};
-use std::{collections::{BTreeMap, HashMap, HashSet}, sync::Arc, time::Duration};
+use std::{collections::{BTreeMap, HashMap, HashSet}, io::Write, sync::{Arc, Mutex}, time::{Duration, SystemTime, UNIX_EPOCH}};
 use tokio::{net::TcpStream, sync::{mpsc, oneshot}, time::timeout};
 use tokio_tungstenite::{MaybeTlsStream, WebSocketStream, connect_async, tungstenite::{Message, client::IntoClientRequest}};
 
@@ -38,8 +38,18 @@ pub struct Last {
     pub projected_external: Option<Vec<Value>>,
 }
 
+pub type DebugLog = Arc<Mutex<std::fs::File>>;
+
+fn record(log: &Option<DebugLog>, kind: &str, value: Value) {
+    let Some(log) = log else { return };
+    let time_ms = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_millis();
+    if let Ok(mut file) = log.lock() {
+        let _ = writeln!(file, "{}", json!({"time_ms":time_ms,"kind":kind,"value":value}));
+    }
+}
+
 #[derive(Clone)]
-pub struct Config { pub backend: String, pub client: reqwest::Client }
+pub struct Config { pub backend: String, pub client: reqwest::Client, pub debug: Option<DebugLog> }
 
 fn properties_match(a: &Value, b: &Value) -> bool {
     for key in ["model", "instructions", "tools", "tool_choice", "parallel_tool_calls", "reasoning", "store", "stream", "include", "service_tier", "prompt_cache_key", "text"] {
@@ -313,6 +323,7 @@ async fn connect(s: &mut Session, c: &Credentials, p: &Prepared, cfg: &Config) -
 }
 
 struct Projection {
+    debug: Option<DebugLog>,
     mode: Mode,
     include_usage: bool,
     model: String,
@@ -330,16 +341,18 @@ struct Projection {
 }
 
 impl Projection {
-    fn new(p: &Prepared, s: &Session) -> Self {
-        Self { mode: p.mode, include_usage: p.include_usage, model: p.logical["model"].as_str().unwrap_or("").into(), id: format!("chatcmpl-{}", uuid::Uuid::new_v4()), response_id: String::new(), output: BTreeMap::new(), chat_tools: BTreeMap::new(), chat_args: BTreeMap::new(), chat_wire_ids: BTreeMap::new(), assigned_ids: s.seen_call_ids.clone(), used_wire_ids: s.used_wire_ids.clone(), next_tool: 0, terminal: false, completed: false }
+    fn new(p: &Prepared, s: &Session, debug: Option<DebugLog>) -> Self {
+        Self { debug, mode: p.mode, include_usage: p.include_usage, model: p.logical["model"].as_str().unwrap_or("").into(), id: format!("chatcmpl-{}", uuid::Uuid::new_v4()), response_id: String::new(), output: BTreeMap::new(), chat_tools: BTreeMap::new(), chat_args: BTreeMap::new(), chat_wire_ids: BTreeMap::new(), assigned_ids: s.seen_call_ids.clone(), used_wire_ids: s.used_wire_ids.clone(), next_tool: 0, terminal: false, completed: false }
     }
     async fn emit(&self, tx: &mpsc::Sender<String>, v: Value) -> Result<(), String> {
+        record(&self.debug, "downstream_event", v.clone());
         tx.send(format!("data: {}\n\n", v)).await.map_err(|_| "client disconnected".into())
     }
     async fn chunk(&self, tx: &mpsc::Sender<String>, delta: Value, finish: Option<&str>) -> Result<(), String> {
         self.emit(tx, json!({"id":self.id,"object":"chat.completion.chunk","model":self.model,"choices":[{"index":0,"delta":delta,"finish_reason":finish}]})).await
     }
     async fn process(&mut self, e: Value, tx: &mpsc::Sender<String>, s: &mut Session) -> Result<(), String> {
+        record(&self.debug, "upstream_event", e.clone());
         let t = e.get("type").and_then(Value::as_str).unwrap_or("").to_owned();
         if t == "response.created" {
             if let Some(id) = e.pointer("/response/id").and_then(Value::as_str) {
@@ -505,14 +518,17 @@ async fn read_ws(session: &mut Session, projection: &mut Projection, tx: &mpsc::
 }
 
 pub async fn run(cfg: Config, session: &mut Session, mut p: Prepared, auth: Arc<Auth>, mut cred: Credentials, tx: mpsc::Sender<String>, ready: oneshot::Sender<Result<(), String>>) -> Result<(), String> {
+    record(&cfg.debug, "incoming_request", json!({"mode":if p.mode==Mode::Responses {"responses"} else {"chat"},"external_input":p.external_input,"logical":p.logical}));
     let owner = format!("{}:{}:{}", cred.account_id, cred.revision, cred.access_token);
     if session.auth_owner != owner { session.ws = None; session.last = None; session.turn_state = None; session.fallback_http = false; session.seen_call_ids.clear(); session.used_wire_ids.clear(); session.auth_owner = owner; }
     if session.thread_id.is_empty() { session.thread_id = uuid::Uuid::new_v4().to_string(); }
     if !same_turn(session, &p) { session.turn_state = None; }
     seed_external_call_ids(session, &p);
     let external_native_input = p.logical.get("input").and_then(Value::as_array).cloned().ok_or("native input missing")?;
+    let external_prefix_match = external_suffix(session, &p).is_some();
     reconstruct_history(session, &mut p);
-    let mut projection = Projection::new(&p, session);
+    record(&cfg.debug, "history", json!({"external_prefix_match":external_prefix_match,"same_turn":session.turn_state.is_some(),"logical_input":p.logical["input"],"previous_response_id":session.last.as_ref().map(|last| &last.response_id)}));
+    let mut projection = Projection::new(&p, session, cfg.debug.clone());
     let mut ready = Some(ready);
     let mut attempt = 0;
     let mut auth_retried = false;
@@ -544,6 +560,7 @@ pub async fn run(cfg: Config, session: &mut Session, mut p: Prepared, auth: Arc<
                 if let Some((id, delta)) = continuation(session, &p) { body["previous_response_id"] = json!(id); body["input"] = json!(delta); }
                 if let Some(state) = &session.turn_state { body["client_metadata"] = json!({"x-codex-turn-state":state}); }
                 body["type"] = json!("response.create");
+                record(&cfg.debug, "upstream_request_ws", body.clone());
                 match session.ws.as_mut().unwrap().send(Message::Text(body.to_string().into())).await {
                     Ok(()) => {
                         match read_ws(session, &mut projection, &tx, &mut ready).await {
@@ -568,6 +585,7 @@ pub async fn run(cfg: Config, session: &mut Session, mut p: Prepared, auth: Arc<
             }
         }
         let url = format!("{}/responses", cfg.backend.trim_end_matches('/'));
+        record(&cfg.debug, "upstream_request_http", p.logical.clone());
         let mut req = cfg.client.post(url);
         for (k,v) in headers(&cred, &p, session, false) { req = req.header(k,v); }
         let response = req.json(&p.logical).send().await.map_err(|e| format!("HTTP transport: {e}"))?;

@@ -75,6 +75,8 @@ fn flag(args: &[String], key: &str, default: &str) -> Result<String, String> {
         if args[i] == key {
             value = args.get(i+1).ok_or_else(|| format!("missing value for {key}"))?.clone();
             i += 2;
+        } else if args[i] == "--debug" {
+            i += 1;
         } else if ["--listen", "--auth-json", "--backend-base-url"].contains(&args[i].as_str()) {
             i += 2;
         } else { return Err(format!("unknown option: {}", args[i])); }
@@ -92,7 +94,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         PathBuf::from(std::env::var("HOME").or_else(|_| std::env::var("USERPROFILE"))?).join(tail)
     } else { PathBuf::from(auth_path) };
     let backend = flag(&args, "--backend-base-url", "https://chatgpt.com/backend-api/codex")?;
-    let config = Config { backend, client: reqwest::Client::builder().build()? };
+    let debug = if args.iter().any(|arg| arg == "--debug") {
+        let path = std::env::temp_dir().join(format!("kimi-codex-proxy-{}.jsonl", std::process::id()));
+        let mut options = std::fs::OpenOptions::new();
+        options.write(true).create_new(true);
+        #[cfg(unix)]
+        { use std::os::unix::fs::OpenOptionsExt; options.mode(0o600); }
+        let file = options.open(&path)?;
+        eprintln!("debug log: {}", path.display());
+        Some(Arc::new(std::sync::Mutex::new(file)))
+    } else { None };
+    let config = Config { backend, client: reqwest::Client::builder().build()?, debug };
     let app = App { config, auth: Arc::new(Auth::new(auth_path)), sessions: Arc::new(Mutex::new(HashMap::new())) };
     let router = Router::new().route("/v1/responses", post(responses)).route("/v1/chat/completions", post(chat)).with_state(app);
     let listener = tokio::net::TcpListener::bind(&listen).await?;
