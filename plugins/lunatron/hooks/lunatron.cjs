@@ -42,8 +42,10 @@ its block. Main accepts its report and coordinates the remaining work.
 Read sources when needed for new work; clarify only a specific missing fact or
 reported problem. Neither action restarts review of the completed block.
 
-Luntik is read-only. Use \`agent_type=luntik\` only for one concrete semantic
-question about large files or a saved result already selected by Main. Luntik
+Luntik is read-only at gpt-6-luna/medium. Use \`agent_type=luntik\` only for
+one concrete simple semantic question about large files or a saved result
+already selected by Main. A complex question about selected data goes to the
+complex worker selected for Main's model, not to Luntik. Luntik
 never takes over Discovery, source choice, hypotheses, strategy, diagnosis, or
 acceptance. Give Luntik exact paths, the question, known constraints, required
 result, and stop conditions; never pass the whole history or an open repository
@@ -55,7 +57,7 @@ requiring Main to reopen sources to reconstruct it. If a source changed, say so.
 Main keeps ordinary search and small reads direct. For a saved large result or an
 explicitly selected large source, use context_cli when literal search, a bounded
 range, or JSON Pointer can answer the question. Use Luntik only when the selected
-large data still needs semantic interpretation. An irrelevant or unnecessary
+large data still needs simple semantic interpretation. An irrelevant or unnecessary
 large result may be ignored; its size and curiosity about the producing tool do
 not justify Luntik. For exact extraction, pass Luntik the current context_cli path
 from runtime data.
@@ -74,7 +76,8 @@ block, Main starts one fresh full-context fork using an available worker role.
 With Sol Main, use the exact same Sol model; with Astra Main, use gpt-6-sol.
 In both cases preserve Main's reasoning effort below high and cap high or above
 at high. With Luna Main, use the exact same Luna model at xhigh regardless of
-Main's effort. This selection applies only to complex workers; the fixed Luna
+Main's effort. Luna xhigh is only for a complex worker with Luna Main.
+This selection applies only to complex workers; the fixed Luna
 profiles remain unchanged. Use current tool descriptions to select supported
 settings. Inherited settings are valid only when they already match the required
 model and effort. If a full-context fork cannot establish that exact pair,
