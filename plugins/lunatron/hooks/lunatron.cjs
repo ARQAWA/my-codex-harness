@@ -5,12 +5,9 @@ const path = require('node:path');
 
 const ACTIVE_CONTEXT = `LUNATRON_STATE=ACTIVE
 Lunatron is active for this root task by default or through LNT1.
-Root workflow: select a coherent block -> prepare its
-mini-plan -> dispatch -> wait -> accept -> close the one-shot worker when supported.
-Active mode requires delegation; do not ask for a separate request to use workers.
-A short task, a supplied command, or the absence
-of parallel work does not waive this workflow. Minimize steps within it while
-respecting higher-priority instructions.
+Read the bundled lunatron-delegation skill first. Follow the workflow below
+only when that skill authorizes delegation; this hook describes the runtime
+contract but is not an independent source of delegation authority.
 
 A coherent block delivers one finished result within common boundaries without
 a new material decision from Main. Group dependent commands, simple implementation,
@@ -71,17 +68,18 @@ application runs. Main supplies decisions and references, not a complete solutio
 written in Main merely for Luna to copy.
 Empirical checks require authority from the main prompt or user.
 
-For a complex, noisy search, reading, diagnosis, code, documentation, or skill
-block, Main starts one fresh full-context fork using an available worker role.
-With Sol Main, use the exact same Sol model; with Astra Main, use gpt-6-sol.
-In both cases preserve Main's reasoning effort below high and cap high or above
-at high. With Luna Main, use the exact same Luna model at xhigh regardless of
-Main's effort. Luna xhigh is only for a complex worker with Luna Main.
-This selection applies only to complex workers; the fixed Luna
-profiles remain unchanged. Use current tool descriptions to select supported
-settings. Inherited settings are valid only when they already match the required
-model and effort. If a full-context fork cannot establish that exact pair,
-report the incompatibility and stop the affected block; do not substitute.
+For each complex, noisy search, reading, diagnosis, code, documentation, or skill
+block, Main starts a fresh full-context fork with the named role profile.
+With Luna Main, use lunatron_luna_xhigh (gpt-6-luna/xhigh). With Sol or
+Astra Main, Main chooses lunatron_sol_low, lunatron_sol_medium, or
+lunatron_sol_high for the block; all three pin gpt-6-sol at the named
+effort. Never use the Luna XHigh role for Sol or Astra Main, and never inherit
+Main's Sol Max effort. The named role profile must establish the required model
+and effort regardless of inherited settings. If the required role is unavailable
+or cannot establish that pair, report the incompatibility and stop the affected
+block; do not substitute. Independent Luna Medium and Luna XHigh blocks may run
+as a swarm of up to 15 combined workers, subject to Codex's configured global
+child-thread limit.
 Give the fork the mini-plan structure below, including the question,
 scope, known facts, constraints, authority, required result, and stop conditions.
 For investigation, specify what must be established, not an invented answer;
@@ -326,7 +324,15 @@ function contextFor(input, commandResult) {
   } else {
     dataBlock += 'PLUGIN_DATA: unavailable\n';
   }
-  return ACTIVE_CONTEXT + dataBlock + status;
+  const delegationSkill = path.resolve(
+    __dirname,
+    '..',
+    'skills',
+    'lunatron-delegation',
+    'SKILL.md',
+  );
+  const skillInstruction = `\n\nFor every ACTIVE root task, before continuing work, Main must read and follow the bundled Lunatron delegation skill at ${delegationSkill}. If it is already loaded in the current context, do not read it again.`;
+  return ACTIVE_CONTEXT + skillInstruction + dataBlock + status;
 }
 
 function userPromptSubmit() {
