@@ -1,13 +1,13 @@
 ---
 name: high-review-cycle
-description: Run only when explicitly invoked for one fresh blind CLEAN pass with Smarty (gpt-6-sol / high) and an autonomous batch-fix loop.
+description: Run only when explicitly invoked for one fresh blind CLEAN pass with Smarty (gpt-6-sol / medium) and an autonomous batch-fix loop.
 ---
 
 # High Review Cycle
 
 Use only on explicit invocation. MAIN owns fixes and completion.
 
-Direct invocation selects `agent_type=smarty` (`gpt-6-sol`, reasoning `high`)
+Direct invocation selects `agent_type=smarty` (`gpt-6-sol`, reasoning `medium`)
 and one clean pass per checkpoint.
 
 Light Review Cycle, Astro Review Cycle, and Double Light Review Cycle read this

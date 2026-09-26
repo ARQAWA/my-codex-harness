@@ -234,11 +234,14 @@ skill с фиксированными моделями и числом чист�
 | `astro-review-cycle` | `bossy` | `gpt-6-astra / low` | 1 |
 | `double-light-review-cycle` | `spotty` | `gpt-6-sol / low` | 2 |
 
+Значение `high` для Smarty в этой таблице историческое. Его заменило
+решение от 2026-09-26 ниже.
+
 В исходниках `blind-check-cycle` переименован в `high-review-cycle`, а
 `blind-double-check-cycle` — в `double-light-review-cycle`; старые runtime-aliases
 удалены. Добавлены Light и Astro. Прежний Spotty на Sol Medium заменён Spotty
-на Sol Low; обычный High использует Smarty на Sol High. Модели и reasoning
-закреплены в трёх read-only профилях с одинаковыми инструкциями.
+на Sol Low; на этом этапе обычный High использовал Smarty на Sol High. Модели
+и reasoning были закреплены в трёх read-only профилях с одинаковыми инструкциями.
 
 Общие правила остались в High Review Cycle. Остальные skills читают их по
 относительной ссылке внутри пакета, сохраняя своего reviewer и число проходов.
@@ -271,3 +274,12 @@ Double Light — только два последовательных чисты
 и его источник: проверка пересказа Main не заменяет проверку результата,
 а CLEAN относится только к проверенному объекту. Модели, имена, формат
 ответов и автономные циклы сохранены.
+
+## 2026-09-26: Smarty на Sol Medium
+
+Владелец уточнил, что «high reviewer» означает профиль Smarty, и подтвердил
+`gpt-6-sol / medium` вместо `gpt-6-sol / high`. Имя `high-review-cycle`
+сохраняется. Это заменяет только прежний effort Smarty из решения выше;
+модель, число чистых проходов и общий blind-контракт не меняются.
+
+Новый effort закреплён в профиле Smarty, review-skill и инструкции установки.

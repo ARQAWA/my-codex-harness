@@ -19,7 +19,7 @@ Review-skills запускаются явно:
 | Skill | Профиль и модель | Чистых проходов |
 |---|---|---|
 | `$light-review-cycle` | Spotty: `gpt-6-sol / low` | 1 |
-| `$high-review-cycle` | Smarty: `gpt-6-sol / high` | 1 |
+| `$high-review-cycle` | Smarty: `gpt-6-sol / medium` | 1 |
 | `$astro-review-cycle` | Bossy: `gpt-6-astra / low` | 1 |
 | `$double-light-review-cycle` | Spotty: `gpt-6-sol / low` | 2 |
 

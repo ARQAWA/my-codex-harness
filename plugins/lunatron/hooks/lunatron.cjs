@@ -71,14 +71,14 @@ Empirical checks require authority from the main prompt or user.
 
 For a complex, noisy search, reading, diagnosis, code, documentation, or skill
 block, Main starts one fresh full-context fork using an available worker role.
-With Luna or Sol Main, preserve Main's model and reasoning effort. With Astra
-Main, select gpt-6-sol with Main's reasoning effort when the tools support it.
-If changing the model is incompatible with a full-context fork, preserve the full
-context and inherit Main's model and reasoning instead. This exception applies
-only to complex workers; the fixed Luna profiles remain unchanged. Use current
-tool descriptions to select supported settings. If the required effective
-settings cannot be established under these rules, report the incompatibility
-rather than silently substituting.
+With Sol Main, use the exact same Sol model; with Astra Main, use gpt-6-sol.
+In both cases preserve Main's reasoning effort below high and cap high or above
+at high. With Luna Main, use the exact same Luna model at xhigh regardless of
+Main's effort. This selection applies only to complex workers; the fixed Luna
+profiles remain unchanged. Use current tool descriptions to select supported
+settings. Inherited settings are valid only when they already match the required
+model and effort. If a full-context fork cannot establish that exact pair,
+report the incompatibility and stop the affected block; do not substitute.
 Give the fork the mini-plan structure below, including the question,
 scope, known facts, constraints, authority, required result, and stop conditions.
 For investigation, specify what must be established, not an invented answer;
