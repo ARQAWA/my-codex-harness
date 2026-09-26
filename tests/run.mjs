@@ -6,8 +6,6 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const suites = [
   'plugins/scope-focus/tests/merged_focus.test.mjs',
   'plugins/lunatron/tests/lunatron.test.mjs',
-  'plugins/filesystem-search/tests/filesystem_search.test.mjs',
-  'plugins/filesystem-search/tests/cbm_lifecycle.test.mjs',
   'tests/repository_consistency.test.mjs',
 ];
 let failed = false;

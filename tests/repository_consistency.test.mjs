@@ -65,12 +65,20 @@ assert.ok(lunatronDesign.includes('## 5. 2026-09-20: сужение model gate')
 assert.ok(lunatronDesign.includes('Это исторический контракт, заменённый решением от 2026-09-20 ниже.'));
 
 const install = read('install-instructions/filesystem-search.md');
-assert.equal((install.match(/BEGIN FILESYSTEM_SEARCH_GLOBAL_ROUTING/g) || []).length, 1);
-assert.equal((install.match(/END FILESYSTEM_SEARCH_GLOBAL_ROUTING/g) || []).length, 1);
-const pathConfig = install.indexOf('shell_environment_policy.set');
-const freshTask = install.indexOf('После настройки environment открой новую Codex task');
+assert.ok(install.includes('Этот блок больше\nне добавляется: его текст находится в `description` skill.'));
+assert.ok(!agents.includes('<!-- BEGIN FILESYSTEM_SEARCH_GLOBAL_ROUTING -->'));
+const fsSkill = read('plugins/filesystem-search/skills/filesystem-search/SKILL.md');
+const description = fsSkill.match(/^description: \|-\n([\s\S]*?)\n---/m)?.[1].replace(/^  /gm, '').trimEnd();
+assert.equal(description, `# Mandatory filesystem discovery routing
+
+Before any command or tool call whose purpose is to discover files, symbols,
+text, callers, dependencies, impact, or source context, load the
+\`filesystem-search\` skill and follow its routing. This gate is mandatory and
+comes before \`rg\`, \`grep\`, \`find\`, globs, AST scripts, or Codebase Memory CLI.
+Read an already known exact path directly when discovery is not needed.`);
+const pluginInstall = install.indexOf('codex plugin add');
 const checks = install.indexOf('## Проверка после установки');
-assert.ok(pathConfig >= 0 && freshTask > pathConfig && checks > freshTask);
+assert.ok(pluginInstall >= 0 && checks > pluginInstall);
 
 const fsSearchDesign = read('FILESYSTEM-SEARCH-DESIGN.md');
 assert.ok(fsSearchDesign.includes('root-дисциплина'));

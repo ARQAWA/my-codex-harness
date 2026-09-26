@@ -1,7 +1,7 @@
 {
   "name": "filesystem-search",
-  "version": "0.0.0+codex.20260925070719",
-  "description": "Поиск по файлам, синтаксису и связям кода через локальные CLI.",
+  "version": "0.0.0+codex.20260926193945",
+  "description": "Поиск по файлам, синтаксису и связям кода через штатные MCP.",
   "author": {
     "name": "A. Chukavin"
   },
@@ -9,7 +9,7 @@
   "interface": {
     "displayName": "Filesystem Search",
     "shortDescription": "Поиск по файлам, синтаксису и связям кода.",
-    "longDescription": "Поиск по файлам, синтаксису и связям кода через локальные CLI.",
+    "longDescription": "Поиск по файлам, синтаксису и связям кода через штатные MCP.",
     "developerName": "A. Chukavin",
     "category": "Productivity",
     "capabilities": [
