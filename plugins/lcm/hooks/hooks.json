@@ -19,7 +19,8 @@
           {
             "type": "command",
             "command": "node -e \"require(require('node:path').join(process.env.PLUGIN_ROOT,'hooks','lcm.cjs')).sessionStart()\"",
-            "timeout": 7
+            "timeout": 7,
+            "additionalContextLimit": 0
           }
         ]
       }

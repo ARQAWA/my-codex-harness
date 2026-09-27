@@ -11,7 +11,8 @@ const { TextDecoder } = require('node:util');
 const { DatabaseSync } = require('node:sqlite');
 
 const MAX_CHUNK_CHARS = 48000;
-const MAX_CONTEXT_BYTES = 8000;
+const MAX_CONTEXT_BYTES = 20000;
+const MAX_CATALOG_BYTES = 1024;
 const utf8 = new TextDecoder('utf-8', { fatal: true });
 
 function archivePath() {
@@ -215,7 +216,9 @@ function contextForSession(db, sessionId, cliPath) {
   if (!rows.length) return '';
   const sources = db.prepare('SELECT source_id FROM summary_sources WHERE summary_id=?');
   const children = db.prepare('SELECT child_id FROM summary_children WHERE parent_id=?');
-  let context = `LCM archive for this main session. These are extra notes after native Codex compaction; check originals when exact detail matters. Search with node "${cliPath}" search <query>; follow summaries and reveal originals with node "${cliPath}" expand <id>.\n`;
+  const header = `LCM archive for this main session. These are extra notes after native Codex compaction; check originals when exact detail matters. Search with node "${cliPath}" search <query> [--offset N]; follow summaries and reveal originals with node "${cliPath}" expand <id>.\n`;
+  let context = header;
+  const included = new Set();
   for (const row of rows) {
     const refs = row.depth === 0
       ? sources.all(row.id).map(item => item.source_id)
@@ -223,21 +226,71 @@ function contextForSession(db, sessionId, cliPath) {
     const entry = `\n[${row.id}; ${row.depth ? 'child summaries' : 'source records'}: ${refs.join(', ')}]\n${row.content.trim()}\n`;
     if (Buffer.byteLength(context + entry, 'utf8') > MAX_CONTEXT_BYTES) continue;
     context += entry;
+    included.add(row.id);
   }
-  return context.includes('[sum_') ? context : '';
+  let omitted = rows.filter(row => !included.has(row.id));
+  if (!omitted.length) return included.size ? context : '';
+
+  const searchHint = `Search by topic: node "${cliPath}" search <query> [--offset N].\n`;
+  const incompleteHint = `Catalog incomplete; search remaining summaries by topic: node "${cliPath}" search <query> [--offset N].\n`;
+  function catalogFor(available) {
+    const limit = Math.min(MAX_CATALOG_BYTES, available);
+    let catalog = '\nOmitted active summaries:\n';
+    let count = 0;
+    for (const row of omitted) {
+      const words = row.content.replace(/\s+/g, ' ').trim();
+      const fragment = Array.from(words).slice(0, 80).join('');
+      const pointer = `[${row.id}] ${fragment}\n`;
+      const hint = count + 1 < omitted.length ? incompleteHint : searchHint;
+      if (Buffer.byteLength(catalog + pointer + hint, 'utf8') > limit) break;
+      catalog += pointer;
+      count++;
+    }
+    return count ? catalog + (count < omitted.length ? incompleteHint : searchHint) : '';
+  }
+
+  while (true) {
+    const catalog = catalogFor(MAX_CONTEXT_BYTES - Buffer.byteLength(context, 'utf8'));
+    if (catalog) return context + catalog;
+    if (!included.size) return '';
+    const last = rows.findLast(row => included.has(row.id));
+    included.delete(last.id);
+    context = header;
+    for (const row of rows) {
+      if (!included.has(row.id)) continue;
+      const refs = row.depth === 0
+        ? sources.all(row.id).map(item => item.source_id)
+        : children.all(row.id).map(item => item.child_id);
+      context += `\n[${row.id}; ${row.depth ? 'child summaries' : 'source records'}: ${refs.join(', ')}]\n${row.content.trim()}\n`;
+    }
+    omitted = rows.filter(row => !included.has(row.id));
+  }
 }
 
-function search(db, query) {
+function search(db, query, offset = 0) {
   if (!query || !query.trim()) throw new Error('search query is required');
+  if (!Number.isSafeInteger(offset) || offset < 0) throw new Error('offset must be a nonnegative integer');
   const escaped = query.replace(/[\\%_]/g, '\\$&');
-  return db.prepare(`SELECT id, session_id, role, search_text FROM records
-    WHERE search_text LIKE ? ESCAPE '\\' ORDER BY created_at DESC, rowid DESC LIMIT 20`)
-    .all(`%${escaped}%`).map(row => ({
+  const matches = db.prepare(`SELECT type, id, session_id, body FROM (
+      SELECT 0 AS type_order, 'summary' AS type, id, session_id, content AS body,
+        created_at, rowid AS item_order FROM summaries WHERE content LIKE ? ESCAPE '\\'
+      UNION ALL
+      SELECT 1 AS type_order, 'record' AS type, id, session_id, search_text AS body,
+        created_at, rowid AS item_order FROM records WHERE search_text LIKE ? ESCAPE '\\'
+    ) ORDER BY type_order, created_at DESC, item_order DESC LIMIT 21 OFFSET ?`)
+    .all(`%${escaped}%`, `%${escaped}%`, offset);
+  const rows = matches.slice(0, 20).map(row => {
+    const position = row.body.toLowerCase().indexOf(query.toLowerCase());
+    const characters = Array.from(row.body);
+    const start = position < 0 ? 0 : Math.max(0, Array.from(row.body.slice(0, position)).length - 60);
+    return {
+      type: row.type,
       id: row.id,
       session_id: row.session_id,
-      role: row.role,
-      snippet: row.search_text.replace(/\s+/g, ' ').slice(0, 200),
-    }));
+      snippet: characters.slice(start, start + 200).join('').replace(/\s+/g, ' '),
+    };
+  });
+  return { rows, nextOffset: matches.length > 20 ? offset + 20 : null };
 }
 
 function expand(db, id) {

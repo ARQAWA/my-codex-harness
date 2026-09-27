@@ -6,18 +6,29 @@ const archive = require('../lib/archive.cjs');
 function main() {
   const [command, ...args] = process.argv.slice(2);
   if (!['search', 'expand'].includes(command) || args.length === 0) {
-    process.stderr.write('Usage: node bin/lcm.cjs search <query> | expand <id>\n');
+    process.stderr.write('Usage: node bin/lcm.cjs search <query> [--offset N] | expand <id>\n');
     process.exitCode = 2;
     return;
   }
   const db = archive.openArchive();
   try {
     if (command === 'search') {
-      const rows = archive.search(db, args.join(' '));
-      if (!rows.length) process.stdout.write('No matching archived records.\n');
-      else for (const row of rows) {
-        process.stdout.write(`${row.id}\t${row.session_id}\t${row.role}\t${row.snippet}\n`);
+      let offset = 0;
+      const option = args.indexOf('--offset');
+      if (option >= 0) {
+        if (option !== args.length - 2 || !/^\d+$/.test(args[option + 1])) {
+          throw new Error('search requires --offset followed by a nonnegative integer');
+        }
+        offset = Number(args[option + 1]);
+        if (!Number.isSafeInteger(offset)) throw new Error('search offset is too large');
+        args.splice(option, 2);
       }
+      const { rows, nextOffset } = archive.search(db, args.join(' '), offset);
+      if (!rows.length) process.stdout.write('No matching archived summaries or records.\n');
+      else for (const row of rows) {
+        process.stdout.write(`${row.type}\t${row.id}\t${row.session_id}\t${row.snippet}\n`);
+      }
+      if (nextOffset !== null) process.stdout.write(`Next page: --offset ${nextOffset}\n`);
     } else {
       if (args.length !== 1) throw new Error('expand requires exactly one ID');
       const raw = archive.expand(db, args[0]);
