@@ -1,0 +1,21 @@
+{
+  "name": "lcm",
+  "version": "0.0.0+codex.20260927060033",
+  "description": "Сохраняет доступную историю Codex и добавляет LCM-память после штатного сжатия.",
+  "author": {
+    "name": "A. Chukavin"
+  },
+  "interface": {
+    "displayName": "LCM",
+    "shortDescription": "Архив и память поверх штатного compaction Codex.",
+    "longDescription": "Сохраняет доступные оригиналы основного чата, строит связанные сводки и возвращает ограниченную память после штатного compaction.",
+    "developerName": "A. Chukavin",
+    "category": "Productivity",
+    "capabilities": [
+      "Root-session transcript archive",
+      "Supplemental post-compaction memory",
+      "Local search and expand CLI"
+    ],
+    "defaultPrompt": "Помоги найти или раскрыть запись в архиве LCM."
+  }
+}
