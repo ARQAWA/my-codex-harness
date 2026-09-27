@@ -12,7 +12,7 @@ Hook передаёт краткое правило MCP-поиска основ�
 ## Требования
 
 Нужен Codex с поддержкой MCP и установленный marketplace этого репозитория.
-Для [интеграции `tgrep`](https://github.com/microsoft/tgrep/blob/main/scripts/agent/README.md)
+Для [MCP runtime `tgrep`](https://github.com/microsoft/tgrep/blob/main/scripts/agent/README.md)
 нужны Linux или macOS, Python 3.11+, Git и исполняемый `tgrep` либо Cargo
 для его сборки. Её MCP на Windows официально не поддерживается; полный
 набор из трёх серверов там не обещается. Для CBM нужен его
@@ -34,6 +34,8 @@ Hook передаёт краткое правило MCP-поиска основ�
 Проверь фактические значения в среде Codex; если они ведут за пределы
 пользовательского кэша, сначала исправь именно эту настройку.
 Проектная установка `tgrep` создаёт `<repo>/.tgrep-agent/` и здесь не подходит.
+Штатный установщик `tgrep` добавляет собственный hook и блок в `AGENTS.md`,
+поэтому здесь используется только его официальный MCP runtime.
 `ast-grep` MCP постоянный поисковый индекс не создаёт.
 
 ## Первая установка
@@ -63,24 +65,37 @@ codex mcp add ast-grep -- uvx --from git+https://github.com/ast-grep/ast-grep-mc
 плагина. CBM выбирает проект и обновляет граф по своим штатным правилам.
 
 Возьми [официальный checkout `tgrep`](https://github.com/microsoft/tgrep)
-вне рабочего проекта и из `scripts/agent` выполни:
+вне рабочего проекта. Скопируй его `scripts/agent/runtime.py` в постоянный
+каталог пользователя вне репозитория, например
+`~/.local/share/tgrep-agent/codex/runtime.py`. Рядом создай `config.json`:
 
-```bash
-python3 install.py install --agent codex --scope user
+```json
+{
+  "root": null,
+  "binary": "/абсолютный/путь/к/tgrep",
+  "cache_dir": "/абсолютный/путь/к/пользовательскому/.cache/tgrep-agent",
+  "index_flags": []
+}
 ```
 
-Если `tgrep` не доступен через `PATH`, добавь
-`--binary /абсолютный/путь/к/tgrep`.
+Подставь реальные пути пользователя. `root: null` позволяет runtime выбирать
+корень проекта текущей сессии. Зарегистрируй только MCP:
 
-Установщик сам создаёт пользовательский MCP `tgrep`, `SessionStart` hook и
-свой раздел в пользовательском `AGENTS.md`. Не заменяй его на `tgrep serve .`.
-Сохрани штатный раздел и hook `tgrep`.
+```bash
+codex mcp add tgrep -- python3 /абсолютный/путь/к/runtime.py mcp --config /абсолютный/путь/к/config.json
+```
+
+При существующей записи `tgrep` обнови только её, не создавая дубля. Удали
+старый отдельный `SessionStart` hook `tgrep` и его управляемый блок из
+пользовательского `AGENTS.md`, если они были установлены ранее; остальной
+текст и hooks сохрани. Не запускай `install.py install`: он вернёт оба блока.
+Первый индексированный MCP-запрос сам запускает штатный сервис и индекс.
 
 Из активного `<active-codex-home>/AGENTS.md` удали **только** прежний блок
 от `<!-- BEGIN FILESYSTEM_SEARCH_GLOBAL_ROUTING -->` до
 `<!-- END FILESYSTEM_SEARCH_GLOBAL_ROUTING -->` включительно. Если маркеры
 неполные или повторяются, останови это удаление и сообщи конфликт.
-Весь другой текст, в том числе раздел `tgrep`, сохрани. Этот блок больше
+Весь другой текст сохрани. Этот блок больше
 не добавляется: его текст находится в `description` skill.
 
 Уже существующий `<repo>/.codebase-memory/graph.db.zst` CBM может обновлять
@@ -95,8 +110,8 @@ python3 install.py install --agent codex --scope user
 `currentHash` и через `config/batchWrite` запиши его в
 `hooks.state.<точный ключ>.trusted_hash`; там же установи для этих ключей
 `enabled = true`. Сохрани все остальные настройки. В результате `hooks/list`
-должен показывать оба hook плагина доверенными и включёнными, а штатный
-`SessionStart` hook `tgrep` — сохранённым.
+должен показывать оба hook плагина доверенными и включёнными, без отдельного
+hook `tgrep`.
 После индексации проверь в известном затронутом репозитории, что старый
 `.codebase-memory/graph.db.zst` не появился снова. Не ищи экспорты в других,
 неизвестных репозиториях.
@@ -104,11 +119,9 @@ python3 install.py install --agent codex --scope user
 ## Проверка после установки
 
 На целевой ОС проверь `codex mcp list`: видны `tgrep`,
-`codebase-memory-mcp` и `ast-grep`. Для `tgrep` выполни из его checkout:
-
-```bash
-python3 install.py doctor --agent codex --scope user
-```
+`codebase-memory-mcp` и `ast-grep`. `install.py doctor` здесь не применяй:
+он проверяет также hook и блок `AGENTS.md`, которые в выбранной MCP-only
+установке намеренно отсутствуют.
 
 Проверь настройку CBM командой `codebase-memory-mcp config get auto_index`;
 она должна вернуть `true`.
@@ -119,9 +132,9 @@ python3 install.py doctor --agent codex --scope user
 выше, а в проверенном проекте не появились `.tgrep-agent/` и новый
 `.codebase-memory/graph.db.zst`. Штатные файлы настроек `tgrep` в
 пользовательском home не являются индексом. Проверь отсутствие старого
-блока `filesystem-search` в активном `AGENTS.md`; раздел `tgrep` допустим.
-Через Codex app-server `hooks/list` проверь, что штатный `SessionStart` hook
-`tgrep` доверен, а hooks плагина `filesystem-search` (`SessionStart`,
+блоков `filesystem-search` и `tgrep` в активном `AGENTS.md`.
+Через Codex app-server `hooks/list` проверь, что отдельного hook `tgrep` нет,
+а hooks плагина `filesystem-search` (`SessionStart`,
 `SubagentStart`) доверены и включены.
 Сбой сервера или иной фактический путь индекса сообщи с диагностикой.
 
@@ -141,14 +154,14 @@ codex plugin add "filesystem-search@<marketplace>"
 Перед перезапуском Codex включи автоиндексацию CBM командой
 `codebase-memory-mcp config set auto_index true` и проверь её командой
 `codebase-memory-mcp config get auto_index`; значение должно быть `true`.
-Для `tgrep` повтори `install --agent codex --scope user` из актуального
-официального checkout командой
-`python3 install.py install --agent codex --scope user`: установщик сохраняет
-свои параметры, если новые не заданы. Если `tgrep` не доступен через `PATH`,
-добавь `--binary /абсолютный/путь/к/tgrep`. Сохрани штатные параметры CBM и
+Для `tgrep` обнови официальный `runtime.py` в пользовательском каталоге и
+исполняемый `tgrep` по процедуре их поставщика, сохрани `config.json` и
+MCP-запись с её абсолютными путями. Не запускай `install.py install` или
+`doctor`: они требуют отдельный hook и блок `AGENTS.md`. Сохрани параметры CBM и
 остальные пользовательские настройки и секреты. Повтори точечное удаление
-прежнего блока `FILESYSTEM_SEARCH_GLOBAL_ROUTING`, если он остался; чужие разделы
-не меняй. Для известного затронутого репозитория повтори точечную проверку
+прежнего блока `FILESYSTEM_SEARCH_GLOBAL_ROUTING` и старого управляемого блока
+`tgrep`, если они остались; чужие разделы не меняй. Для известного затронутого
+репозитория повтори точечную проверку
 и удаление только прежнего `.codebase-memory/graph.db.zst`, если он ещё есть.
 После индексации проверь, что файл не появился снова. Не проверяй неизвестные
 репозитории.
@@ -159,5 +172,5 @@ codex plugin add "filesystem-search@<marketplace>"
 hook, который не помечен как доверенный. Сохрани остальные настройки.
 Убедись по результату `hooks/list`, что hooks `SessionStart` и
 `SubagentStart` доверены и включены, прежние search guard hooks плагина не
-загружаются, а штатный hook `tgrep` сохранён.
+загружаются и отдельного hook `tgrep` нет.
 Повтори только проверки затронутых частей.
