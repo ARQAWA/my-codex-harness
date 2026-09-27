@@ -49,9 +49,9 @@ Native install выполняй командой `codex plugin add <name>@<marke
 когда entry source указывает этот репозиторий и версия соответствует source
 commit. Соблюдай профили из выбранного документа: Scope Focus — `spotty`,
 `smarty`, `bossy`; Lunatron — `lunatik` и `luntik`. Scope Focus обновляет три
-профиля без hook trust. Fresh hook trust нужен только для компонентов, чьи
-выбранная инструкция и установленный пакет действительно содержат hooks,
-например Lunatron. Trust не обходи.
+профиля и коммуникационные hooks по своей установочной инструкции. Fresh hook
+trust нужен для компонентов, чьи выбранная инструкция и установленный пакет
+действительно содержат hooks, включая Scope Focus и Lunatron. Trust не обходи.
 
 После native install выполни только оставшиеся applicable setup/check шаги из
 выбранного документа. Не повторяй cachebuster или native add, уже выполненные

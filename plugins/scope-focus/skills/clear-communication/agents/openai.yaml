@@ -1,0 +1,6 @@
+interface:
+  display_name: "Коротко и понятно"
+  short_description: "Суть, причина и нужное решение без простыней"
+  default_prompt: "Применяй $clear-communication к сообщениям в чате."
+policy:
+  allow_implicit_invocation: true
