@@ -13,6 +13,7 @@
 | `scope-focus` | [`install-instructions/scope-focus.md`](install-instructions/scope-focus.md) |
 | `lunatron` | [`install-instructions/lunatron.md`](install-instructions/lunatron.md) |
 | `filesystem-search` | [`install-instructions/filesystem-search.md`](install-instructions/filesystem-search.md) |
+| `lcm` | [`install-instructions/lcm.md`](install-instructions/lcm.md) |
 | Системный промпт | [`install-instructions/system-prompt.md`](install-instructions/system-prompt.md) |
 
 Системный промпт — отдельный компонент, подключаемый через
