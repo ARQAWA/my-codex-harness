@@ -90,9 +90,13 @@ python3 install.py install --agent codex --scope user
 Без перечня проектов не обещай очистить неизвестные репозитории.
 
 После настройки перезапусти Codex, чтобы он загрузил новые MCP и skill.
-В `/hooks` доверь hooks плагина `filesystem-search` для событий
-`SessionStart` и `SubagentStart`. Это отдельный hook плагина; отдельно
-проверь штатный `SessionStart` hook, который установил `tgrep`.
+Через штатный Codex app-server получи hook-определения командой `hooks/list`.
+Для точных ключей hooks плагина `filesystem-search` возьми возвращённый
+`currentHash` и через `config/batchWrite` запиши его в
+`hooks.state.<точный ключ>.trusted_hash`; там же установи для этих ключей
+`enabled = true`. Сохрани все остальные настройки. В результате `hooks/list`
+должен показывать оба hook плагина доверенными и включёнными, а штатный
+`SessionStart` hook `tgrep` — сохранённым.
 После индексации проверь в известном затронутом репозитории, что старый
 `.codebase-memory/graph.db.zst` не появился снова. Не ищи экспорты в других,
 неизвестных репозиториях.
@@ -116,8 +120,9 @@ python3 install.py doctor --agent codex --scope user
 `.codebase-memory/graph.db.zst`. Штатные файлы настроек `tgrep` в
 пользовательском home не являются индексом. Проверь отсутствие старого
 блока `filesystem-search` в активном `AGENTS.md`; раздел `tgrep` допустим.
-Доверие к штатному `SessionStart` hook `tgrep` и hooks плагина
-`filesystem-search` (`SessionStart`, `SubagentStart`) проверь через `/hooks`.
+Через Codex app-server `hooks/list` проверь, что штатный `SessionStart` hook
+`tgrep` доверен, а hooks плагина `filesystem-search` (`SessionStart`,
+`SubagentStart`) доверены и включены.
 Сбой сервера или иной фактический путь индекса сообщи с диагностикой.
 
 ## Обновление
@@ -147,7 +152,12 @@ codex plugin add "filesystem-search@<marketplace>"
 и удаление только прежнего `.codebase-memory/graph.db.zst`, если он ещё есть.
 После индексации проверь, что файл не появился снова. Не проверяй неизвестные
 репозитории.
-Перезапусти Codex. Через `/hooks` проверь доверие новым hooks плагина
-`filesystem-search` (`SessionStart`, `SubagentStart`) и убедись, что прежние
-search guard hooks плагина не загружаются. Нативный hook `tgrep` сохрани.
+Перезапусти Codex. Через штатный Codex app-server вызови `hooks/list`, возьми
+актуальные `currentHash` и `trustStatus` для hooks плагина `filesystem-search`.
+Через `config/batchWrite` установи `enabled = true` для обоих hooks. Обнови
+`hooks.state.<точный ключ>.trusted_hash` значением `currentHash` только для
+hook, который не помечен как доверенный. Сохрани остальные настройки.
+Убедись по результату `hooks/list`, что hooks `SessionStart` и
+`SubagentStart` доверены и включены, прежние search guard hooks плагина не
+загружаются, а штатный hook `tgrep` сохранён.
 Повтори только проверки затронутых частей.

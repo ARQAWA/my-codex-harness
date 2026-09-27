@@ -1,6 +1,6 @@
 {
   "name": "filesystem-search",
-  "version": "0.0.0+codex.20260926234333",
+  "version": "0.0.0+codex.20260927000301",
   "description": "Поиск по файлам, синтаксису и связям кода через штатные MCP.",
   "author": {
     "name": "A. Chukavin"
