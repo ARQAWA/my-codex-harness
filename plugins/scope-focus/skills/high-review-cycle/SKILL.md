@@ -5,7 +5,7 @@ description: Run only when explicitly invoked for one fresh blind CLEAN pass wit
 
 # High Review Cycle
 
-Use only on explicit invocation. MAIN owns fixes and completion.
+Use only on explicit invocation. The agent assigned to this review cycle owns its fixes and cycle completion; root Main owns whole-task decisions, acceptance, and final response.
 
 Direct invocation selects `agent_type=smarty` (`gpt-6-sol`, reasoning `medium`)
 and one clean pass per checkpoint.
@@ -16,7 +16,7 @@ count throughout the cycle, including after repairs. Reading this file does not
 select Smarty or start an additional High cycle. Use only the invoking skill's
 configured profile; do not override its model or reasoning.
 
-The root agent orchestrating this task owns fixes and completion. It invokes the configured blind acceptance reviewer directly; do not add another manager or role layer for the check.
+The agent assigned to this review cycle owns its fixes and completion. It invokes the configured blind acceptance reviewer directly; do not add an intermediate manager or role layer between the cycle executor and reviewer. Root Main retains whole-task decisions, acceptance, and final response.
 
 Honor the user's exact frozen object, scope, checkpoint order, and selected pass count.
 If the user does not specify checkpoints, select them automatically. Build the
@@ -92,7 +92,7 @@ EVIDENCE: <evidence>
 REQUIRED OUTCOME: <required outcome>
 ```
 
-On `FINDINGS:`, MAIN treats each finding as a claim, not a command. Admit only
+On `FINDINGS:`, the agent assigned to this review cycle treats each finding as a claim, not a command. Admit only
 findings that satisfy the configured reviewer's materiality gate. A pass with
 zero admitted substantial findings counts as `CLEAN`, regardless of its raw
 label. Rejected findings authorize no change, extra evidence, or retry.

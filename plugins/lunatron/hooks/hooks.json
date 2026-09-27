@@ -22,6 +22,18 @@
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "^(collaborationspawn_agent|spawn_agent|Agent)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"require(require('node:path').join(process.env.PLUGIN_ROOT,'hooks','lunatron.cjs')).preToolUse()\"",
+            "timeout": 7
+          }
+        ]
+      }
     ]
   }
 }

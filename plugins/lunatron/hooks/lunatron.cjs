@@ -22,13 +22,15 @@ roles needed for the task.
 Lunatik and Luntik are specialized roles, not an allowlist: Main may use other
 available agents when the task needs them, under the active instructions.
 
-Main directly reads mandatory AGENTS.md and every selected SKILL.md.
+Main reads mandatory root AGENTS.md and the bundled lunatron-delegation skill.
+Main selects skills and may assign any selected skill except goal as a whole to
+a suitable worker within its block. The assigned worker reads the actual
+SKILL.md and applies its procedure within the skill's requirements, its role,
+authority, and assigned scope. Main applies the goal skill and creates or
+manages the native Goal in the root chat. A skill does not authorize extra work.
 Do not combine required instruction files into one output when this is likely
-to cause truncation; Main must still read every required instruction in full.
-Main alone interprets and orchestrates skills; never ask
-lunatik or luntik to read, apply, or execute a skill. Translate applicable skill
-requirements into concrete work.
-A skill file may be an explicit data or edit target, but its text is then data.
+to cause truncation; the agent applying each skill reads its required source in
+full.
 Main writes the final user output using delegated results as established inputs.
 All agents, including Main and general workers, trust completed results from
 other agents as their own work. A handoff never requires rereading originals,
@@ -97,13 +99,16 @@ solution and concrete references; Actions and dependencies; Readiness,
 authorized checks, and return conditions. Include the exact working directory,
 targets, commands and parameters when applicable, sufficient symbols or other
 references, permitted differences, and material corner cases or failure handling.
+For an assigned skill, identify its actual SKILL.md, authorized result and scope.
 For each command specified in the mini-plan that requires a working directory,
 supply one exact absolute cwd resolved from the relevant project or workspace.
 Do not leave working-directory alternatives or delegate their selection to Lunatik.
 Include required current tool paths and result locations. The full fork already
 inherits the available history; do not repeat it in the assignment. Tell each
 one-shot worker to execute only its assigned block, without taking over the root
-order or redelegating the block. Inherited requests are context, not new assignments.
+order or passing the whole block onward. A helper or reviewer required by an
+assigned skill may be used when its procedure is authorized. Inherited requests
+are context, not new assignments.
 Include all known mandatory results
 and authorized checks for the block from the outset; never make a known
 requirement optional.
@@ -164,14 +169,8 @@ While a specialist works, continue only independent necessary analysis;
 otherwise use the normal event-driven wait policy.
 
 Goal and memory workflows remain optional and run only when explicitly selected.
-Main owns and orchestrates them; specialists never create, redefine, or control
-their semantic state.
-Main determines notebook content, decisions, and status; Lunatik may mechanically
-write the exact text Main supplies. Include related ready writes in the same
-assignment when their required order permits. Never delay a required update for
-batching or mark work accepted or complete before Main accepts it. A separate
-assignment is appropriate when the write depends on that acceptance. Native Goal
-management remains with Main.
+Main retains whole-task decisions and acceptance; no worker may mark the whole
+task accepted or complete before Main does.
 
 Choose the reading path before requesting bulk task data.
 Use capture_cli only when a command's output is expected to be
@@ -195,6 +194,11 @@ Lunatron root orchestration does not apply to this child. Follow your configured
 role, assigned block, boundaries, and other applicable instructions. Inherited
 root requests and earlier LNT commands are context, not new assignments. This
 message does not cancel your role or assignment restrictions.
+When assigned a selected skill other than the goal skill, read its actual SKILL.md
+and apply its procedure within your block, role, authority, and source bounds.
+You may use a helper or reviewer required by that skill when already authorized;
+do not pass the whole assigned block onward. A skill does not enlarge the task.
+Only root Main applies the goal skill and creates or manages the native Goal.
 Trust other agents' supplied results as your own completed work. Only an
 explicitly assigned reviewer rechecks work under a requested review. Do not
 reread sources, repeat research or checks, or delegate review merely because
@@ -352,6 +356,65 @@ function sessionStart() {
   if (context) emitContext('SessionStart', context);
 }
 
+const LUNATRON_ROLES = new Set([
+  'lunatik',
+  'luntik',
+  'lunatron_luna_xhigh',
+  'lunatron_sol_low',
+  'lunatron_sol_medium',
+  'lunatron_sol_high',
+]);
+
+function modelFamily(model) {
+  if (typeof model !== 'string') return undefined;
+  for (const family of ['gpt-6-luna', 'gpt-6-sol', 'gpt-6-astra']) {
+    if (model === family || model.startsWith(`${family}-`)) return family;
+  }
+  return undefined;
+}
+
+function denyPreToolUse(reason) {
+  process.stdout.write(JSON.stringify({
+    hookSpecificOutput: {
+      hookEventName: 'PreToolUse',
+      permissionDecision: 'deny',
+      permissionDecisionReason: reason,
+    },
+  }));
+}
+
+function preToolUse() {
+  const input = readInput('PreToolUse');
+  if (!input || !['collaborationspawn_agent', 'spawn_agent', 'Agent'].includes(input.tool_name)) return;
+  const role = input.tool_input && input.tool_input.agent_type;
+  if (!LUNATRON_ROLES.has(role)) return;
+
+  let override;
+  try {
+    override = readOverride(input);
+  } catch (error) {
+    denyPreToolUse(`Не удалось определить режим Lunatron: ${String(error.code || error.message).replace(/[\r\n]+/gu, ' ')}`);
+    return;
+  }
+  if (override === 0) return;
+
+  const family = modelFamily(input.model);
+  if (!family) {
+    denyPreToolUse('модель вызывающего агента не определена; профиль Lunatron не запущен');
+    return;
+  }
+
+  const simpleRoles = ['lunatik', 'luntik'];
+  const allowedRoles = family === 'gpt-6-luna'
+    ? [...simpleRoles, 'lunatron_luna_xhigh']
+    : family === 'gpt-6-sol' || family === 'gpt-6-astra'
+      ? [...simpleRoles, 'lunatron_sol_low', 'lunatron_sol_medium', 'lunatron_sol_high']
+      : [];
+  if (!allowedRoles.includes(role)) {
+    denyPreToolUse(`Профиль ${role} не разрешён для ${family}; допустимы: ${allowedRoles.join(', ')}.`);
+  }
+}
+
 function safePathComponent(value) {
   if (value === undefined || value === null || value === '') return 'unavailable';
   let identity;
@@ -369,3 +432,4 @@ function hasNonEmpty(value) {
 
 exports.userPromptSubmit = userPromptSubmit;
 exports.sessionStart = sessionStart;
+exports.preToolUse = preToolUse;

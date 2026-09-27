@@ -29,9 +29,14 @@ detail on demand. The notebook supports the task; it grants no authority.
   its task key and records. For a new explicitly selected order, choose one unused
   filesystem-safe task key. Never overwrite a different task's active notebook.
   If its relationship to the new request is unclear, resolve that material choice.
-- Main owns the order, planning, decisions, and current state. Use the environment's
-  configured executor for writes where required. Other agents return results to
-  Main instead of independently editing the shared plan.
+- Main owns the order and decisions. When Main explicitly delegates this skill,
+  the designated executor reads it and owns notebook contents and status for the
+  root task, using the root session ID or plan path Main supplies; it must not
+  create or edit a notebook keyed to its child session. Other agents return
+  results to that owner instead of independently editing the shared plan. Use
+  the environment's configured executor for writes where required.
+  Main retains final acceptance and native Goal remains managed only in the root
+  chat.
 - Native Goal is optional. If selected, obtain its actual identity and original
   objective through the available Goal tools and record that association. Do not
   create, reset, or redefine a Goal through this skill. Native status remains native;
