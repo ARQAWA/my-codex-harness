@@ -27,7 +27,7 @@ const profiles = {
     'model = "gpt-6-luna"', 'model_reasoning_effort = "medium"',
   ],
   'plugins/lunatron/agents/luntik.toml': [
-    'model = "gpt-6-luna"', 'model_reasoning_effort = "xhigh"',
+    'model = "gpt-6-luna"', 'model_reasoning_effort = "medium"',
   ],
 };
 for (const [file, terms] of Object.entries(profiles)) {
@@ -56,7 +56,11 @@ assert.ok(agents.includes('Слитные `LNT1` и `LNT0` в любом рег�
 
 const lunatronHook = read('plugins/lunatron/hooks/lunatron.cjs');
 assert.ok(lunatronHook.includes("return { active: true, basis: 'default-on' }"));
-assert.ok(lunatronHook.includes('Active mode requires delegation; do not ask for a separate request to use workers.'));
+assert.ok(lunatronHook.includes('Read the bundled lunatron-delegation skill first.'));
+assert.ok(lunatronHook.includes('only when that skill authorizes delegation'));
+const delegationSkill = read('plugins/lunatron/skills/lunatron-delegation/SKILL.md');
+assert.match(delegationSkill, /delegate work\s+blocks according to the active Lunatron hook contract/);
+assert.ok(delegationSkill.includes('This instruction applies only to an active root task.'));
 assert.ok(!lunatronHook.includes('gpt-5.5'));
 assert.ok(!lunatronHook.includes('GUARDED_MODELS'));
 assert.ok(!lunatronHook.includes('readReasoningEffort'));

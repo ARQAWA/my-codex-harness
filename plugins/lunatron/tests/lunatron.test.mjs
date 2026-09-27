@@ -55,8 +55,8 @@ try {
   assert.match(forcedOn.stdout, /LUNATRON_STATE=ACTIVE/);
   assert.match(forcedOn.stdout, /LUNATRON_MODE=forced-on/);
   assert.match(forcedOn.stdout, /LUNATRON_COMMAND_APPLIED=LNT1/);
-  assert.match(forcedOn.stdout, /Active mode requires delegation/);
-  assert.match(forcedOn.stdout, /absence\\nof parallel work does not waive this workflow/);
+  assert.match(forcedOn.stdout, /Read the bundled lunatron-delegation skill first/);
+  assert.match(forcedOn.stdout, /only when that skill authorizes delegation/);
   assert.match(forcedOn.stdout, /Do not silently execute that block in Main/);
   assert.match(forcedOn.stdout, /carry out the rest of the user request/);
   assert.match(forcedOn.stdout, /Missing closure support does not prevent starting a worker/);
