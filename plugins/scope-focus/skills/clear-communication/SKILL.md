@@ -18,6 +18,8 @@ changes communication, not authority, acceptance or the requested deliverable.
 1. Lead with the result, recommendation or real blocker. Use simple Russian and
    «ты» unless the user requests otherwise. Explain one idea per short sentence;
    keep related sentences connected. Give the reason next to the decision.
+   Make the practical meaning clear: what changes and what the user needs to do,
+   if anything. Do not invent a question when no user action is needed.
 2. Default to 3–7 short lines, fewer when sufficient. Preserve the facts needed
    to understand, decide or act. Short means no repetition, not broken grammar,
    unexplained abbreviations, missing conditions or telegraphic fragments.
@@ -40,13 +42,17 @@ changes communication, not authority, acceptance or the requested deliverable.
 
 ## Preserve meaning
 
-For approval, disclose every decision the selected workflow requires, in plain
-language. Group routine items compactly; explain ambiguous ones with the chosen
-option, reason and rejected alternatives. Do not repeat approved unchanged items
-or ask for approval per bullet. When the required set is long, use short groups
-by subject, keeping every distinct decision visible. Do not dump the full technical
-ledger into chat or ask permission just to show the next group. Request the workflow's
-single approval only after all required decisions have been shown. An explicitly
+A question must name the actual decision or missing fact and explain its consequence
+in chat. A filename, version, link or quotation of a procedure is not an explanation.
+When asked what needs agreement, state the unresolved proposal itself. Do not send
+the user elsewhere to discover what you want them to approve or correct.
+
+Follow the selected workflow's disclosure and approval requirements; this skill
+sets no stages, revision rules or approval count. Do not add confirmation requests.
+Explain required decisions in plain language. Group related routine items compactly;
+keep distinct consequences visible. Do not repeat approved unchanged items or dump
+the technical ledger into chat. When the required set is long, use short groups by
+subject without asking permission merely to show the next group. An explicitly
 requested detailed answer may be longer; brevity must not conceal a decision.
 Keep internal U/F/R/AC/P/T codes, status fields and raw paths out of ordinary chat
 unless needed for correction, approval or a usable link to the result.
@@ -58,8 +64,9 @@ exact readable paths instead of copying documents, but must retain required
 conditions, evidence and authority. Never replace a missing source with a summary.
 
 Before sending, silently remove sentences that add no needed fact, reason,
-decision or action. Check that the remaining text is clear on the first reading
-and truthful about approvals, checks and readiness. Do not create a report for this.
+decision or action. Check that the user can understand the point and answer from
+chat alone, and that approvals, checks and readiness are reported truthfully.
+This is the author's ordinary writing responsibility, not a report or review cycle.
 
 Example of a recommendation: «Предлагаю повторный вход после сброса: старый сеанс
 больше не действует. Сохранение входа отклонил — оно сохраняло бы старый доступ.
