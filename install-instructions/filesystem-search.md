@@ -1,4 +1,8 @@
-# Установка filesystem-search
+# Установка filesystem-search на macOS и Linux
+
+Эта инструкция сохраняет действующую установку и маршрут поиска для macOS и
+Linux. Для native Windows 11 используй отдельную
+[`filesystem-search-windows.md`](filesystem-search-windows.md).
 
 ## Состав
 
@@ -18,8 +22,7 @@ Hook передаёт краткое правило MCP-поиска основ�
 набор из трёх серверов там не обещается. Для CBM нужен его
 [официальный пакет](https://github.com/DeusData/codebase-memory-mcp), для
 [`ast-grep` MCP](https://github.com/ast-grep/ast-grep-mcp) — `uvx` и
-[`ast-grep`](https://ast-grep.github.io/guide/quick-start/). В Windows
-работай только через Git Bash.
+[`ast-grep`](https://ast-grep.github.io/guide/quick-start/).
 
 Постоянные индексы должны находиться в кэше пользователя: CBM использует
 `${CBM_CACHE_DIR:-~/.cache/codebase-memory-mcp}`, `tgrep` —

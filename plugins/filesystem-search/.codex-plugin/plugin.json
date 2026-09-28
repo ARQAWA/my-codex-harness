@@ -1,7 +1,7 @@
 {
   "name": "filesystem-search",
-  "version": "0.0.0+codex.20260927000301",
-  "description": "Поиск по файлам, синтаксису и связям кода через штатные MCP.",
+  "version": "0.0.0+codex.20260928061001",
+  "description": "Поиск текста и имён файлов через tgrep на macOS/Linux и rg на Windows; связи кода через Codebase Memory, синтаксис через ast-grep.",
   "author": {
     "name": "A. Chukavin"
   },
@@ -9,7 +9,7 @@
   "interface": {
     "displayName": "Filesystem Search",
     "shortDescription": "Поиск по файлам, синтаксису и связям кода.",
-    "longDescription": "Поиск по файлам, синтаксису и связям кода через штатные MCP.",
+    "longDescription": "Маршруты зависят от ОС: на macOS/Linux текст и имена файлов ищутся через tgrep MCP, на Windows — прямыми rg -n и rg --files; известные пути читаются напрямую, связи кода ищутся через внешний Codebase Memory MCP, синтаксис — через внешний ast-grep MCP.",
     "developerName": "A. Chukavin",
     "category": "Productivity",
     "capabilities": [

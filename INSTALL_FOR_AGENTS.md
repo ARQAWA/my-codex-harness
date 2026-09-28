@@ -12,7 +12,7 @@
 |---|---|
 | `scope-focus` | [`install-instructions/scope-focus.md`](install-instructions/scope-focus.md) |
 | `lunatron` | [`install-instructions/lunatron.md`](install-instructions/lunatron.md) |
-| `filesystem-search` | [`install-instructions/filesystem-search.md`](install-instructions/filesystem-search.md) |
+| `filesystem-search` | macOS/Linux: [`install-instructions/filesystem-search.md`](install-instructions/filesystem-search.md); native Windows 11: [`install-instructions/filesystem-search-windows.md`](install-instructions/filesystem-search-windows.md) |
 | `lcm` | [`install-instructions/lcm.md`](install-instructions/lcm.md) |
 | Системный промпт | [`install-instructions/system-prompt.md`](install-instructions/system-prompt.md) |
 
