@@ -15,8 +15,9 @@ Preserve Task Notebook plans, notes, work records, reports, and evidence needed 
 
 The user selected OS temporary storage and later cleanup for ToSpec outputs.
 Use only the exact workspace locator for the current task, never a search for
-all matching folders or the newest folder. Read its spec/tasks headers and current
-task evidence to establish ownership and actual completion of implementation and
+all matching folders or the newest folder. Read its spec/plan headers and current
+task evidence (for an older three-document workspace, also read its existing
+tasks header) to establish ownership and actual completion of implementation and
 required checks, or the user's explicit instruction to discard this exact task.
 `ГОТОВ К РЕАЛИЗАЦИИ` is not completed implementation. Keep pending plans needed
 by another agent; do not delete them at the end of specification preparation.
@@ -24,9 +25,11 @@ by another agent; do not delete them at the end of specification preparation.
 The target must be a real task-created `scope-focus-tospec-*` directory directly
 inside the actual Node.js `os.tmpdir()`, outside the repository. Recheck canonical
 paths and symlinks; do not follow a link into another workspace. Within that exact
-directory remove only proven task-created spec.md, plan.md, tasks.md and known
-intermediate material, then the directory only if empty. Preserve unknown files,
-other tasks, notebooks and pre-existing repository specs. Do not migrate, archive
+directory remove only proven task-created spec.md, plan.md and known
+intermediate material; a tasks.md from an older completed workspace is removable
+only with the same ownership and completion proof. Remove the directory only if
+empty. Preserve unknown files, other tasks, notebooks and pre-existing repository
+specs. Do not migrate, archive
 or copy these documents into the repository as part of cleanup.
 
 Before deletion, enumerate exact targets and recheck each target still matches the proof and exclusions. Prohibit `rm -f`, `--force`, and broad cleanup. Delete the explicit Goal Memory directory last among task-created temporary targets. Verify every target is absent and the result remains preserved.
