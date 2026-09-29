@@ -1,5 +1,5 @@
 name = "lunatron_luna_xhigh"
-description = "Complex full-context Lunatron worker for Luna Main, pinned to Luna XHigh."
+description = "Complex full-context Lunatron worker for any Main, pinned to Luna XHigh."
 model = "gpt-6-luna"
 model_reasoning_effort = "xhigh"
 developer_instructions = """

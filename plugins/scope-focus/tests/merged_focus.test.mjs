@@ -8,7 +8,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const spotty = readFileSync(path.join(root, 'agents', 'spotty.toml'), 'utf8');
 for (const term of [
   'name = "spotty"',
-  'model = "gpt-6-sol"',
+  'model = "gpt-6.1-sol"',
   'model_reasoning_effort = "low"',
   'sandbox_mode = "read-only"',
   'review_stage',
@@ -19,15 +19,18 @@ for (const term of [
 ]) assert.ok(spotty.includes(term), term);
 assert.ok(!spotty.includes('properliler'));
 
-for (const skill of ['high-review-cycle', 'double-light-review-cycle']) {
+for (const skill of ['blind-review-cycle', 'high-review-cycle']) {
   const text = readFileSync(path.join(root, 'skills', skill, 'SKILL.md'), 'utf8');
   assert.ok(text.includes('frozen object'), skill);
   assert.ok(text.includes('pre-action'), skill);
 }
-const blindCheck = readFileSync(path.join(root, 'skills', 'high-review-cycle', 'SKILL.md'), 'utf8');
+const blindCheck = readFileSync(path.join(root, 'skills', 'blind-review-cycle', 'SKILL.md'), 'utf8');
 assert.ok(blindCheck.includes('agent_type=smarty'));
 assert.ok(blindCheck.includes('the selected cycle reaches its required clean-pass count'));
 assert.ok(blindCheck.includes('no new invocation is required after\na repair'));
+const highCheck = readFileSync(path.join(root, 'skills', 'high-review-cycle', 'SKILL.md'), 'utf8');
+assert.ok(highCheck.includes('agent_type=bossy'));
+assert.ok(highCheck.includes('reasoning `xhigh`'));
 for (const file of ['SKILL.md', 'agents/openai.yaml', 'LICENSE.txt']) {
   assert.ok(existsSync(path.join(root, 'skills', 'goal', file)), file);
 }

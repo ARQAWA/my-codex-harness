@@ -2,13 +2,13 @@
 
 ## Состав
 
-Пакет содержит три hook-определения: `SessionStart`, `UserPromptSubmit` и
-`PreToolUse`, skill с явным поручением делегировать
+Пакет содержит два hook-определения: `SessionStart` и `UserPromptSubmit`,
+skill с явным поручением делегировать
 при активном Lunatron, контракт Main, Node.js CLI для
 подготовки контекста, CLI для полного захвата потенциально большого вывода и
 профили `agents/lunatik.toml`, `agents/luntik.toml`,
-`agents/lunatron_luna_xhigh.toml`, `agents/lunatron_sol_low.toml`,
-`agents/lunatron_sol_medium.toml` и `agents/lunatron_sol_high.toml`.
+`agents/lunatron_luna_xhigh.toml`, `agents/lunatron_sol_low.toml` и
+`agents/lunatron_sol_medium.toml`.
 Lunatik на `gpt-6-luna/medium` исполняет законченный план простого связного блока
 в новом полном форке. После приёмки Main закрывает его, если штатный способ
 доступен; иначе продолжает без закрытия. Связанные команды,
@@ -20,13 +20,14 @@ Lunatik на `gpt-6-luna/medium` исполняет законченный пл�
 и малые чтения и владеет решениями и приёмкой. Сложный вопрос к данным и любой
 другой сложный шумный блок выполняет одноразовый native full-context fork по
 закреплённому профилю: Main Luna — `lunatron_luna_xhigh`
-(`gpt-6-luna/xhigh`); Main Sol или Astra — один из `lunatron_sol_low`,
-`lunatron_sol_medium` или `lunatron_sol_high` (`gpt-6-sol` с подходящим effort).
-Sol и Astra не используют Luna `xhigh` и не наследуют Sol `max`. Если нужный
+(`gpt-6-luna/xhigh`). Любой Main вне Luna сам выбирает между этим профилем и
+`lunatron_sol_low`/`lunatron_sol_medium` (`gpt-6.1-sol` с подходящим effort).
+Sol workers не наследуют Sol `max`. Если нужный
 профиль недоступен, Main останавливает зависимый блок без подмены роли.
 Одновременно допускается до 15 независимых исполнителей Lunatik и сложных Luna;
 постоянный Luntik занимает ещё один слот.
-Другие доступные роли не запрещены.
+Другие доступные роли соблюдают эти модельные ограничения workers.
+Reviewer выбирается по своему review-skill независимо от модели Main.
 Main может целиком поручить любой выбранный skill, кроме `goal`,
 подходящему помощнику в границах блока. Помощник сам читает `SKILL.md` и
 исполняет его процедуру. Постановка и управление Goal остаются в корневом
@@ -50,7 +51,7 @@ CLI с экранированными путями; глобальное окр�
 ## Требования
 
 Нужны Codex CLI с поддержкой плагинов, hooks, app-server, native full-context
-fork, Node.js и все шесть профилей помощников.
+fork, Node.js и все пять профилей помощников.
 Main выбирает вызовы и параметры по текущим описаниям инструментов.
 Каждый помощник возвращает final и завершает ход. Закрытие обязательно, когда
 есть поддерживаемый способ; без него работа продолжается. Завершение хода
@@ -74,8 +75,8 @@ max_concurrent_threads_per_session = 16
 используется только Git Bash, без PowerShell. Lunatron и Tritron не должны
 работать одновременно.
 
-Плагин и все три hooks (`SessionStart`, `UserPromptSubmit`, `PreToolUse`) должны
-быть включены после установки и обновления.
+Плагин и оба hooks (`SessionStart`, `UserPromptSubmit`) должны быть включены
+после установки и обновления.
 Сам режим Lunatron по умолчанию включён для корневой задачи на любой модели.
 При `LUNATRON_STATE=ACTIVE` hook прямо указывает Main прочитать bundled skill,
 который поручает делегировать подходящие блоки, включая короткие команды без
@@ -109,7 +110,7 @@ codex plugin add "lunatron@<marketplace>" --json
 Настрой `agents.max_concurrent_threads_per_session` в `config.toml` как указано
 в разделе «Требования», не уменьшая уже заданный предел.
 
-Подключи все шесть профилей из состава выше из установленного пакета в каталог
+Подключи все пять профилей из состава выше из установленного пакета в каталог
 `agents` активного Codex home (обычно `~/.codex/agents`).
 Используй нового lunatik на каждый простой блок и одного persistent luntik. Профили не
 требуют отдельного Fast; не включай Fast у Main.
@@ -123,7 +124,7 @@ codex plugin add "lunatron@<marketplace>" --json
 `hooks.state`: используй точный ключ hook и его `currentHash` как
 `trusted_hash`. Меняй только hooks устанавливаемого плагина; уже доверенные
 не переписывай. В том же batch для каждого hook Lunatron — `SessionStart`,
-`UserPromptSubmit` и `PreToolUse` — запиши `enabled = true` по его точному ключу.
+`UserPromptSubmit` — запиши `enabled = true` по его точному ключу.
 Не обходи trust и не подставляй хеш из прежней версии.
 
 Если в `<active-codex-home>/AGENTS.md` есть прежний точный блок между маркерами
@@ -132,12 +133,9 @@ codex plugin add "lunatron@<marketplace>" --json
 
 ## Проверка после установки
 
-После установки напрямую запусти каждый установленный хук с нужными входными
-данными на целевой ОС: `SessionStart`, `UserPromptSubmit` и `PreToolUse`.
-Для `PreToolUse` передай native `tool_name` `collaborationspawn_agent` и
-проверь ответ `deny` для несовместимой пары `model=gpt-6-sol`,
-`tool_input.agent_type=lunatron_luna_xhigh`. Убедись, что hooks выполняются без
-ошибок. На Windows используй Git Bash. Убедись, что прежний блок
+После установки напрямую запусти оба установленных хука с нужными входными
+данными на целевой ОС: `SessionStart` и `UserPromptSubmit`. Убедись, что hooks
+выполняются без ошибок. На Windows используй Git Bash. Убедись, что прежний блок
 `LUNATRON_GLOBAL_DELEGATION` отсутствует. На этом проверка закончена.
 
 Запросы к моделям, пробные задачи, переходы контекста и дополнительные
@@ -146,14 +144,18 @@ codex plugin add "lunatron@<marketplace>" --json
 ## Обновление
 
 Обнови пакет через тот же `codex plugin add
-"lunatron@<marketplace>" --json`, затем обнови все шесть packaged profiles из
+"lunatron@<marketplace>" --json`, затем обнови все пять packaged profiles из
 одной версии. Убедись, что `agents.max_concurrent_threads_per_session` в
 `config.toml` не ниже 16; более высокое значение сохрани. Сохрани настройки, данные,
-сохранённые результаты, артефакты и остальные плагины.
+сохранённые результаты, артефакты и остальные плагины. Удали прежний
+`agents/lunatron_sol_high.toml` из активного Codex home только если можно
+подтвердить, что он не был изменён пользователем и принадлежит прежней
+установке Lunatron. Если принадлежность или отсутствие правок установить
+нельзя, сохрани файл и запроси решение пользователя.
 Профили не требуют отдельного Fast; обычный root режим Main сохраняется.
 Через app-server согласуй trust изменённых hook-определений; уже доверенные
-не переписывай. Включи каждый hook обновлённого Lunatron через его точный
-`hooks.state` key, даже если он был выключен до обновления. Не повторяй bump
+не переписывай. Включи оба hook обновлённого Lunatron через их точные
+`hooks.state` keys, даже если они были выключены до обновления. Не повторяй bump
 source version. Удали прежний точный блок `LUNATRON_GLOBAL_DELEGATION` из
 активного Codex home, если он остался, сохранив остальной текст.
 Затем выполни раздел проверки для обновлённых частей напрямую.

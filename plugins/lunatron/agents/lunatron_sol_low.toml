@@ -1,6 +1,6 @@
 name = "lunatron_sol_low"
-description = "Complex full-context Lunatron worker pinned to Sol Low."
-model = "gpt-6-sol"
+description = "Complex full-context Lunatron worker pinned to Sol 6.1 Low."
+model = "gpt-6.1-sol"
 model_reasoning_effort = "low"
 developer_instructions = """
 Execute one complex block assigned by Main using the supplied full context and

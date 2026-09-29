@@ -20,7 +20,8 @@ secondary. Keep ordinary search, small reads, planning, and acceptance with Main
 An ordinary question or explanation needs no ceremonial worker. Use only the
 roles needed for the task.
 Lunatik and Luntik are specialized roles, not an allowlist: Main may use other
-available agents when the task needs them, under the active instructions.
+available agents when the task needs them, under the active instructions and
+the worker model constraints below.
 
 Main reads mandatory root AGENTS.md and the bundled lunatron-delegation skill.
 Main selects skills and may assign any selected skill except goal as a whole to
@@ -72,11 +73,13 @@ Empirical checks require authority from the main prompt or user.
 
 For each complex, noisy search, reading, diagnosis, code, documentation, or skill
 block, Main starts a fresh full-context fork with the named role profile.
-With Luna Main, use lunatron_luna_xhigh (gpt-6-luna/xhigh). With Sol or
-Astra Main, Main chooses lunatron_sol_low, lunatron_sol_medium, or
-lunatron_sol_high for the block; all three pin gpt-6-sol at the named
-effort. Never use the Luna XHigh role for Sol or Astra Main, and never inherit
-Main's Sol Max effort. The named role profile must establish the required model
+Main chooses the executor. Luna Main may use only Luna: the medium roles above
+for their specialized work and lunatron_luna_xhigh (gpt-6-luna/xhigh) for a complex
+block. Any Main outside Luna may also choose lunatron_sol_low or
+lunatron_sol_medium (gpt-6.1-sol at the named effort), or lunatron_luna_xhigh
+for a complex block. Reviewer profiles follow their selected review skill,
+independently of this worker pool. Never inherit Main's Sol Max effort.
+The named role profile must establish the required model
 and effort regardless of inherited settings. If the required role is unavailable
 or cannot establish that pair, report the incompatibility and stop the affected
 block; do not substitute. Independent Luna Medium and Luna XHigh blocks may run
@@ -356,65 +359,6 @@ function sessionStart() {
   if (context) emitContext('SessionStart', context);
 }
 
-const LUNATRON_ROLES = new Set([
-  'lunatik',
-  'luntik',
-  'lunatron_luna_xhigh',
-  'lunatron_sol_low',
-  'lunatron_sol_medium',
-  'lunatron_sol_high',
-]);
-
-function modelFamily(model) {
-  if (typeof model !== 'string') return undefined;
-  for (const family of ['gpt-6-luna', 'gpt-6-sol', 'gpt-6-astra']) {
-    if (model === family || model.startsWith(`${family}-`)) return family;
-  }
-  return undefined;
-}
-
-function denyPreToolUse(reason) {
-  process.stdout.write(JSON.stringify({
-    hookSpecificOutput: {
-      hookEventName: 'PreToolUse',
-      permissionDecision: 'deny',
-      permissionDecisionReason: reason,
-    },
-  }));
-}
-
-function preToolUse() {
-  const input = readInput('PreToolUse');
-  if (!input || !['collaborationspawn_agent', 'spawn_agent', 'Agent'].includes(input.tool_name)) return;
-  const role = input.tool_input && input.tool_input.agent_type;
-  if (!LUNATRON_ROLES.has(role)) return;
-
-  let override;
-  try {
-    override = readOverride(input);
-  } catch (error) {
-    denyPreToolUse(`Не удалось определить режим Lunatron: ${String(error.code || error.message).replace(/[\r\n]+/gu, ' ')}`);
-    return;
-  }
-  if (override === 0) return;
-
-  const family = modelFamily(input.model);
-  if (!family) {
-    denyPreToolUse('модель вызывающего агента не определена; профиль Lunatron не запущен');
-    return;
-  }
-
-  const simpleRoles = ['lunatik', 'luntik'];
-  const allowedRoles = family === 'gpt-6-luna'
-    ? [...simpleRoles, 'lunatron_luna_xhigh']
-    : family === 'gpt-6-sol' || family === 'gpt-6-astra'
-      ? [...simpleRoles, 'lunatron_sol_low', 'lunatron_sol_medium', 'lunatron_sol_high']
-      : [];
-  if (!allowedRoles.includes(role)) {
-    denyPreToolUse(`Профиль ${role} не разрешён для ${family}; допустимы: ${allowedRoles.join(', ')}.`);
-  }
-}
-
 function safePathComponent(value) {
   if (value === undefined || value === null || value === '') return 'unavailable';
   let identity;
@@ -432,4 +376,3 @@ function hasNonEmpty(value) {
 
 exports.userPromptSubmit = userPromptSubmit;
 exports.sessionStart = sessionStart;
-exports.preToolUse = preToolUse;

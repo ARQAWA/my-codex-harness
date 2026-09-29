@@ -45,15 +45,14 @@ Review-skills запускаются явно либо как обязатель
 
 | Skill | Профиль и модель | Чистых проходов |
 |---|---|---|
-| `$light-review-cycle` | Spotty: `gpt-6-sol / low` | 1 |
-| `$high-review-cycle` | Smarty: `gpt-6-sol / medium` | 1 |
-| `$astro-review-cycle` | Bossy: `gpt-6-astra / low` | 1 |
-| `$double-light-review-cycle` | Spotty: `gpt-6-sol / low` | 2 |
+| `$light-review-cycle` | Spotty: `gpt-6.1-sol / low` | 1 |
+| `$blind-review-cycle` | Smarty: `gpt-6.1-sol / medium` | 1 |
+| `$high-review-cycle` | Bossy: `gpt-6.1-sol / xhigh` | 1 |
 
-Double Light — самостоятельный двойной Light-цикл, а не модификатор других
-review. Профили имеют одинаковый read-only контракт. После принятых замечаний
-назначенный исполнитель цикла исправляет результат в пределах поручения и повторяет ревью; Double Light начинает серию
-из двух чистых проходов заново. Старые review-aliases заменены этой четвёркой.
+Все три skills имеют общий read-only контракт: `$blind-review-cycle` хранит
+его и запускает Smarty, а Light и High читают его, сохраняя своих reviewers.
+Каждый явно выбранный цикл требует один CLEAN на checkpoint; после принятых
+замечаний исполнитель исправляет результат и начинает свежий проход.
 
 Системный промпт — отдельный компонент поставки, не часть плагина.
 После repo-level setup runtime-пакет самодостаточен и не зависит
