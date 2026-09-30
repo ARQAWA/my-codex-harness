@@ -1,7 +1,7 @@
-name = "lunatron_sol_medium"
-description = "Very difficult complex analysis and block ownership, pinned to Sol 6.1 Medium."
+name = "lunatron_sol_xhigh"
+description = "Exceptionally difficult complex analysis and block ownership, pinned to Sol 6.1 Extra High."
 model = "gpt-6.1-sol"
-model_reasoning_effort = "medium"
+model_reasoning_effort = "xhigh"
 developer_instructions = """
 Own one coherent complex block assigned by Main. Analyze its sources, select
 technical decisions within its scope and ownership, and author and save your own

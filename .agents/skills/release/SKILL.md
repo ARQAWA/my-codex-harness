@@ -19,10 +19,11 @@ Analysis-only не меняет состояние. Полный релиз вы
 
 ## 2. Версии и проверки
 
-Для изменяемых плагинов обнови manifest version существующим
-`update_plugin_cachebuster.py` из plugin-creator. Согласуй marketplace source с
-папкой plugin этого репозитория через текущий plugin-creator. Перед действием
-прочитай актуальный installed skill plugin-creator.
+Для изменённых плагинов один раз запусти из корня репозитория
+`node tools/update-plugin-cachebuster.mjs <имя-plugin> [...]` перед source commit.
+Скрипт берёт timestamp UTC, сохраняет JSON в читаемом UTF-8 и проверяет,
+что marketplace source указывает на `./plugins/<имя-plugin>` этого репозитория.
+Неизменённые плагины не передавай. Внешний plugin-creator и Python не нужны.
 
 Сделай одно повышение версии до исходного коммита. Не повторяй bump из
 `INSTALL` после коммита.
@@ -49,7 +50,7 @@ Native install выполняй командой `codex plugin add <name>@<marke
 когда entry source указывает этот репозиторий и версия соответствует source
 commit. Соблюдай профили из выбранного документа: Scope Focus — `spotty`,
 `smarty`, `bossy`; Lunatron — `lunatik`, `luntik`, `lunatron_luna_xhigh`,
-`lunatron_sol_low`, `lunatron_sol_medium`. Scope Focus обновляет три
+`lunatron_sol_low`, `lunatron_sol_medium`, `lunatron_sol_xhigh`. Scope Focus обновляет три
 профиля и коммуникационные hooks по своей установочной инструкции. Fresh hook
 trust нужен для компонентов, чьи выбранная инструкция и установленный пакет
 действительно содержат hooks, включая Scope Focus и Lunatron. Trust не обходи.
@@ -75,4 +76,5 @@ native install уже выполнены release flow.
 При uncertain install сначала прочитай affected state. Не повторяй install
 вслепую. Сообщи незавершённый этап и не объявляй release завершённым.
 
-Не добавляй скрипты, UI metadata, README или другие файлы.
+Не добавляй служебные файлы для отдельного релиза. Штатный cachebuster хранится
+в `tools/update-plugin-cachebuster.mjs`; UI metadata и README не создавай.

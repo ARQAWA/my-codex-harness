@@ -1,5 +1,5 @@
 interface:
-  display_name: "Коротко и понятно"
+  display_name: "Clear Communication"
   short_description: "Суть, причина и нужное решение без простыней"
   default_prompt: "Применяй $clear-communication к сообщениям в чате."
 policy:

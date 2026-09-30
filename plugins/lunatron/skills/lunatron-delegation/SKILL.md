@@ -11,6 +11,16 @@ blocks according to the active Lunatron hook contract without asking the user
 for a separate request. Follow the hook's roles, boundaries, and workflow, as
 well as all higher-priority instructions.
 
-This instruction applies only to an active root task. If the hook reports
-`LUNATRON_STATE=INACTIVE`, this skill does not authorize delegation. A child
-agent follows its assigned role and does not inherit root orchestration.
+This root instruction applies only to an active root task. When the root hook
+reports `LUNATRON_STATE=INACTIVE`, this skill does not authorize root delegation.
+A child follows its assigned role without inheriting root orchestration. Child
+INACTIVE does not cancel a configured Sol profile's narrow right to assign its
+own bounded Luna implementation blocks with full available conversation context,
+a sufficient descriptive plan, and pinned Luna roles. It does not grant that
+right to other inactive roles or authorize Sol-to-Sol chains. Luna final returns
+to its immediate Sol; Sol completes the block and returns to Main. All agents
+trust completed results without handoff-driven rereads, research, checks or
+review. Only explicitly assigned reviewers perform requested review. Scope,
+authority, native wait, actual shared budget, and immediate-parent native closure
+follow the configured role and active contract; final is not proof of closure.
+Only root Main applies goal and manages the native Goal.
