@@ -52,9 +52,10 @@ mutation с конкретной причиной, без скрытого provi
 Сборка, проверки, commit/push, release и установка выполняются лишь в объёме
 текущего поручения и обязательных принятых процедур; skill не выдаёт эти
 полномочия. Windows работает через Git Bash. Поставка — Windows 11 VDI x64
-и macOS Apple Silicon ARM64. Extension Actions выключены; CLI использует лишь
-собственный manual Windows build по действующему UPDATING, другие imported
-workflows выключены. Не включай их при обычном update. Обновляй HARNESS/UPDATING
+и macOS Apple Silicon ARM64. Extension Actions выключены; CLI производится полностью локально на Mac
+по действующему UPDATING, включая Windows x64/MSVC cross build. Actions не
+исполняют нашу сборку; imported workflows остаются выключенными. Не включай
+их при обычном update. Обновляй HARNESS/UPDATING
 вместе с source inventory/evidence; assets публикуются в соответствующие private
 Releases, не Git blobs. До сдачи/публикации соблюдай обязательные review gates
 управляющего repo.
