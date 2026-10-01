@@ -1,6 +1,6 @@
 {
   "name": "lunatron",
-  "version": "0.0.0+codex.20260930032447",
+  "version": "0.0.0+codex.20261001120046",
   "description": "Помогает основному агенту работать с помощниками.",
   "author": {
     "name": "A. Chukavin"
@@ -12,7 +12,7 @@
     "developerName": "A. Chukavin",
     "category": "Productivity",
     "capabilities": [
-      "Default-on delegation with LNT1/LNT0 overrides",
+      "Default-off delegation with LNT1/LNT0 overrides",
       "Main-directed information preparation",
       "Main-directed mechanical execution"
     ],

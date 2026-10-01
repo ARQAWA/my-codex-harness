@@ -51,11 +51,11 @@ assert.ok(!agents.includes('## Baseline'));
 assert.ok(agents.includes('node tests/run.mjs'));
 assert.ok(agents.includes('plugins/filesystem-search'));
 assert.ok(agents.includes('install-instructions/filesystem-search.md'));
-assert.ok(agents.includes('Lunatron по умолчанию включён для корневой задачи независимо от модели;'));
+assert.ok(agents.includes('Lunatron по умолчанию выключен для корневой задачи независимо от модели;'));
 assert.ok(agents.includes('Слитные `LNT1` и `LNT0` в любом регистре'));
 
 const lunatronHook = read('plugins/lunatron/hooks/lunatron.cjs');
-assert.ok(lunatronHook.includes("return { active: true, basis: 'default-on' }"));
+assert.ok(lunatronHook.includes("return { active: false, basis: 'default-off' }"));
 assert.ok(lunatronHook.includes('Read the bundled lunatron-delegation skill first.'));
 assert.ok(lunatronHook.includes('only when that skill authorizes delegation'));
 const delegationSkill = read('plugins/lunatron/skills/lunatron-delegation/SKILL.md');

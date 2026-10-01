@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ACTIVE_CONTEXT = `LUNATRON_STATE=ACTIVE
-Lunatron is active for this root task by default or through LNT1.
+Lunatron is active for this root task through LNT1.
 Read the bundled lunatron-delegation skill first. Follow the workflow below
 only when that skill authorizes delegation; this hook describes the runtime
 contract but is not an independent source of delegation authority.
@@ -322,7 +322,7 @@ function resolveMode(input) {
     const override = readOverride(input);
     if (override === 1) return { active: true, basis: 'forced-on' };
     if (override === 0) return { active: false, basis: 'forced-off' };
-    return { active: true, basis: 'default-on' };
+    return { active: false, basis: 'default-off' };
   } catch (error) {
     return { active: false, basis: 'state-error', error: error.code || error.message };
   }

@@ -41,10 +41,10 @@ try {
       turn_id: 'unused-turn',
     });
     assert.equal(result.status, 0, result.stderr);
-    assert.match(result.stdout, /LUNATRON_STATE=ACTIVE/);
-    assert.match(result.stdout, /LUNATRON_MODE=default-on/);
+    assert.match(result.stdout, /LUNATRON_STATE=INACTIVE/);
+    assert.match(result.stdout, /LUNATRON_MODE=default-off/);
     assert.doesNotMatch(result.stdout, /LUNATRON_COMMAND_APPLIED/);
-    assert.match(result.stdout, /LUNATRON_DATA_PATHS/);
+    assert.doesNotMatch(result.stdout, /LUNATRON_DATA_PATHS/);
   }
 
   const forcedOn = invoke('userPromptSubmit', {
@@ -99,7 +99,7 @@ try {
     });
     assert.equal(result.status, 0, result.stderr);
     if (expected === null) {
-      assert.match(result.stdout, /LUNATRON_MODE=default-on/);
+      assert.match(result.stdout, /LUNATRON_MODE=default-off/);
       assert.doesNotMatch(result.stdout, /LUNATRON_COMMAND_APPLIED/);
     } else {
       assert.ok(result.stdout.includes(`LUNATRON_COMMAND_APPLIED=LNT${expected}`));
