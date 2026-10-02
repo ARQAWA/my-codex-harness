@@ -11,19 +11,19 @@ Rust adapter `kimi-codex-proxy`, Node.js patcher `cursor-patch.mjs` и
 `codex plugin add` этот компонент не устанавливает.
 
 Выбранная поставка —
-[v0.2.3](https://github.com/ARQAWA/cursor-codex-provider/releases/tag/v0.2.3),
-macOS ARM64. Source commit разрешается по tag v0.2.3; prompt source revision
+[v0.2.4](https://github.com/ARQAWA/cursor-codex-provider/releases/tag/v0.2.4),
+macOS ARM64. Source commit разрешается по tag v0.2.4; prompt source revision
 `aa8abfa3ea3c8c6bb8c7f1b4c6cd9a73390e6415`. Binary неизменён из v0.2.2,
 его source — `351bfce4f38f98962ada993f04c33cf3bfbe4aae` (binary version 0.2.2);
 Rust не пересобирается для этих документационных исправлений.
-Публикация определяется наличием GitHub Release; установка использует только
-выпущенные assets этой выбранной версии:
+Публикация и установка используют одни локально подготовленные файлы
+выбранной поставки:
 
 | Asset | SHA-256 |
 |---|---|
 | `kimi-codex-proxy-macos-arm64` | `102f55ff9a619c4ccaf5d1e1f4042884397fb4dccd74d2d8da8cb850faab58c4` |
 | `cursor-patch.mjs` | `322cfd1b27e15a200e3eeeb19ea1cac824d9470f0db174bb9c372832dd19ed41` |
-| `CURSOR-UPDATE.md` | `3af2d24cd52e4ac2b1c50c885c51a23ee8477d4cb2426bb929da3c6d3b0e7c57` |
+| `CURSOR-UPDATE.md` | `a813af84edd24388c2f8cfa24afe6ee9727ca688b010427ae16e9855325db4fb` |
 
 `SHA256SUMS` сопровождает эти assets. Markdown copy не заменяет установку
 нового binary с embedded prompt. Полный release включает установку на текущем Mac; частичный заказ только
@@ -46,12 +46,16 @@ Rust не пересобирается для этих документацио�
 ## Первая установка
 
 1. Прочитай `HARNESS.md` и `UPDATING.md` выбранной ревизии Cursor-компонента.
-   Выбери выпущенные macOS ARM64 assets, tag/source commit, prompt revision и
-   SHA-256. Получи assets через `gh release download <tag> --repo
-   ARQAWA/cursor-codex-provider` с точными `--pattern` для бинарника, patcher,
-   `CURSOR-UPDATE.md` и `SHA256SUMS`. Сверь SHA-256 стандартным Node.js crypto
-   с опубликованными значениями до замены runtime. Не бери локальный `dist`
-   только потому, что он существует.
+   Полный release идёт от текущей локальной разработки: подготовь нужный
+   binary в `dist/kimi-codex-proxy-macos-arm64`, source `cursor-patch.mjs`,
+   `CURSOR-UPDATE.md` и `dist/SHA256SUMS`, затем source commit/push и
+   публикация этих файлов. Для установки на этом же хосте используй эти же
+   локальные файлы. Не скачивай свою поставку обратно с GitHub. Сверь SHA-256
+   стандартным Node.js crypto с локальным checksum перед заменой runtime.
+   Существующий binary переиспользуется только с известным source/hash и
+   неизменёнными Rust/embedded prompt; иначе требуется заказанная production
+   сборка. Install-only использует выбранную готовую совместимую поставку,
+   без неявного source release. Недоступный обязательный input — blocker.
 2. Установи бинарник как `kimi-codex-proxy` (с правом выполнения), patcher и
    `CURSOR-UPDATE.md` в постоянный каталог. Переиспользуй совместимые auth/route
    и действующий TLS endpoint. Если маршрут ещё не подготовлен, получи нужные

@@ -24,7 +24,9 @@ Analysis-only не меняет состояние. Полный релиз вк
 исходников/поставки, source commit, push, публикацию и локальную установку
 выбранных компонентов на текущем хосте с проверками из инструкции. Остановка
 после GitHub Release не завершает полный релиз. Уже выполненные части
-переиспользуй; явно заказанная только публикация или только установка
+переиспользуй. Публикуй локально подготовленные артефакты и устанавливай
+эти же локальные файлы; обратное скачивание своего release не выполняй.
+Явно заказанная только публикация или только установка
 сохраняет эту границу.
 Частичный запрос выполняет только его явно заказанную часть. Install-only
 пропускает source preparation/build/bump/commit и переходит к установке
@@ -49,7 +51,7 @@ Analysis-only не меняет состояние. Полный релиз вк
 `new-model-instructions-cursor.md` выбранной ревизии в
 `prompts/model-instructions.md` до source commit/build. Rust/embedded prompt
 изменён — production `cargo build --release --locked`; только patcher/docs —
-переиспользуй точный неизменённый binary asset с его source/hash. Новый prompt
+переиспользуй сохранённый локальный binary с известным source/hash. Новый prompt
 не обновляется одним Markdown copy. Cargo/tag version меняется один раз
 только при source release; plugin cachebuster к Cursor не относится. Поставка:
 macOS ARM64 binary, `cursor-patch.mjs`, `CURSOR-UPDATE.md`, `SHA256SUMS`, реальные
