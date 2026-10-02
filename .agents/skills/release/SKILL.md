@@ -20,7 +20,12 @@ description: Release or install selected my-codex-harness components, including 
 checkout `cursor-codex-provider`, его `HARNESS.md` и `UPDATING.md`. Сам Cursor
 не является Codex plugin; остальные плагины автоматически не устанавливай.
 
-Analysis-only не меняет состояние. Полный релиз выполняет весь порядок ниже.
+Analysis-only не меняет состояние. Полный релиз включает подготовку нужных
+исходников/поставки, source commit, push, публикацию и локальную установку
+выбранных компонентов на текущем хосте с проверками из инструкции. Остановка
+после GitHub Release не завершает полный релиз. Уже выполненные части
+переиспользуй; явно заказанная только публикация или только установка
+сохраняет эту границу.
 Частичный запрос выполняет только его явно заказанную часть. Install-only
 пропускает source preparation/build/bump/commit и переходит к установке
 готовой выбранной поставки.
@@ -63,11 +68,13 @@ prompt-копию, patcher, release/installation документы и provenanc
 только пока результат и основания проверки остаются неизменными.
 
 `git add` выполняй только для exact requested paths и source commit. Чужой delta
-не включай. Не делай push без запроса.
+не включай. Полный release разрешает push выбранных source commits; при частичном заказе
+выполняй push только если он входит в него.
 
 ## 4. Публикация и установка
 
-Если публикация Cursor заказана, выполни только оставшийся пункт 5 его
+Для полного release или явно заказанной публикации Cursor выполни
+оставшийся пункт 5 его
 `UPDATING.md`: private release с assets/checksum на фактический source commit.
 Push выполняется только в разрешённой части. Не повторяй bump/build/source
 commit уже выполненных шагов. Install-only использует выпущенную совместимую
@@ -90,11 +97,12 @@ packaged profiles и отдельные runtime-файлы.
 Не запускай второй cachebuster или native add из выбранного документа: bump и
 native install уже выполнены release flow.
 
-Если Codex-промпт входит в запрос, выполни
+Для полного release с Codex-промптом или его install выполни
 `install-instructions/system-prompt.md` той же ревизии. Его исходник —
 `new-model-instructions.md` в корне репозитория.
 
-Если Cursor install входит в запрос, выполни `install-instructions/cursor-harness.md`
+Для полного release Cursor или явно заказанного install выполни
+`install-instructions/cursor-harness.md`
 выбранной ревизии без повторных release шагов: доставь затронутые runtime-файлы
 и restart adapter после замены binary. При изменении patcher/route или Cursor
 пользователь полностью закрывает приложение перед apply. Только prompt/binary
