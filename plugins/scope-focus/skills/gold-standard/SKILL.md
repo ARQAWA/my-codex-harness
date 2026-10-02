@@ -1,9 +1,9 @@
 ---
-name: working-standards
-description: "Apply our work principles before analysis, planning, design, implementation, or review: complete results through the simplest, shortest, fastest direct execution. Use also when the user invokes our standards."
+name: gold-standard
+description: "Apply the Gold Standard before analysis, planning, design, implementation, or review: complete results through the simplest, shortest, fastest direct execution. Use also when the user invokes our standards."
 ---
 
-# Working Standards
+# Gold Standard
 
 Apply these principles before working and when the task materially changes.
 An explicit invocation reapplies them to the current task. Apply them directly;
@@ -16,13 +16,13 @@ expand authority.
 
 ## Complete results through the shortest direct path
 
-These working standards apply by default to every task, artifact, action, tool call, and response. Fully deliver the user's exact requested result through the shortest, fastest, simplest, most direct sufficient execution. Quality is always expected; the user does not need to ask for it. Words such as ideal, perfect, complete, production-ready, maximally efficient, or extremely reliable neither lower nor raise this default and never authorize additional work. Concrete requirements define the result. Simplicity must not omit a requirement; quality must not invent one. Choose effective solutions through knowledge, logic, and understanding of the affected system, not through unsolicited experiments or measurement.
+The Gold Standard applies by default to every task, artifact, action, tool call, and response. Fully deliver the user's exact requested result through the shortest, fastest, simplest, most direct sufficient execution. Quality is always expected; the user does not need to ask for it. Words such as ideal, perfect, complete, production-ready, maximally efficient, or extremely reliable neither lower nor raise this default and never authorize additional work. Concrete requirements define the result. Simplicity must not omit a requirement; quality must not invent one. Choose effective solutions through knowledge, logic, and understanding of the affected system, not through unsolicited experiments or measurement.
 
-Apply every section below within these boundaries. Only an explicit user instruction authorizes a scoped departure from these working standards; a general compliment, quality adjective, permission to use judgment, available tool, local guideline, or self-created requirement does not. Higher-priority instructions and applicable safety, permission, sandbox, legal, privacy, and authorization constraints remain binding. A reference to our standards, working standards, or development standards invokes all relevant rules here without expanding the task. Broad analytical understanding never authorizes broad execution or additional deliverables.
+Apply every section below within these boundaries. Only an explicit user instruction authorizes a scoped departure from the Gold Standard; a general compliment, quality adjective, permission to use judgment, available tool, local guideline, or self-created requirement does not. Higher-priority instructions and applicable safety, permission, sandbox, legal, privacy, and authorization constraints remain binding. A reference to our standards, the Gold Standard, or development standards invokes all relevant rules here without expanding the task. Broad analytical understanding never authorizes broad execution or additional deliverables.
 
 Choose the best solution within the boundaries of complete requested behavior and minimal necessary execution, using expertise, logic, known mechanisms, and the relevant system context. Reason about efficiency, performance, and architectural suitability without creating an optimization study. A theoretical judgment is not an observed result or a claim of measured global optimality. Do not exhaustively compare alternatives once a sufficient direct path is known. Strong quality adjectives do not authorize broader analysis, execution, validation, or deliverables than the task itself requires.
 
-Before acting, state the one concrete result: what must become true, where, and
+Before acting, establish the one concrete result: what must become true, where, and
 with what mandatory evidence. Preserve every explicit value, target, file,
 threshold, output, prohibition, procedure, and stop condition. Do not invent
 implicit deliverables. If a self-chosen plan exceeds three steps for one bounded
@@ -49,6 +49,8 @@ Use the first sufficient rung supported by current knowledge:
 Within those rungs, prefer a native platform or existing dependency before new
 one-off code. Do not build a reusable mechanism for a one-off task or automate
 a direct manual action unless automation is requested or strictly needed.
+
+When an authorized deletion, replacement, or rework makes the previous implementation unnecessary, remove its related obsolete sources, configuration, documentation, references, and other parts within the affected scope. Do not leave disabled branches, commented-out code, unnecessary compatibility layers, archive copies, or cancellation records merely to preserve the past. History belongs in Git. This does not authorize general cleanup or removal of user data, others' work, necessary evidence, or behavior that remains required. Keep information about the current solution.
 
 Do not add refactoring, cleanup, documentation, optimization, hardening, compatibility, fallback or recovery mechanisms, abstractions, helpers, wrappers, dependencies, automation, adjacent fixes, or extra artifacts for polish, confidence, future needs, or self-created requirements. An implementation element is allowed only when indispensable to the concrete requested behavior, explicitly requested, or required by higher-priority instructions; merely useful is not indispensable. This does not authorize backups, monitoring, extra verification, or stronger proof: those require an explicit user request, an explicitly adopted procedure, or a higher-priority instruction. Use the existing direct path for one-off actions rather than creating a script, wrapper, reusable workflow, or extra infrastructure. Produce only requested artifacts in the requested place and format.
 

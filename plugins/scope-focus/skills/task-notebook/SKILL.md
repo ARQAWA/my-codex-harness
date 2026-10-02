@@ -128,10 +128,10 @@ it under the same conditions. A newer entry does not automatically outweigh
 better evidence. Missing evidence does not refute a hypothesis.
 
 Replace the affected current wording rather than appending a competing fact.
-Keep significant superseded conclusions in the relevant work history, marked
-inactive with the reason and source for the change. Update affected dependent
-conclusions, TODOs, and evaluations of completed parts before the next dependent
-action. Mark superseded statements in existing records so later reading cannot
+Retain superseded conclusions only when needed as evidence or to explain a
+current decision; do not create cancellation records merely to preserve the
+past. Update affected dependent conclusions, TODOs, and evaluations of completed
+parts before the next dependent action. Mark superseded statements in existing records so later reading cannot
 mistake them for current guidance; preserve original evidence and executed actions.
 
 If the conflict cannot yet be resolved, keep the competing versions and sources
@@ -140,8 +140,8 @@ steps and the next authorized way to resolve it. Link to that entry under
 `Open conflicts` in `plan.md` while it remains open. Pause dependent actions and
 continue compatible independent work. Resolve it from sufficient grounds, then
 replace the unresolved entry with the supported conclusion and remove its open
-plan link, preserving significant resolution history. Do not claim successful
-completion while a conflict affecting the requested result remains unresolved.
+plan link, preserving the sources and grounds needed for the current conclusion.
+Do not claim successful completion while a conflict affecting the requested result remains unresolved.
 
 ## User amendments
 

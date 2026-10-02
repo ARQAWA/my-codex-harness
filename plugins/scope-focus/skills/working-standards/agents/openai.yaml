@@ -1,6 +1,0 @@
-interface:
-  display_name: "Working Standards"
-  short_description: "Complete work through the simplest direct solution"
-  default_prompt: "Use $working-standards to apply our work principles to this task."
-policy:
-  allow_implicit_invocation: true

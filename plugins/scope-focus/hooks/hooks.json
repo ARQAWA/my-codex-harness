@@ -8,7 +8,7 @@
             "type": "command",
             "command": "node -e \"require(require('node:path').join(process.env.PLUGIN_ROOT,'hooks','communication.cjs'))\"",
             "timeout": 7,
-            "additionalContextLimit": 12000
+            "additionalContextLimit": 32768
           }
         ]
       }
@@ -20,7 +20,7 @@
             "type": "command",
             "command": "node -e \"require(require('node:path').join(process.env.PLUGIN_ROOT,'hooks','communication.cjs'))\"",
             "timeout": 7,
-            "additionalContextLimit": 12000
+            "additionalContextLimit": 32768
           }
         ]
       }
@@ -32,7 +32,7 @@
             "type": "command",
             "command": "node -e \"require(require('node:path').join(process.env.PLUGIN_ROOT,'hooks','communication.cjs'))\"",
             "timeout": 7,
-            "additionalContextLimit": 12000
+            "additionalContextLimit": 32768
           }
         ]
       }
