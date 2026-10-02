@@ -12,12 +12,14 @@
 |---|---|
 | `scope-focus` | [`install-instructions/scope-focus.md`](install-instructions/scope-focus.md) |
 | `lunatron` | [`install-instructions/lunatron.md`](install-instructions/lunatron.md) |
-| Системный промпт Codex и исходная Cursor-копия | [`install-instructions/system-prompt.md`](install-instructions/system-prompt.md) |
+| Системный промпт Codex и Cursor | [`install-instructions/system-prompt.md`](install-instructions/system-prompt.md) |
+| Cursor harness | [`install-instructions/cursor-harness.md`](install-instructions/cursor-harness.md) |
 
 Системный промпт — отдельный компонент, подключаемый через
 `model_instructions_file` в Codex. Отдельная Cursor-копия
-`new-model-instructions-cursor.md` поставляется исходным файлом; инструкция
-Codex не задаёт её подключение в Cursor. Каталог моделей и версию субагентов определяет
+`new-model-instructions-cursor.md` встраивается в отдельный Cursor adapter;
+его поставка описана в Cursor-инструкции. Общий release промпта обновляет обоих
+потребителей, явно частичная установка — только выбранного. Каталог моделей и версию субагентов определяет
 штатный Codex. Прямой `codex plugin add` сам по себе не выполняет инструкции
 репозитория.
 

@@ -1,6 +1,6 @@
 ---
 name: release
-description: Release or install the selected my-codex-harness components, commit the source version, and install it into Codex; ordinary edits do not trigger a release.
+description: Release or install selected my-codex-harness components, including Codex and Cursor harness; ordinary edits do not trigger release.
 ---
 
 # Release
@@ -14,8 +14,16 @@ description: Release or install the selected my-codex-harness components, commit
 `INSTALL_FOR_AGENTS.md`, затем выбранный
 `install-instructions/<component>.md`. Сохрани чужой delta.
 
+Общий release системного промпта включает Codex и Cursor; явно частичный
+заказ только Codex или только Cursor не расширяй. Для Cursor выбранная
+инструкция — `install-instructions/cursor-harness.md`; она ведёт в отдельный
+checkout `cursor-codex-provider`, его `HARNESS.md` и `UPDATING.md`. Сам Cursor
+не является Codex plugin; остальные плагины автоматически не устанавливай.
+
 Analysis-only не меняет состояние. Полный релиз выполняет весь порядок ниже.
-Частичный запрос выполняет только его явно заказанную часть.
+Частичный запрос выполняет только его явно заказанную часть. Install-only
+пропускает source preparation/build/bump/commit и переходит к установке
+готовой выбранной поставки.
 
 ## 2. Версии и проверки
 
@@ -31,6 +39,17 @@ Analysis-only не меняет состояние. Полный релиз вы
 Версия системного промпта определяется source commit. Придуманный номер версии
 не добавляй.
 
+Если Cursor входит в source release, выполни подготовку из его `UPDATING.md`
+(исходники и пункты 1–3 поставки): дословно синхронизируй
+`new-model-instructions-cursor.md` выбранной ревизии в
+`prompts/model-instructions.md` до source commit/build. Rust/embedded prompt
+изменён — production `cargo build --release --locked`; только patcher/docs —
+переиспользуй точный неизменённый binary asset с его source/hash. Новый prompt
+не обновляется одним Markdown copy. Cargo/tag version меняется один раз
+только при source release; plugin cachebuster к Cursor не относится. Поставка:
+macOS ARM64 binary, `cursor-patch.mjs`, `CURSOR-UPDATE.md`, `SHA256SUMS`, реальные
+source/prompt revision и hashes; новые target/builders не добавляй.
+
 Выполняй только проверки, прямо заказанные или required выбранной процедурой.
 Сохрани их результат. Не придумывай count и дополнительные тесты.
 
@@ -38,15 +57,23 @@ Analysis-only не меняет состояние. Полный релиз вы
 
 После подготовки версии и перед коммитом выполни обязательный
 [finalize-work](../finalize-work/SKILL.md) на полном сдаваемом результате.
+Для Cursor включи контракт обоих репозиториев, source/runtime различия,
+prompt-копию, patcher, release/installation документы и provenance поставки.
 Тот же gate обязателен перед push и завершением release; переиспользуй CLEAN
 только пока результат и основания проверки остаются неизменными.
 
 `git add` выполняй только для exact requested paths и source commit. Чужой delta
 не включай. Не делай push без запроса.
 
-## 4. Установка
+## 4. Публикация и установка
 
-Native install выполняй командой `codex plugin add <name>@<marketplace>` только
+Если публикация Cursor заказана, выполни только оставшийся пункт 5 его
+`UPDATING.md`: private release с assets/checksum на фактический source commit.
+Push выполняется только в разрешённой части. Не повторяй bump/build/source
+commit уже выполненных шагов. Install-only использует выпущенную совместимую
+поставку и не запускает новый source release.
+
+Для выбранных Codex plugins native install выполняй командой `codex plugin add <name>@<marketplace>` только
 когда entry source указывает этот репозиторий и версия соответствует source
 commit. Соблюдай профили из выбранного документа: Scope Focus — `spotty`,
 `smarty`, `bossy`; Lunatron — `lunatik`, `luntik`, `lunatron_luna_xhigh`,
@@ -63,9 +90,17 @@ packaged profiles и отдельные runtime-файлы.
 Не запускай второй cachebuster или native add из выбранного документа: bump и
 native install уже выполнены release flow.
 
-Если системный промпт входит в запрос, выполни
+Если Codex-промпт входит в запрос, выполни
 `install-instructions/system-prompt.md` той же ревизии. Его исходник —
 `new-model-instructions.md` в корне репозитория.
+
+Если Cursor install входит в запрос, выполни `install-instructions/cursor-harness.md`
+выбранной ревизии без повторных release шагов: доставь затронутые runtime-файлы
+и restart adapter после замены binary. При изменении patcher/route или Cursor
+пользователь полностью закрывает приложение перед apply. Только prompt/binary
+update не требует повторного apply. Сохраняй auth/root key/route/endpoint,
+LaunchAgent/туннель, чужие настройки и истории. Проверки — только из выбранной
+инструкции; runtime не объявляется обновлённым до фактической установки.
 
 ## 5. Ошибки
 

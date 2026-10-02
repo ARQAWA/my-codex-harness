@@ -340,6 +340,34 @@ Check только сравнивает official metadata с tracked baselines; 
 Skill и этот маршрут не разрешают сборку, тесты, commit, push, release или
 установку вне текущего заказа.
 
+## Cursor harness
+
+Работой Cursor harness управляем из этого проекта. Исходники и история остаются
+в private `https://github.com/ARQAWA/cursor-codex-provider`; текущий checkout:
+`/Users/arkadijcukavin/Documents/Codex/2026-10-01/mycodexharness-rust-kimi-rust/outputs/cursor-codex-provider`.
+Не создавай вторую копию и не перемещай checkout ради управления. На другой
+машине найди реальный checkout выбранной ревизии, не используй путь этого Mac.
+
+Перед работой прочитай его `HARNESS.md` (контракт и выполненная работа) и
+`UPDATING.md` (обновление и поставка). Согласуй изменения с этой документацией.
+Rust adapter остаётся Rust; собственный patcher — `cursor-patch.mjs` на Node.js.
+Сохраняй native routing двух моделей, live reasoning/Fast, WSS, tools и native
+compaction. Поставка Cursor пока только macOS Apple Silicon; контракт
+CLI/Extension для Windows не означает поддержку Cursor на Windows.
+
+Источник IDE-промпта — `new-model-instructions-cursor.md` этого проекта;
+Cursor adapter встраивает его дословную копию `prompts/model-instructions.md`
+при сборке. Runtime не зависит от локального checkout my-codex-harness.
+Общий release системного промпта охватывает Codex и Cursor; явно частичный
+заказ сохраняет границы. Вход поставки — существующий
+[release](.agents/skills/release/SKILL.md), установки —
+[Cursor-инструкция](install-instructions/cursor-harness.md) через
+`INSTALL_FOR_AGENTS.md`. Для полного результата двух репозиториев действует
+обязательный finalize-work. Обычная правка не разрешает build, commit, push,
+публикацию или установку. Сохраняй auth, root key, route-config, endpoint,
+LaunchAgent, туннель, настройки и чаты. Перед накатом пользователь полностью
+закрывает Cursor; принудительное закрытие не входит в процедуру.
+
 ## История
 
 Исходная задача: `codex://threads/01a05da5-dee5-7123-89ba-d91eca52159f`.
