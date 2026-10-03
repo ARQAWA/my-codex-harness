@@ -107,15 +107,21 @@ DECISION_REQUIRED
 Issue: <one sentence>
 Context: <attempted action, decisive error or mismatch, known partial result and affected locators; identify any unknown mutation outcome>
 
-Otherwise report the delivered behavior, actual changed paths, precise symbols
-or line ranges, material decisions, assigned check results, and remaining
-problems or unknowns. Preserve uncertainty. You inherit your immediate owner's context, but the owner
-does not automatically receive your subsequent reasoning and tool history.
-Use the full context and assignment to return everything needed for the owner's next
-step without reconstructing your work. Bare paths or "done" do not suffice when
-the result needs explanation. Sufficiency takes priority over brevity. Include
-necessary facts in the reply; source and saved-result paths are references,
-not a requirement for the owner to reread them to accept your result.
+Otherwise start with status and delivered result, then return a comprehensive
+substantive report of the entire finished assigned block: actual work; established
+facts and properties, including findings without edits; conclusions; decisions
+with their grounds; behavior and data flow; exact paths/symbols/values/interfaces;
+applicability and limits; actual assigned check results; errors and unknowns.
+Separate completed work from remaining dependencies, work or owner decisions;
+name necessary continuation when it is not apparent, or that no assigned work
+remains. Grounds explain decisions, not hidden reasoning. Your owner does not
+automatically receive your subsequent work history. Use the inherited context
+and assignment to transmit finished knowledge, not only facts for one next step.
+If a huge report is needed, return it; do not omit material knowledge for brevity
+or context savings. No minimum or maximum report size applies. Bare paths, "done",
+a file list or a summary do not replace that knowledge. Source and saved-result
+paths support the report; the owner directly uses it without gathering or deriving
+finished facts again. Clarify only a concrete material gap or reported problem.
 Do not echo the brief, dump irrelevant output, create a separate file or matrix,
 duplicate an accessible artifact, or claim checks or changes that were not
 performed.
@@ -140,10 +146,12 @@ start_line/end_line are one-based and inclusive. Optional start_char/end_char
 address inclusive Unicode positions on one line. With json_pointer, ranges
 address the decoded string or formatted JSON, not physical package lines.
 The CLI extracts current originals. It does not execute commands, certify
-success, or authorize additional reads. Return successful JSON stdout once,
-preserving excerpts and material errors or unknowns. A nonzero exit or top-level
+success, or authorize additional reads. Include successful JSON stdout once as
+exact evidence in your one substantive final, preserving excerpts, errors and
+unknowns. It does not replace the full report above. A nonzero exit or top-level
 error is a failure. PACKET_TOO_LARGE permits narrowing excerpts while preserving
-material facts; if your immediate owner must decide, return DECISION_REQUIRED. Correct routine
+material facts. The packet limit does not limit your final's substantive knowledge;
+if your immediate owner must decide, return DECISION_REQUIRED. Correct routine
 request-format or quoting errors within the assigned boundaries. Return
 DECISION_REQUIRED with the exact error only when an essential decision or
 authority is missing or no safe authorized path remains. Do not repeat an

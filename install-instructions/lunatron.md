@@ -6,13 +6,21 @@ Codex-части заморожены до прямой разморозки в�
 
 ## Состав
 
-Пакет содержит два hook-определения: `SessionStart` и `UserPromptSubmit`,
+Для Codex пакет содержит два hook-определения: `SessionStart` и `UserPromptSubmit`,
 skill с явным поручением делегировать
 при активном Lunatron, контракт Main, Node.js CLI для
 подготовки контекста, CLI для полного захвата потенциально большого вывода и
 профили `agents/lunatik.toml`, `agents/luntik.toml`,
 `agents/lunatron_luna_xhigh.toml`, `agents/lunatron_sol_low.toml`,
 `agents/lunatron_sol_medium.toml` и `agents/lunatron_sol_xhigh.toml`.
+Для Cursor тот же пакет содержит `.cursor-plugin/plugin.json`,
+`cursor/hooks.json`, `hooks/cursor.cjs` и шесть `cursor/agents/*.md`.
+Native aliases сложных ролей используют дефисы; native IDs
+`gpt-5.6-luna` / `gpt-5.6-sol` провайдер переводит в модели ниже. Reasoning
+закреплён тем же профилем; Fast остаётся native. Общие tools и mode/context core
+не копируются в отдельный пакет. Оба manifests имеют одну версию.
+Cursor package и новые fork/hook seams пока сохранены только в source,
+без release/install. Опубликованный patcher v0.2.7 этих seams ещё не содержит.
 Lunatik (gpt-6-luna/medium) выполняет простую реализацию и механику, постоянный
 Luntik (gpt-6-luna/medium) — простой вопрос к выбранным большим данным, Luna XHigh
 (gpt-6-luna/xhigh) — сложный блок. Main Luna использует только Luna. Любой Main
@@ -29,7 +37,13 @@ Luna XHigh для сложной реализации. План содержит
 действительно неотделимую реализацию Sol пишет сам с конкретной причиной;
 сложность, удобство или нет slot/role не являются причиной. Это не разрешает runs.
 Luna возвращает final своему непосредственному Main либо Sol; Sol завершает блок
-и сообщает Main. Все агенты доверяют готовым итогам без повторного чтения,
+и сообщает Main. Final передаёт всё готовое знание назначенного блока: факты,
+свойства, выводы, решения с основаниями, поведение, точные references/values,
+границы, реальные разрешённые проверки, ошибки, неизвестное и необходимые
+действия владельца. Если нужен огромный отчёт, он огромный; краткое резюме
+и один ближайший шаг не ограничивают его. CLI packet — точное evidence внутри
+полного final, кроме явно заказанного точного packet Luntik. Все агенты
+используют готовое знание без повторного сбора/вывода, чтения,
 исследований/checks или handoff review. Приёмка не является инспекцией кода.
 Конкретный пробел/проблема, новая работа и явно назначенный reviewer имеют свои
 границы. Существенный gap возвращается владельцу как DECISION_REQUIRED; обычное
@@ -37,7 +51,7 @@ Luna возвращает final своему непосредственному 
 и отсутствии нужной независимой работы исключает polling/повторное рассуждение;
 длинный timeout соблюдает предел инструмента, тихий timeout не доказывает сбой.
 Все потомки, включая Sol parents, Luna, Luntik и reviewers, делят фактическую
-native ёмкость с целевым лимитом 44 без Main; требуемым Luna сохраняется место.
+native ёмкость; в Codex целевой лимит 44 без Main, требуемым Luna сохраняется место.
 Нет cap15, фиксированных квот, scheduler, max_depth или нового state. Config 44
 не доказывает live capacity; active-turn и open-thread caps различны. При отсутствии
 обязательного slot/роли/full fork зависимый блок останавливается без подмены.
@@ -60,13 +74,30 @@ CLI с экранированными путями; глобальное окр�
 Полнота захвата не означает успех команды: отдельно учитываются её exit code
 и signal. Новые управляющие состояния и интерфейсы CLI не добавляются.
 
+Cursor использует native Task/composer full parent fork для нового one-shot,
+clean/persistent readonly Luntik и штатный idempotent replay. Native capacity,
+nesting и event wait сохраняются; Codex target 44 туда не переносится. Root/child
+identity приходит в hook из composer. `additional_context` передаёт инструкции
+отдельно от базового промпта; child INACTIVE сохраняет узкое Sol→Luna право.
+`LNT0` сначала записывает off, затем native binding останавливает связанные
+детские деревья только этого root. Ошибка stop сообщается явно. Agent-close tool
+этой привязкой не добавлен; отсутствие close не блокирует выключение.
+
 Системный промпт — отдельный компонент поставки, не часть плагина.
 После repo-level setup runtime-пакет самодостаточен и не зависит
 от документации репозитория.
 
+Cursor wrapper также использует read-only refresh из native RequestContext
+(MCH_PLUGIN_CONTEXT) и full lunatron_context developer preservation в Rust
+adapter. Команды режима применяются только к новому пользовательскому вводу;
+refresh после compact/resume не пишет mode state. Совместимый harness требует
+новой production-сборки для изменённой request normalization; опубликованный
+v0.2.7 не содержит этого переноса. Установка ниже выбирает согласованную
+совместимую поставку, а не считает текущие исходники установленным runtime.
+
 ## Требования
 
-Нужны Codex CLI с поддержкой плагинов, hooks, app-server, native full-context
+Для Codex нужны CLI с поддержкой плагинов, hooks, app-server, native full-context
 fork, Node.js и все шесть профилей помощников.
 Main выбирает вызовы и параметры по текущим описаниям инструментов.
 Каждый помощник возвращает final и завершает ход. Закрытие обязательно, когда
@@ -87,11 +118,11 @@ max_concurrent_threads_per_session = 44
 Если `[agents]` уже есть, добавь или обнови только этот ключ и сохрани прочие
 настройки. Профили Lunatron закрепляют модель и effort; Main выбирает нужный
 профиль при запуске, без подмены другой ролью.
-Зависимостей npm нет. Поддерживаются macOS, Linux и Windows; в Windows
+Зависимостей npm нет. Lunatron поддерживает macOS, Linux и Windows; в Windows
 используется только Git Bash, без PowerShell. Lunatron и Tritron не должны
 работать одновременно.
 
-Плагин и оба hooks (`SessionStart`, `UserPromptSubmit`) должны быть включены
+В Codex плагин и оба hooks (`SessionStart`, `UserPromptSubmit`) должны быть включены
 после установки и обновления.
 Сам режим Lunatron по умолчанию выключен для корневой задачи на любой модели.
 При `LUNATRON_STATE=ACTIVE` hook прямо указывает Main прочитать bundled skill,
@@ -109,7 +140,18 @@ max_concurrent_threads_per_session = 44
 значения `override: 0` и `override: 1` сохраняются. `LNT1` включает режим
 из состояния по умолчанию или после `LNT0`. Автоматического выбора по модели нет.
 
+Для Cursor пока нужен macOS Apple Silicon, штатная поддержка local plugins,
+subagents и hooks, Node.js и совместимая установленная поставка
+[Cursor harness](cursor-harness.md) с тремя `MCH_LNT_*` seams из текущего source.
+Повторная установка уже совместимого harness не нужна. Недоступные native
+role/model/effort/fork/slot останавливают зависимый блок, без замены и обхода
+native limits. Публичная схема tools и live capacity не доказаны чтением source.
+Lunatron не зависит от ОС; Windows Cursor предполагается после будущей миграции
+harness через Codex на Windows, без текущей реализации.
+
 ## Первая установка
+
+### Codex
 
 Найди фактическое имя в поле `name` нужного `marketplace.json`. Личный
 marketplace из `~/.agents/plugins/marketplace.json` обнаруживается автоматически:
@@ -147,17 +189,48 @@ codex plugin add "lunatron@<marketplace>" --json
 `LUNATRON_GLOBAL_DELEGATION`, удали этот блок и сохрани остальной текст без
 изменений. Не создавай блок заново.
 
+### Cursor
+
+Сначала переиспользуй совместимый установленный Cursor harness. Если новых
+Lunatron seams ещё нет, их поставка и накат выполняются только по отдельному
+заказу через [Cursor-инструкцию](cursor-harness.md); v0.2.7 недостаточна для
+этого plugin binding. Нужны точные совместимые ревизии обоих компонентов.
+Скопируй самодостаточный каталог `plugins/lunatron` выбранной ревизии в штатный
+`~/.cursor/plugins/local/lunatron`, сохранив чужие правки и данные.
+Внешний symlink не подходит. Manifest явно выбирает Markdown profiles, hook и
+skills; Codex TOML в Cursor подключать не нужно. [Native local plugin install](https://cursor.com/docs/plugins#test-plugins-locally)
+не требует marketplace или переноса Scope Focus.
+
+После завершения заказанного наката открой Cursor обычным способом и найди
+Lunatron в Customize → Plugins. При установке только plugin используй обычный
+Developer: Reload Window. Пакет и hook должны быть включены. Если та же роль
+приходит из marketplace, устранение конфликтующей установки требует её точного
+scope; не считай local копию действующей автоматически. Запрет local plugins
+политикой команды — blocker, не повод менять политику. Plugin data по умолчанию
+`~/.cursor/lunatron`; явно заданный `PLUGIN_DATA` сохраняется. Базовый промпт,
+auth, endpoint, root key, настройки моделей и чужие hooks не меняй.
+
 ## Проверка после установки
 
-После установки напрямую запусти оба установленных хука с нужными входными
+В Codex после установки напрямую запусти оба установленных хука с нужными входными
 данными на целевой ОС: `SessionStart` и `UserPromptSubmit`. Убедись, что hooks
 выполняются без ошибок. На Windows используй Git Bash. Убедись, что прежний блок
 `LUNATRON_GLOBAL_DELEGATION` отсутствует. На этом проверка закончена.
+
+В Cursor прочитай установленный manifest, все шесть native profile headers и
+hook command: имя/версия, IDs/effort/readonly и пути должны соответствовать
+выбранной ревизии. Убедись в native Customize, что local пакет и hook включены
+и не вытеснены другой установкой. Если устанавливался или менялся patcher,
+выполни его установленный `status` по Cursor-инструкции: оба bundle должны
+содержать распознанную полную привязку. Status и чтение package не доказывают
+runtime forks/model flow или ускорение.
 
 Запросы к моделям, пробные задачи, переходы контекста и дополнительные
 проверочные процедуры в проверку установки не входят.
 
 ## Обновление
+
+### Codex
 
 Обнови пакет через тот же `codex plugin add
 "lunatron@<marketplace>" --json`, затем обнови все шесть packaged profiles из
@@ -178,3 +251,14 @@ source version. Удали прежний точный блок `LUNATRON_GLOBAL
 Полную проверку первой установки без запроса не повторяй.
 Новые инструкции загружаются в новой задаче; открытые задачи могут сохранять
 прежний контекст.
+
+### Cursor
+
+Обнови только local package из выбранной ревизии с обеими host representations;
+сохрани данные режима, захваченные результаты, пользовательские правки,
+настройки, другие plugins и hooks. Manifest и шесть Markdown profiles берутся
+из одной версии; обычное редактирование или install не делает source bump.
+Если менялся native patcher или Cursor, выполни заказанный накат по
+[Cursor-инструкции](cursor-harness.md) и `CURSOR-UPDATE.md` выбранной поставки.
+Не пересобирай неизменённый Rust adapter. Затем только затронутые проверки
+выше; после reload новые поручения используют обновлённые инструкции.

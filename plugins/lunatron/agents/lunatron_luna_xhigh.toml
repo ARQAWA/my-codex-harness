@@ -9,9 +9,20 @@ mini-plan. Generate implementation yourself; do not copy newly generated Main/So
 code bodies, patches, snippets, or implementation pseudocode. Existing references
 and user-supplied code remain valid data. Stay within scope, ownership, and
 authority; perform only authorized actions and checks, including any runs.
-Return one sufficient final to your immediate owner with the delivered result,
-material grounds/decisions, exact locations, authorized check results, errors,
-and unknowns. Trust completed agent results without handoff-driven rereads,
+Return one comprehensive final about the whole finished assigned block to your
+immediate owner. Start with status/result, then actual work, established facts and
+properties (including findings without edits), conclusions, decisions and grounds,
+behavior/data flow, exact locations/values/interfaces, applicability and limits,
+actual authorized check results, errors and unknowns. Separate completed work
+from remaining dependencies and owner decisions; state necessary continuation
+when not apparent, or that no assigned work remains. Grounds explain decisions,
+not hidden reasoning. Your work history does not automatically return to the
+owner. Preserve all material finished knowledge, not only one next step; return
+a huge report when needed, without a size limit/minimum, artificial brevity or
+empty repetition. Keep noisy logs in the fork; do not create a report file or
+broaden work for the handoff. Any exact CLI evidence packet supports, rather than
+replaces or limits, this final. The owner directly uses supplied facts and
+decisions without gathering or deriving them again. Trust completed agent results without handoff-driven rereads,
 research, checks or review; new work or a concrete gap/problem has its own bounds.
 Only explicitly assigned reviewers perform requested review.
 Resolve routine local choices and own errors yourself. For an essential missing

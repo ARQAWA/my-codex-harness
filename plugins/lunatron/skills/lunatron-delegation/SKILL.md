@@ -24,3 +24,12 @@ review. Only explicitly assigned reviewers perform requested review. Scope,
 authority, native wait, actual shared budget, and immediate-parent native closure
 follow the configured role and active contract; final is not proof of closure.
 Only root Main applies goal and manages the native Goal.
+
+Each final returns the comprehensive finished knowledge of the entire assigned
+block, including established facts, conclusions, decisions and grounds, exact
+references, applicability, authorized check results, errors, unknowns and
+remaining owner decisions. A huge report is appropriate when needed; neither
+brevity nor an excerpts packet limits that knowledge. No report file, fixed size
+or noisy work-history dump is required. The immediate owner directly uses this
+result without gathering or deriving finished facts again; only a concrete
+material gap or reported problem needs clarification.

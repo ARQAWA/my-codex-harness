@@ -21,7 +21,7 @@ macOS ARM64. Source commit разрешается по tag v0.2.7; prompt source
 `cargo build --release --locked` с этим embedded prompt; source разрешается
 по tag v0.2.7. Промпт самодостаточен и не зависит от плагинов; их Goal/Notebook/cleanup
 поступают отдельно. Финальные правила и Cursor mechanics сохранены дословно.
-Rust-логика и Node patcher не изменены.
+В поставке v0.2.7 Rust-логика и Node patcher не менялись.
 Публикация и установка используют одни локально подготовленные файлы
 выбранной поставки:
 
@@ -36,6 +36,17 @@ Rust-логика и Node patcher не изменены.
 публикации сохраняется. Runtime обновлён лишь после замены файлов, apply
 затронутого патча и restart adapter, затем предусмотренных проверок.
 
+Текущий source patcher и update инструкция дополнены native Lunatron seams;
+они ещё не выпущены и не установлены. Assets/hashes v0.2.7 выше этих seams не
+содержат. Для Cursor Lunatron нужна выбранная совместимая поставка patcher и
+отдельный native package по [Lunatron-инструкции](lunatron.md). Scope Focus
+не является зависимостью. Текущий перенос Scope Focus добавляет MCH_PLUGIN_CONTEXT, fresh reviewer guards
+и сохранение обособленных plugin sections в src/request.rs. Embedded prompt
+не изменён, но Rust-логика изменена: будущая совместимая поставка требует
+новой production-сборки. v0.2.7 не содержит и этих изменений. Scope Focus
+подключается отдельно по [своей инструкции](scope-focus.md); его контракт
+действует также при выключенном Lunatron.
+
 ## Требования
 
 Поддерживаемая поставка — macOS Apple Silicon, Cursor с совместимыми seams
@@ -48,6 +59,8 @@ Rust-логика и Node patcher не изменены.
 публичный HTTPS `base_url` с последним `/v1`, необязательный `provider_urls`.
 На том же TLS origin/порту/prefix доступны HTTP inference и WSS reasoning bridge.
 На иной машине определи реальные пути; Windows/Linux Cursor install не заявлен.
+Windows предполагается после будущей миграции harness через Codex на Windows;
+текущий технический патч остаётся Mac-only.
 
 ## Первая установка
 
@@ -87,8 +100,10 @@ Rust-логика и Node patcher не изменены.
 выполни тот же Node command с `status`: оба bundle должны быть распознаны.
 Старый наш runtime `cursor-patch.py` удаляй только после установки его Node-замены;
 не трогай чужие файлы. Для миграции сохрани чужие hooks; если ещё существует
-только наша старая beforeSubmitPrompt-регистрация/bridge, удаляй exact targets
+только наша старая reasoning beforeSubmitPrompt-регистрация/bridge, удаляй exact targets
 по исходному Cursor-контракту. На текущем Mac старый hook уже удалён.
+Новый native beforeSubmitPrompt hook Lunatron не относится к старому bridge;
+его local package, hooks и данные режима сохраняй.
 Это проверки установки; модельные прогоны и тесты сюда не входят.
 Сообщи source/prompt revision, assets, пути, фактические результаты и блокеры.
 
@@ -100,6 +115,10 @@ Rust-логика и Node patcher не изменены.
 LaunchAgent, туннель, настройки и истории. Binary replacement требует restart
 adapter; только prompt/binary update не требует повторного `apply` Cursor.
 При смене patcher/маршрута или обновлении Cursor нужен закрытый Cursor и apply,
-затем только затронутые проверки выше. Ротация ключа не выполняется автоматически.
+затем только затронутые проверки выше. Повторный накат всей совместимой
+привязки, включая Lunatron, и адаптация изменившихся native interfaces описаны
+в `CURSOR-UPDATE.md` выбранной поставки. Сохрани local plugins/hooks и данные
+Lunatron; уже совместимые незатронутые компоненты не переустанавливай.
+Ротация ключа не выполняется автоматически.
 Не повторяй выполненные release шаги. Незавершённый этап явно сообщи;
 копирование Markdown само по себе не обновляет установленный prompt.

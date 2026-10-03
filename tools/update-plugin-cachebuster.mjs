@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -22,10 +22,17 @@ const updates = names.map(name => {
   }
   if (version <= manifest.version) throw new Error(`UTC-версия должна быть новее ${manifest.version}`);
   const previous = manifest.version;
+  const cursorFile = path.join(root, 'plugins', name, '.cursor-plugin/plugin.json');
+  const cursorManifest = existsSync(cursorFile) ? JSON.parse(readFileSync(cursorFile, 'utf8')) : null;
+  if (cursorManifest && (cursorManifest.name !== name || cursorManifest.version !== previous)) {
+    throw new Error(`Cursor manifest должен иметь те же имя и текущую версию: ${name}`);
+  }
   manifest.version = version;
-  return { file, manifest, name, previous };
+  if (cursorManifest) cursorManifest.version = version;
+  return { file, manifest, cursorFile, cursorManifest, name, previous };
 });
-for (const { file, manifest, name, previous } of updates) {
+for (const { file, manifest, cursorFile, cursorManifest, name, previous } of updates) {
   writeFileSync(file, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+  if (cursorManifest) writeFileSync(cursorFile, `${JSON.stringify(cursorManifest, null, 2)}\n`, 'utf8');
   console.log(`${name}: ${previous} -> ${version}`);
 }

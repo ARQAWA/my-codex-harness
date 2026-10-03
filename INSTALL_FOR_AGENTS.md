@@ -22,16 +22,18 @@ Check/Update, сборка, release, push и установка не выпол�
 
 | Компонент | Инструкция |
 |---|---|
-| `scope-focus` | [`install-instructions/scope-focus.md`](install-instructions/scope-focus.md) |
-| `lunatron` | [`install-instructions/lunatron.md`](install-instructions/lunatron.md) |
+| Scope Focus для Cursor (Codex заморожен) | [`install-instructions/scope-focus.md`](install-instructions/scope-focus.md) |
+| Lunatron для Codex / Cursor | [`install-instructions/lunatron.md`](install-instructions/lunatron.md) |
 | Системный промпт Codex и Cursor | [`install-instructions/system-prompt.md`](install-instructions/system-prompt.md) |
 | Cursor harness | [`install-instructions/cursor-harness.md`](install-instructions/cursor-harness.md) |
 
 Системный промпт — отдельный компонент, подключаемый через
 `model_instructions_file` в Codex. Отдельная Cursor-копия
 `new-model-instructions-cursor.md` встраивается в отдельный Cursor adapter;
-его поставка описана в Cursor-инструкции. Во время заморозки общий release промпта обновляет только Cursor; явно частичная установка — только выбранного. Каталог моделей и версию субагентов определяет
-штатный Codex. Прямой `codex plugin add` сам по себе не выполняет инструкции
+его поставка описана в Cursor-инструкции. Во время заморозки общий release промпта обновляет только Cursor; явно частичная установка — только выбранного. Scope Focus и Lunatron в Cursor
+устанавливаются отдельно как native plugins и требуют совместимого Cursor
+patcher; уже готовый совместимый harness переиспользуется. Каталог моделей и
+версию субагентов Codex определяет штатный Codex. Прямой `codex plugin add` сам по себе не выполняет инструкции
 репозитория.
 
 После выбранного документа сообщи установленную ревизию, пути компонентов,

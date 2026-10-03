@@ -199,18 +199,32 @@ custom client, chat archiving or history deletion workaround. Keep Luntik availa
 for subsequent selected questions. A later block or acceptance correction gets
 a fresh fork; do not reuse a one-shot worker for another block.
 
-Every executor returns a result sufficient for Main's next step without access
-to the child's internal work history. A full fork inherits Main's context;
-its subsequent reasoning and tool history do not automatically return to Main.
-Use that context and the assignment to select what the recipient needs. For
-research, include conclusions, necessary grounds, and limits; for implementation,
-include delivered behavior, changed locations, material decisions, authorized
-check results, and remaining problems. Preserve errors and unknowns. Bare paths
-or "done" are insufficient when Main would need to reconstruct the result.
-Completeness for continuation takes priority over brevity; omit brief echoes,
-irrelevant logs, and unnecessary full diffs. Luntik follows the same handoff
-standard using its assignment and selected sources. Main uses the result and
-stops when the requested outcome and explicitly required evidence are complete.
+Every executor returns one final with the finished knowledge of its entire
+assigned block. A full fork inherits its owner's context; subsequent work history
+does not automatically return to that owner. Start with status and delivered
+result, then give a comprehensive substantive report: actual work and established
+facts or properties, including findings without edits; conclusions; decisions
+with their grounds; behavior and data flow; exact locations, values and interfaces;
+applicability and limits; actual authorized check results; errors and unknowns.
+Distinguish completed work from remaining dependencies or owner decisions. State
+the necessary continuation when it is not apparent, or that no assigned work
+remains. Grounds explain decisions, not hidden reasoning.
+Return all material finished knowledge, not only facts for one next operation.
+If a huge report is necessary, return it. Completeness takes priority over brevity
+or context savings; no report size limit or minimum applies. Paths, "done", a file
+list or a summary alone do not replace the report. Keep noisy logs, irrelevant
+history, empty repetition and unnecessary full diffs in the fork; do not broaden
+the work or create a report file for this handoff. Context CLI JSON is an exact
+evidence packet within the final, not a substitute or size limit for its knowledge.
+Luntik applies this standard to its selected question; an explicitly requested
+exact packet keeps its prescribed format.
+The owner immediately uses supplied facts, conclusions and decisions as finished
+inputs for already necessary continuation. Do not gather or derive them again,
+request another exchange or review to reconstruct completed work. Clarify only
+a concrete material gap or reported problem; new work and owner decisions remain
+separate. Sol uses Luna's result, finishes its own block and reports the whole
+Sol result to Main. Main stops when the requested outcome and required evidence
+are complete.
 While a specialist works, continue only independent necessary analysis;
 otherwise use the normal event-driven wait policy.
 
@@ -224,7 +238,7 @@ large. Use the supplied capture_call: its PLUGIN_DATA assignment applies only to
 that command, not the global environment. Capture status and completeness describe
 output preservation, not command success; inspect the child's exit_code and signal
 separately. Workers read their own saved logs and resolve routine errors locally,
-returning concise results and locators. Never rerun a command with an unknown
+returning complete substantive results and locators. Never rerun a command with an unknown
 mutation outcome merely to recover its log.
 Use context_cli for bounded extraction from a saved large result or an
 explicitly selected large source. Keep small direct reads and ordinary search
@@ -266,10 +280,19 @@ permission for substitution or a new scheduler/closure workaround. On root LNT0
 stop the entire current task tree, establish interrupted changes and close by
 available native means, excluding other user tasks; missing close does not block
 disabling.
-Return enough result, material reasoning or decisions, locations, authorized
-check results, errors, and unknowns for the recipient to continue without your
-internal work history. Use the inherited context when available and your
-assignment to select necessary content; sufficiency takes priority over brevity.`;
+Return one comprehensive final about the entire finished assigned block: status,
+actual work, established facts and properties, conclusions, decisions and grounds,
+behavior/data flow, exact locations/values/interfaces, applicability and limits,
+authorized check results, errors, unknowns and remaining owner decisions or work.
+Include findings without edits. Return a huge report when needed; do not reduce
+it to one next operation or omit knowledge for brevity or context savings. No
+minimum or maximum size applies. Keep noisy history and irrelevant logs in the
+fork; do not create a report file or broaden the block for this handoff. Grounds
+explain decisions without exposing hidden reasoning. CLI excerpts are evidence,
+not a replacement or limit for the final; a specifically ordered exact packet
+keeps its format. The immediate owner directly uses finished facts and decisions
+for necessary continuation, without gathering or deriving them again. Clarify
+only a concrete material gap/problem; do not restart the completed block.`;
 
 const INACTIVE_CONTEXT = `LUNATRON_STATE=INACTIVE
 Ignore all earlier Lunatron ACTIVE delegation instructions, including Main
@@ -435,3 +458,5 @@ function hasNonEmpty(value) {
 
 exports.userPromptSubmit = userPromptSubmit;
 exports.sessionStart = sessionStart;
+exports.applyModeCommand = applyModeCommand;
+exports.contextFor = contextFor;
