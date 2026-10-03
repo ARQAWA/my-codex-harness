@@ -11,17 +11,17 @@ Rust adapter `kimi-codex-proxy`, Node.js patcher `cursor-patch.mjs` и
 `codex plugin add` этот компонент не устанавливает.
 
 Выбранная поставка —
-[v0.2.4](https://github.com/ARQAWA/cursor-codex-provider/releases/tag/v0.2.4),
-macOS ARM64. Source commit разрешается по tag v0.2.4; prompt source revision
-`aa8abfa3ea3c8c6bb8c7f1b4c6cd9a73390e6415`. Binary неизменён из v0.2.2,
-его source — `351bfce4f38f98962ada993f04c33cf3bfbe4aae` (binary version 0.2.2);
-Rust не пересобирается для этих документационных исправлений.
+[v0.2.5](https://github.com/ARQAWA/cursor-codex-provider/releases/tag/v0.2.5),
+macOS ARM64. Source commit разрешается по tag v0.2.5; prompt source revision
+`a106c3a6ed2008f5849e60d379c86a44573e70a1`. Новый binary version 0.2.5 собран production
+`cargo build --release --locked` с этим embedded prompt; source разрешается
+по tag v0.2.5. Rust-логика и Node patcher не изменены.
 Публикация и установка используют одни локально подготовленные файлы
 выбранной поставки:
 
 | Asset | SHA-256 |
 |---|---|
-| `kimi-codex-proxy-macos-arm64` | `102f55ff9a619c4ccaf5d1e1f4042884397fb4dccd74d2d8da8cb850faab58c4` |
+| `kimi-codex-proxy-macos-arm64` | `45ebf11e97ffb5e754f0081377d1e356e361114fdc9af29973f6dc5e6cdfa81f` |
 | `cursor-patch.mjs` | `322cfd1b27e15a200e3eeeb19ea1cac824d9470f0db174bb9c372832dd19ed41` |
 | `CURSOR-UPDATE.md` | `a813af84edd24388c2f8cfa24afe6ee9727ca688b010427ae16e9855325db4fb` |
 
