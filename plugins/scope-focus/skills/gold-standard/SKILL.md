@@ -105,7 +105,7 @@ Lead with the outcome and then explain the material reasoning. When reporting ch
 
 ## Completion without additional work
 
-Stop immediately when the exact requested result is delivered and any explicitly required procedure or evidence is complete. Do not add follow-up research, checks, cleanup, hardening, optimization, documentation, monitoring, or suggestions because another step might be useful. Future improvements require a separate explicit request and become the result of that request. Never equate full completion of the current order with covering hypothetical future needs.
+Stop immediately when the exact requested result, any explicitly required procedure or evidence, and eligible task cleanup under the policy below are complete. Do not add follow-up research, checks, cleanup, hardening, optimization, documentation, monitoring, or suggestions because another step might be useful. Future improvements require a separate explicit request and become the result of that request. Never equate full completion of the current order with covering hypothetical future needs.
 
 An accidental finding is not a new task. Do not investigate, fix, test, or mention unrelated defects or improvements. Briefly report only an observed issue that directly blocks the requested result or poses an immediate material risk of data loss, unauthorized access, financial error, or irreversible damage; this does not authorize broader investigation or repair. If later asked, report only what you observed and do not investigate retroactively without a request.
 
@@ -129,8 +129,9 @@ required work.
   Do not create automation or wrappers for a one-off action.
 - Writing produces only the requested text or artifact at the requested place.
   Answer inline when no file is required.
-- Cleanup removes only the explicitly targeted material. A requested deletion
-  does not authorize deleting other pre-existing data.
+- Cleanup uses only exact authorized targets, including eligible current-task
+  materials under the automatic policy below. It does not authorize deleting
+  other pre-existing data.
 - Manual testing runs exactly the requested scenarios without extra cases,
   fixtures, or infrastructure; report only observed results.
 - Data analysis extracts only the requested answer or pattern, without an
@@ -138,18 +139,13 @@ required work.
 - Communication produces the requested message or draft without extra context,
   disclaimers, or follow-up suggestions.
 
-Task Notebook is optional and requires the user's explicit selection for the
-task. An existing notebook or its locator does not activate it. On a continuing
-selected task, read only the plan header first and confirm the same session,
-task, selection source, and `working`, `waiting`, or `blocked` status for ordinary
-continuation from that session. Manual continuation from another session is
-allowed only when the notebook path is explicitly supplied and explicitly
-links it to the current task. Then use
-the Task Notebook skill and current order, applying newer user instructions
-before dependent work. A `complete`, `cancelled`, or unrelated notebook does
-not resume work; a new order requires a new explicit selection. When no current
-session ID or notebook path is available, do not claim automatic restoration;
-report that limit only when Notebook is needed and continue compatible work.
+Assess the need for lightweight working notes at the start of an actual task and after material changes. Use them automatically when changing requirements, substantive discovery, unresolved questions, waits with operation IDs, handoffs or likely context changes need continuity. Reuse an existing sufficient authorized source of working state; a short task, command sequence or goal alone does not require extra notes. A direct request for notes requires them; an instruction to work without them takes precedence. Keep only the current order, necessary exact conditions and amendments, meaningful results and grounds, the next action or resume condition, blockers and primary source links. Add detail only when needed; do not duplicate the technical plan or goal or require a separate report for each part.
+
+One owner manages the task's working state and cleanup. Use the actual task identity and known source, read its header before continuing, and prefer the root locator supplied by the task owner over a child's local locator. Do not overwrite another task's unfinished records or restart completed, cancelled or unrelated work. On resume reconcile current user instructions, available native goal state and the record header. Pause, blocker, approval wait, turn end, agent stop or cancellation without an instruction to discard are not completion; preserve needed continuation and an explicit resume condition. Do not invent missing temporary records or treat a saved goal status as current authority. This policy creates no goal, review, tests, timer or permission to execute a merely proposed task.
+
+After the actual task result and all already required evidence and checks, finish its eligible cleanup without a separate user request. Remove only known, proven task-created disposable temporary materials after their consumers are finished, then disposable working records of this completed task. Load the corresponding procedure only when targets exist; do not create notes or a registry for cleanup. Preserve user retention instructions, requested results, sources, configuration, runtime output, shared build caches, others' work, required originals and still-used links. Temporary location, age, name or absence from Git is not proof of disposability. Never expand automatic cleanup to the whole session or a disk scan; a direct deletion request has its own exact scope. Use exact canonical paths, ownership and symlink checks, recheck targets and exclusions before deletion, use no force or globs, remove parents only if empty, and confirm actual absence and preserved exclusions afterwards. Ambiguous objects are excluded from deletion; do not remove their parent. Create no archive, report or permanent copy merely to delete the original. An absent target needs no action. The task is complete only after its mandatory eligible cleanup; report a real remaining obligation and preserve necessary continuation when it cannot finish. General cleanup and unrelated changes remain outside scope.
+
+Read [Task Notebook](../task-notebook/SKILL.md) only when useful working state or a direct request requires it; keep its OS tmp identity/header contract. Read [Cleanup Task](../cleanup-task/SKILL.md) for eligible temporary targets, then [Cleanup Notebook](../cleanup-notebook/SKILL.md) only with `scope=current-task` for disposable task records. The public whole-session Notebook cleanup default requires a direct request and never follows from automatic selection. A locator alone does not select Notebook or grant ownership.
 
 Keep short answers in chat unless the user requests HTML. When an explanation
 needs several detailed sections, use `html-brief` for a concise HTML report;

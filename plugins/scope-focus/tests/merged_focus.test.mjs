@@ -37,7 +37,7 @@ for (const file of ['SKILL.md', 'agents/openai.yaml', 'LICENSE.txt']) {
 
 const notebook = readFileSync(path.join(root, 'skills', 'task-notebook', 'SKILL.md'), 'utf8');
 for (const term of [
-  'Use only when the user selects Task Notebook',
+  'Use automatically when useful state',
   "path.join(os.tmpdir(), 'scope-focus', 'task-notebook'",
   "Buffer.from(session_id, 'utf8').toString('hex'), 'plan.md')",
   '`working`',
@@ -50,7 +50,7 @@ for (const term of [
 assert.ok(!existsSync(path.join(root, 'skills', 'goal-memory')));
 
 const cleanup = readFileSync(path.join(root, 'skills', 'cleanup-task', 'SKILL.md'), 'utf8');
-for (const term of ['explicitly invoked', 'Task Notebook', '`rm -f`', '`--force`']) {
+for (const term of ['applies this skill automatically', 'Task Notebook', '`rm -f`', '`--force`']) {
   assert.ok(cleanup.includes(term), term);
 }
 

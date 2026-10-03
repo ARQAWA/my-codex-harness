@@ -1,13 +1,20 @@
 ---
 name: task-notebook
-description: Explicitly manage medium or long complex tasks with an adaptive plan, user amendments, evidence, and durable progress across context changes. Use only when the user selects Task Notebook for the task.
+description: Keep lightweight task state when changing requirements, discovery, open questions, waits, handoffs or context changes need continuity; also use when the user explicitly requests Task Notebook.
 ---
 
 # Task Notebook
 
-Use after the user's explicit selection for this task, including its continuations,
-until completion or cancellation. A new independent order needs a new selection.
-A retained notebook or a lookup of its header does not activate this skill.
+Main assesses the need at the start of an actual order and after material changes.
+Use automatically when useful state must survive changing requirements, discovery,
+open questions, a wait with an operation ID, a handoff or a likely context change.
+Reuse an existing sufficient authorized source of operational state instead of
+creating a duplicate. A short task, command sequence, Goal or ToSpec confirmation
+alone does not require Notebook. Direct `$task-notebook` requires it for the named
+task; an explicit instruction to work without Notebook takes precedence.
+A retained notebook or locator never authorizes restarting an old task. With
+ToSpec, link the exact primary spec/plan, task key and any selected native Goal;
+keep operational progress without an independent technical copy.
 
 Keep a small current view from which the agent can establish the effective order,
 completed work and its grounds, what changed, and the next concrete action. Use
@@ -25,8 +32,10 @@ detail on demand. The notebook supports the task; it grants no authority.
   OS cleanup may remove these files; do not create a hidden permanent copy.
   If the file is missing, continue only from available task sources and do
   not invent recovered state.
+- Validate canonical OS tmp containment and namespace/session path components
+  before writing; require real directories and a regular entry plan, not symlinks.
 - Read an existing header before writing. For the same continuing task, retain
-  its task key and records. For a new explicitly selected order, choose one unused
+  its task key and records. For a new order needing a notebook, choose one unused
   filesystem-safe task key. Never overwrite a different task's active notebook.
   If its relationship to the new request is unclear, resolve that material choice.
 - Main owns the order and decisions. When Main explicitly delegates this skill,
@@ -36,7 +45,9 @@ detail on demand. The notebook supports the task; it grants no authority.
   results to that owner instead of independently editing the shared plan. Use
   the environment's configured executor for writes where required.
   Main retains final acceptance and native Goal remains managed only in the root
-  chat.
+  chat. The exact root locator supplied by Main takes precedence over a child
+  hook locator, including parent-session data in nested delegation. Hook metadata
+  supplies identity, not ownership or permission to write.
 - Native Goal is optional. If selected, obtain its actual identity and original
   objective through the available Goal tools and record that association. Do not
   create, reset, or redefine a Goal through this skill. Native status remains native;
@@ -57,11 +68,11 @@ Create only `plan.md` initially. Add other records when their content is needed:
 | --- | --- |
 | `plan.md` | Header, effective order, user amendments, current step, plan, and links. |
 | `<task-key>/notes.md` | Current understanding, shared tools, access context, rules, and sources. |
-| `<task-key>/work/<part-id>.md` | A part's working detail, meaningful chronology, actions, problems, evidence, and eventual report. |
+| `<task-key>/work/<part-id>.md` | Necessary working detail, results and evidence that do not fit the current view. |
 | `<task-key>/evidence/…` | Required originals that do not already have a suitable durable location. |
-| `<task-key>/report.md` | Final notebook outcome and links, unless a suitable report already exists at the required destination. |
+| `<task-key>/report.md` | Only a requested report or necessary outcome detail without an existing suitable source. |
 
-The header names the exact session, task key, explicit selection source, and status:
+The header names the exact session, task key, selection source, and status:
 `working`, `waiting`, `blocked`, `complete`, or `cancelled`. Follow it with the
 effective order, current amendments, current step, TODO plan, and record links.
 Keep stable part IDs when reordering; use source case IDs when present.
@@ -71,7 +82,7 @@ This abbreviated example shows the shape; keep the full required list in real wo
 ```text
 Session: actual session_id
 Task: selected task-key and short task identity
-Selected by: user message locator or necessary exact excerpt
+Selected by: direct user source, or automatic Gold Standard selection with current order source and concrete need
 Status: working
 
 Current order: required result, conditions, exact constraints, source references.
@@ -104,8 +115,9 @@ Records: shared notes, work records, required originals.
    reconciling understanding and replanning before dependent work continues.
    Record meaningful results, necessary evidence, and the next action or wait
    condition; no separate entry is required for each tool call.
-5. Complete a substantive part's work record before collapsing its plan branch to
-   a short status, result, and link. The same work file becomes its report.
+5. Retain sufficient grounds before collapsing a branch to a short result and
+   links. Use an existing work record when detail is needed; do not create one
+   or a separate report for every part.
 
 Usually expand the nearest branch. Retain multiple active branches only when the
 task requires them, such as useful independent work during a wait. Do not impose
@@ -113,8 +125,9 @@ serial execution, parallelism, a fixed TODO depth, or whole-product research.
 
 ## Current understanding and conflicts
 
-When substantive knowledge appears, create `Current understanding` in the task's
-existing `notes.md` (create the file if needed). This is the single current account
+Keep substantive knowledge in the existing sufficient source; when it needs a
+separate account, use `Current understanding` in the task's `notes.md`. This is
+the single current account
 of significant findings and conclusions: retain their sources, grounds, and
 conditions of applicability, and distinguish observations, hypotheses, and
 conclusions. Plans and work records link to this account instead of maintaining
@@ -238,7 +251,7 @@ On continuation, use the plan path computed from an explicitly available current
 session ID, or an explicitly supplied plan path for manual continuation. Inspect
 only the notebook header first. Check the session when known, task identity,
 selection source, and status against the current request. Load and apply this skill
-only for the same continuing explicitly selected task in `working`, `waiting`, or
+only for the same continuing task with valid direct or automatic selection in `working`, `waiting`, or
 `blocked` status. A complete, cancelled, or unrelated notebook does not restart work
 or enable the skill for a new order. Apply new user amendments before dependent work,
 then load the relevant current understanding, open conflicts, current branch, and
@@ -247,30 +260,44 @@ assessing its applicability. Reconcile existing notebooks for the continuing tas
 only as needed for that work; do not migrate unrelated tasks or reread the whole
 history. Recheck only material mutable, missing, contradicted, or invalidated grounds.
 
-No Scope Focus hook locates or loads the notebook on startup, resume, clear, or
-compact. For a different session, require a supplied notebook path and an explicit
+The communication hook supplies the actual native session ID and computed
+locator only; it never reads, creates, loads or deletes Notebook. Use the real
+root locator and header checks above, not a session search. For a different
+session, require a supplied notebook path and an explicit
 relationship to the task; do not search other sessions or silently reassign their
 records.
 
-At a part's completion, finish its work record with the result, meaningful chronology,
-problems, solutions, and evidence links. Only after saving those grounds, collapse
-the branch into its short status and link. Preserve the detailed completed work.
+At a part's completion, retain its useful result and grounds in the current view
+or existing detailed source. Separate work records and full chronology are not
+mandatory. Keep necessary evidence and links.
 
 At whole-task completion, reconcile the actual result with the effective order and
 all applicable amendments and current grounds, including unresolved conflicts.
-Save the notebook outcome with those conditions, the
-result, unresolved matters, and links to part records. Reuse a suitable existing
-final report at the user's required destination; otherwise write the task's report
-in its stable task-key directory. Resolve links against their actual locations.
-Only then shorten `plan.md` to the completed header, outcome, and report locator.
+Save sufficient closing outcome and grounds in the existing plan or required
+result. A separate report is needed only when requested or necessary; reuse an
+existing suitable source. Do not create an archive, report or permanent copy
+solely for closing or deletion. Resolve links against their actual locations.
+After the substantive result and required evidence/reviews, automatically apply
+[Cleanup Task](../cleanup-task/SKILL.md) to known disposable task materials when
+any exist, then [Cleanup Notebook](../cleanup-notebook/SKILL.md) only with
+`scope=current-task` for proven disposable records. Keep Notebook available until
+its ownership and links are no longer needed by task cleanup.
 
-A later independently selected task in the same session gets a new task key.
+A later independent task needing Notebook in the same session gets a new task key.
 Replace the entry plan only after preserving the prior task's outcome; keep its
 record paths and links unchanged. For a pause, cancellation, or blocker, save the
-actual state without claiming completion. Never delete a notebook automatically.
-Cleanup is separately authorized and must preserve records required for continuation
-or later use. An explicit `$cleanup-notebook` invocation instead authorizes deletion
-of the entire current-session notebook, including completed records. Legacy Goal
+actual state without claiming completion. For a pause use `waiting` and an explicit
+pause/resume condition; native Goal status remains native. Pause, blocker, awaiting
+approval, turn end, agent stop or cancellation without an instruction to discard
+do not authorize deletion or resumption against the user's intent. On resume check
+current user instructions, available associated native Goal state and the header.
+Keep requested Notebook results, required originals, still-used links and anything
+the user asked to retain. Tmp location alone does not make them disposable.
+Unknown ownership excludes that target from automatic cleanup. Preserve other
+task keys and sessions; absent targets require no replacement or workflow.
+An explicit `$cleanup-notebook` invocation without a scope instead authorizes
+deletion of the entire current-session notebook, including completed records.
+Cleanup Task does not delete Notebook. Legacy Goal
 Memory data is not migrated or deleted by this replacement.
 
 ## Existing workflows

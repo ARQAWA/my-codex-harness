@@ -1,11 +1,19 @@
 ---
 name: cleanup-task
-description: Explicitly remove only proven task-created temporary artifacts after the result, evidence, and selected checks are complete; includes finished ToSpec workspaces in OS tmp.
+description: Automatically remove proven disposable temporary materials of the completed current task after its result and required checks, or perform an explicitly scoped task cleanup.
 ---
 
 # Cleanup Task
 
-Use only when explicitly invoked. Defer cleanup until the result, required evidence, and every explicitly selected check are complete.
+Main or its designated owner applies this skill automatically when known
+task-created materials have become disposable after the actual result, required
+evidence and all selected or mandatory checks. If there are no targets, do not
+start a cleanup workflow or create a notebook/registry for it. Explicit retention
+instructions override automatic deletion. A direct cleanup request follows its
+exact scope and exclusions; only an explicit discard permits removing unfinished
+materials. Pause, blocker, approval wait, turn end, agent stop or cancellation
+without discard are not completion. ToSpec preparation/readiness preserves inputs
+needed for later execution.
 
 Remove only exactly proven task-created temporary or intermediate files, directories, staging, extracted copies, temporary downloads, obsolete intermediate cache/package versions, backups, and an explicit Goal Memory directory if present. Preserve deliverables, source/config/runtime result, final active cache/archive, research/report artifacts, and every pre-existing, user-owned, or ambiguous object, except the explicitly scoped finished ToSpec material below.
 
@@ -23,7 +31,8 @@ required checks, or the user's explicit instruction to discard this exact task.
 by another agent; do not delete them at the end of specification preparation.
 
 The target must be a real task-created `scope-focus-tospec-*` directory directly
-inside the actual Node.js `os.tmpdir()`, outside the repository. Recheck canonical
+inside the actual Node.js `os.tmpdir()`, outside the task's real target file areas
+when any exist; no repository is required. Recheck canonical
 paths and symlinks; do not follow a link into another workspace. Within that exact
 directory remove only proven task-created spec.md, plan.md and known
 intermediate material; a tasks.md from an older completed workspace is removable
@@ -32,4 +41,14 @@ empty. Preserve unknown files, other tasks, notebooks and pre-existing repositor
 specs. Do not migrate, archive
 or copy these documents into the repository as part of cleanup.
 
-Before deletion, enumerate exact targets and recheck each target still matches the proof and exclusions. Prohibit `rm -f`, `--force`, and broad cleanup. Delete the explicit Goal Memory directory last among task-created temporary targets. Verify every target is absent and the result remains preserved.
+Before deletion, establish canonical paths, ownership and exclusions; reject
+symlinks or paths that escape the proven target. Use exact known paths, not age,
+names, tmp location or absence from Git as proof. No disk audit, recursive search
+for rubbish or shared cache cleanup. Known consumers must finish using a target.
+Enumerate exact targets and recheck their proof and exclusions immediately before
+deletion. Prohibit `rm -f`, `--force`, globs and broad cleanup. Delete an explicitly
+authorized Goal Memory directory last. Remove parents only when empty. Confirm
+each selected target is absent and exclusions remain; an absent target needs no
+action. Preserve ambiguous objects without treating their parent as disposable.
+If required eligible cleanup cannot finish, retain necessary continuation and
+report the concrete remaining work; do not claim full completion.

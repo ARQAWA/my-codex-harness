@@ -11,6 +11,12 @@ Shape the user's intent into a concrete outcome with bounded scope and grounds f
 
 This skill covers goal definition and goal-tool creation only. Do not create intermediate planning artifacts, durable snapshots, ledgers, decision logs, or resume files from this skill.
 
+The Gold Standard independently assesses useful working state for an actual
+task, with or without Goal. Goal creation alone does not require Notebook and
+definition alone does not authorize executing the proposed task. Keep any
+necessary operational notes under Task Notebook's conditional policy, outside
+this definition procedure; native Goal state remains authoritative.
+
 ## Workflow
 
 1. Confirm that goal definition is actually needed.
