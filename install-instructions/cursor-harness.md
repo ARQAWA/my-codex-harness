@@ -15,37 +15,33 @@ Rust adapter `kimi-codex-proxy`, Node.js patcher `cursor-patch.mjs` и
 `codex plugin add` этот компонент не устанавливает.
 
 Выбранная поставка —
-[v0.2.7](https://github.com/ARQAWA/cursor-codex-provider/releases/tag/v0.2.7),
-macOS ARM64. Source commit разрешается по tag v0.2.7; prompt source revision
-`27a07b798226b82e1d1f7d64c22b2ecb808b575c`. Новый binary version 0.2.7 собран production
+[v0.2.8](https://github.com/ARQAWA/cursor-codex-provider/releases/tag/v0.2.8),
+macOS ARM64. Source commit разрешается по tag v0.2.8; prompt source revision
+`27a07b798226b82e1d1f7d64c22b2ecb808b575c`. Новый binary version 0.2.8 собран production
 `cargo build --release --locked` с этим embedded prompt; source разрешается
-по tag v0.2.7. Промпт самодостаточен и не зависит от плагинов; их Goal/Notebook/cleanup
+по tag v0.2.8. Промпт самодостаточен и не зависит от плагинов; их Goal/Notebook/cleanup
 поступают отдельно. Финальные правила и Cursor mechanics сохранены дословно.
-В поставке v0.2.7 Rust-логика и Node patcher не менялись.
+В поставке v0.2.8 обновлены Rust context preservation и native Node bindings.
 Публикация и установка используют одни локально подготовленные файлы
 выбранной поставки:
 
 | Asset | SHA-256 |
 |---|---|
-| `kimi-codex-proxy-macos-arm64` | `103de8e11ec5c05f908c63d9c11da174adeb9b1f6a5b93035d0b658c5fbf3107` |
-| `cursor-patch.mjs` | `322cfd1b27e15a200e3eeeb19ea1cac824d9470f0db174bb9c372832dd19ed41` |
-| `CURSOR-UPDATE.md` | `a813af84edd24388c2f8cfa24afe6ee9727ca688b010427ae16e9855325db4fb` |
+| `kimi-codex-proxy-macos-arm64` | `b4e63d31b88b3085e92f11a979e2cd66f8b784131d9efe67c15d523a093691fb` |
+| `cursor-patch.mjs` | `503eb73ab225ca22ff0db0dc174cb8ede08de787e4a5570f06de2f4f215a4552` |
+| `CURSOR-UPDATE.md` | `a5ecfe9065d483e0a21593a46252461878a11401daa6592e439d729f6c28de6a` |
 
 `SHA256SUMS` сопровождает эти assets. Markdown copy не заменяет установку
 нового binary с embedded prompt. Полный release включает установку на текущем Mac; частичный заказ только
 публикации сохраняется. Runtime обновлён лишь после замены файлов, apply
 затронутого патча и restart adapter, затем предусмотренных проверок.
 
-Текущий source patcher и update инструкция дополнены native Lunatron seams;
-они ещё не выпущены и не установлены. Assets/hashes v0.2.7 выше этих seams не
-содержат. Для Cursor Lunatron нужна выбранная совместимая поставка patcher и
-отдельный native package по [Lunatron-инструкции](lunatron.md). Scope Focus
-не является зависимостью. Текущий перенос Scope Focus добавляет MCH_PLUGIN_CONTEXT, fresh reviewer guards
-и сохранение обособленных plugin sections в src/request.rs. Embedded prompt
-не изменён, но Rust-логика изменена: будущая совместимая поставка требует
-новой production-сборки. v0.2.7 не содержит и этих изменений. Scope Focus
-подключается отдельно по [своей инструкции](scope-focus.md); его контракт
-действует также при выключенном Lunatron.
+Поставка v0.2.8 включает native Lunatron seams, MCH_PLUGIN_CONTEXT,
+fresh reviewer guards и four-envelope developer preservation. Embedded prompt
+не изменён. Scope Focus и Lunatron подключаются отдельно по
+[Scope-инструкции](scope-focus.md) и [Lunatron-инструкции](lunatron.md),
+версия обоих пакетов 0.0.0+codex.20261003072133. Scope Focus действует при LNT0.
+Runtime готов только после фактической установки и предусмотренных проверок.
 
 ## Требования
 
