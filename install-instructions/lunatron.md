@@ -19,8 +19,6 @@ Native aliases сложных ролей используют дефисы; nati
 `gpt-5.6-luna` / `gpt-5.6-sol` провайдер переводит в модели ниже. Reasoning
 закреплён тем же профилем; Fast остаётся native. Общие tools и mode/context core
 не копируются в отдельный пакет. Оба manifests имеют одну версию.
-Cursor package и новые fork/hook seams пока сохранены только в source,
-без release/install. Опубликованный patcher v0.2.7 этих seams ещё не содержит.
 Lunatik (gpt-6-luna/medium) выполняет простую реализацию и механику, постоянный
 Luntik (gpt-6-luna/medium) — простой вопрос к выбранным большим данным, Luna XHigh
 (gpt-6-luna/xhigh) — сложный блок. Main Luna использует только Luna. Любой Main
@@ -90,9 +88,10 @@ identity приходит в hook из composer. `additional_context` перед
 Cursor wrapper также использует read-only refresh из native RequestContext
 (MCH_PLUGIN_CONTEXT) и full lunatron_context developer preservation в Rust
 adapter. Команды режима применяются только к новому пользовательскому вводу;
-refresh после compact/resume не пишет mode state. Совместимая поставка v0.2.9 содержит новую production-сборку
-для изменённой request normalization; v0.2.7 не содержит этого переноса. Установка ниже выбирает согласованную
-совместимую поставку, а не считает текущие исходники установленным runtime.
+refresh после compact/resume не пишет mode state. Совместимая выбранная
+поставка v0.2.10 содержит исправленный Node-патчер и production binary v0.2.9
+с этой request normalization. Установка ниже выбирает согласованную
+совместимую поставку; исходники сами по себе не являются установленным runtime.
 
 ## Требования
 
@@ -192,8 +191,8 @@ codex plugin add "lunatron@<marketplace>" --json
 
 Сначала переиспользуй совместимый установленный Cursor harness. Если новых
 Lunatron seams ещё нет, их поставка и накат выполняются только по отдельному
-заказу через [Cursor-инструкцию](cursor-harness.md); v0.2.7 недостаточна для
-этого plugin binding. Нужны точные совместимые ревизии обоих компонентов.
+заказу через [Cursor-инструкцию](cursor-harness.md). Нужны точные совместимые
+ревизии обоих компонентов.
 Скопируй самодостаточный каталог `plugins/lunatron` выбранной ревизии в штатный
 `~/.cursor/plugins/local/lunatron`, сохранив чужие правки и данные.
 Внешний symlink не подходит. Manifest явно выбирает Markdown profiles, hook и

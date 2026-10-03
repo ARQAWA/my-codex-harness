@@ -15,33 +15,33 @@ Rust adapter `kimi-codex-proxy`, Node.js patcher `cursor-patch.mjs` и
 `codex plugin add` этот компонент не устанавливает.
 
 Выбранная поставка —
-[v0.2.9](https://github.com/ARQAWA/cursor-codex-provider/releases/tag/v0.2.9),
-macOS ARM64. Source commit разрешается по tag v0.2.9; prompt source revision
-`27a07b798226b82e1d1f7d64c22b2ecb808b575c`. Новый binary version 0.2.9 собран production
-`cargo build --release --locked` с этим embedded prompt; source разрешается
-по tag v0.2.9. Промпт самодостаточен и не зависит от плагинов; их Goal/Notebook/cleanup
-поступают отдельно. Финальные правила и Cursor mechanics сохранены дословно.
-В поставке v0.2.9 обновлены Rust context preservation и native Node bindings.
-Публикация и установка используют одни локально подготовленные файлы
-выбранной поставки:
+[v0.2.10](https://github.com/ARQAWA/cursor-codex-provider/releases/tag/v0.2.10),
+macOS ARM64. Source нового Node-патчера разрешается по tag v0.2.10.
+Переиспользован production binary v0.2.9 из source commit
+`21944020366e97cee0c03a2eb5ff13882ac118fa`, без новой сборки Rust.
+Его embedded prompt source revision — `27a07b798226b82e1d1f7d64c22b2ecb808b575c`.
+Промпт самодостаточен; Goal/Notebook/cleanup плагинов поступают отдельно.
+Новая поставка исправляет выбор hook по уже нормализованной native команде
+с абсолютным installPath. Exact hook guard и остальные механики сохранены.
 
 | Asset | SHA-256 |
 |---|---|
 | `kimi-codex-proxy-macos-arm64` | `15b8680b5453cc11eb0c1282140ab7800d279665204555922a50f0bdb12b655b` |
-| `cursor-patch.mjs` | `eeef3ec0cc7b97d64a6aa35db2346ce72f0bfda7d32b41085b0e214667889990` |
-| `CURSOR-UPDATE.md` | `f06bc805a868fce5da91fbccce9854fbb119951851ff60528f8b7fc221856765` |
+| `cursor-patch.mjs` | `6693c1413dc468b005b68206b32e642fb0fb0df1ff253f49cd76e50f2a50f1ee` |
+| `CURSOR-UPDATE.md` | `9718b504d1880d1e1be44b9c0c0c3e9710cc3ebe45a181748fbc3ca8eaae2520` |
 
-`SHA256SUMS` сопровождает эти assets. Markdown copy не заменяет установку
-нового binary с embedded prompt. Полный release включает установку на текущем Mac; частичный заказ только
-публикации сохраняется. Runtime обновлён лишь после замены файлов, apply
-затронутого патча и restart adapter, затем предусмотренных проверок.
+SHA256SUMS сопровождает эти assets. Публикация и установка используют те же
+локальные файлы. Обновление только patcher не требует повторной установки
+неизменённого binary или его restart. Полный release включает локальный
+apply и предусмотренные проверки; только публикация — по явному заказу.
 
-Поставка v0.2.9 включает native Lunatron seams, MCH_PLUGIN_CONTEXT,
-fresh reviewer guards и four-envelope developer preservation. Embedded prompt
-не изменён. Scope Focus и Lunatron подключаются отдельно по
-[Scope-инструкции](scope-focus.md) и [Lunatron-инструкции](lunatron.md),
-версия обоих пакетов 0.0.0+codex.20261003072133. Scope Focus действует при LNT0.
-Runtime готов только после фактической установки и предусмотренных проверок.
+Поставка включает native Lunatron seams, MCH_PLUGIN_CONTEXT, fresh reviewer
+guards и four-envelope developer preservation из binary v0.2.9. Scope Focus и
+Lunatron подключаются отдельно по [Scope-инструкции](scope-focus.md) и
+[Lunatron-инструкции](lunatron.md); версия обоих пакетов
+`0.0.0+codex.20261003072133`. Scope Focus действует при LNT0.
+Runtime готов только после фактической установки и предусмотренных проверок;
+модельные прогоны этими проверками не подтверждаются.
 
 ## Требования
 
