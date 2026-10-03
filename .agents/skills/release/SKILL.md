@@ -14,6 +14,11 @@ description: Release or install selected my-codex-harness components, including 
 `INSTALL_FOR_AGENTS.md`, затем выбранный
 `install-instructions/<component>.md`. Сохрани чужой delta.
 
+Форк Codex CLI заморожен, временно архивирован и исключён из любых работ до
+явной активации, извлечения и разморозки пользователем. Общий release harness
+не включает его и не разрешает чтение/поиск архива, build, push или install
+форка. Штатный Codex CLI из App для активных компонентов остаётся доступен.
+
 Общий release системного промпта включает Codex и Cursor; явно частичный
 заказ только Codex или только Cursor не расширяй. Для Cursor выбранная
 инструкция — `install-instructions/cursor-harness.md`; она ведёт в отдельный
@@ -52,7 +57,10 @@ Analysis-only не меняет состояние. Полный релиз вк
 `prompts/model-instructions.md` до source commit/build. Rust/embedded prompt
 изменён — production `cargo build --release --locked`; только patcher/docs —
 переиспользуй сохранённый локальный binary с известным source/hash. Новый prompt
-не обновляется одним Markdown copy. Cargo/tag version меняется один раз
+не обновляется одним Markdown copy. Обе базовые версии промпта самодостаточны:
+не переносить в них Goal/Notebook/cleanup или другие механики плагинов.
+Синхронизация здесь означает только дословную доставку независимого central
+исходника потребителям. Cargo/tag version меняется один раз
 только при source release; plugin cachebuster к Cursor не относится. Поставка:
 macOS ARM64 binary, `cursor-patch.mjs`, `CURSOR-UPDATE.md`, `SHA256SUMS`, реальные
 source/prompt revision и hashes; новые target/builders не добавляй.
