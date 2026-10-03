@@ -1,9 +1,13 @@
 ---
 name: update-codex-harness
-description: "Проверить stable обновления или по явному поручению актуализировать активный VS Code VSIX-патч. Форк Codex CLI заморожен и временно архивирован до явной активации, извлечения и разморозки пользователем. Не устанавливает пакеты автоматически."
+description: "Codex CLI и VS Code-патч заморожены. Check/Update допустимы только после прямой разморозки выбранного компонента владельцем."
 ---
 
 # Check и Update Codex Harness
+
+Codex-части заморожены до прямой разморозки владельцем; процедуры для них
+ниже сохраняются как архивный baseline и не выполняются. Активно Cursor-направление.
+Общий статус и границы установки: [INSTALL_FOR_AGENTS.md](../../../INSTALL_FOR_AGENTS.md).
 
 Рабочая база — корень `my-codex-harness`, содержащий этот repo-local skill.
 Форк CLI `ARQAWA/codex-harness` заморожен, находится во временном архиве,
@@ -13,12 +17,12 @@ checkout/архив, не выполнять CLI Check/Update, fetch, build, rel
 или install. Общий запрос на обновление harness не снимает заморозку.
 После разморозки использовать фактический восстановленный checkout и его
 `AGENTS.md`, `HARNESS.md`, `UPDATING.md`, не прежний путь по предположению.
-Штатный CLI Codex App и активный Extension этим статусом не замораживаются.
+Штатный CLI Codex App остаётся рабочим инструментом. Extension заморожен.
 
 Extension: `../codex-vscode-harness`, private
 `ARQAWA/codex-vscode-harness`, патч Marketplace `openai.chatgpt`.
 Разрешай пути относительно рабочей базы, а не случайного cwd. Прочитай
-`AGENTS.md`, если он есть, и `HARNESS.md` активного выбранного репозитория:
+`AGENTS.md`, если он есть, и `HARNESS.md` размороженного выбранного репозитория:
 tracked HARNESS задаёт baseline/inventory/evidence.
 
 ## Check

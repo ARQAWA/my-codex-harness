@@ -5,6 +5,10 @@ description: Release or install selected my-codex-harness components, including 
 
 # Release
 
+Codex-части заморожены до прямой разморозки владельцем; процедуры для них
+ниже сохраняются как архивный baseline и не выполняются. Активно Cursor-направление.
+Общий статус и границы установки: [INSTALL_FOR_AGENTS.md](../../../INSTALL_FOR_AGENTS.md).
+
 Триггер: «выпустить» или «установить» эти компоненты.
 Обычное редактирование release не запускает.
 
@@ -19,7 +23,7 @@ description: Release or install selected my-codex-harness components, including 
 не включает его и не разрешает чтение/поиск архива, build, push или install
 форка. Штатный Codex CLI из App для активных компонентов остаётся доступен.
 
-Общий release системного промпта включает Codex и Cursor; явно частичный
+Во время заморозки общий release промпта включает только Cursor; явно частичный
 заказ только Codex или только Cursor не расширяй. Для Cursor выбранная
 инструкция — `install-instructions/cursor-harness.md`; она ведёт в отдельный
 checkout `cursor-codex-provider`, его `HARNESS.md` и `UPDATING.md`. Сам Cursor

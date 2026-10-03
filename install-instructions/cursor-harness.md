@@ -1,5 +1,9 @@
 # Cursor harness
 
+Codex-части заморожены до прямой разморозки владельцем; процедуры для них
+ниже сохраняются как архивный baseline и не выполняются. Активно Cursor-направление.
+Общий статус и границы установки: [INSTALL_FOR_AGENTS.md](../INSTALL_FOR_AGENTS.md).
+
 ## Состав
 
 Отдельный private [cursor-codex-provider](https://github.com/ARQAWA/cursor-codex-provider):
