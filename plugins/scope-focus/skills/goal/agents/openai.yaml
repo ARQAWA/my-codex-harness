@@ -1,4 +1,4 @@
 interface:
   display_name: "Define Goal"
-  short_description: "Shape clear measurable goals"
-  default_prompt: "Use $goal to turn this intention into a concrete, measurable goal before starting work."
+  short_description: "Select useful native goals"
+  default_prompt: "Use $goal to define this requested result and, when native rules permit, create or reuse its native Goal without adding work or permissions."

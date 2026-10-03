@@ -8,7 +8,7 @@ const { tmpdir } = require('node:os');
 // Read both installed sources; do not copy their text or inspect user content.
 const standard = join(__dirname, '..', 'skills', 'gold-standard', 'SKILL.md');
 const communication = join(__dirname, '..', 'skills', 'clear-communication', 'SKILL.md');
-process.stdout.write(`Apply the full Gold Standard to all work. This does not select Goal or review workflows or authorize actions beyond the standard. Apply silently. Source: ${standard}\n\n${readFileSync(standard, 'utf8')}\n\n`);
+process.stdout.write(`Apply the full Gold Standard to all work. This does not select review workflows or authorize actions beyond the standard. Apply silently. Source: ${standard}\n\n${readFileSync(standard, 'utf8')}\n\n`);
 process.stdout.write(`Apply the following communication skill before every user-facing message. Source: ${communication}\n\n${readFileSync(communication, 'utf8')}`);
 
 // Only native identity is used; never inspect prompts, transcripts or Notebook.

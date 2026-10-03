@@ -1,6 +1,6 @@
 ---
 name: goal
-description: Help the user define a concrete, measurable goal before starting work, especially when they ask to use the goal tool, create a goal, set an objective, clarify success criteria, or turn a fuzzy intention into a quantitative outcome. Use this skill for goal creation and goal refinement only; it does not manage durable snapshots, decision logs, or long-running execution artifacts.
+description: Automatically select native Goal, when user authority and native rules permit, for independently requested work whose outcome spans dependent stages, substantial research or uncertainty, or prolonged execution. Also use for an explicit $goal request or goal definition and refinement. Short questions, simple edits and discussion do not require Goal; it does not manage working notes or authorize execution.
 ---
 
 # Define Goal
@@ -11,17 +11,28 @@ Shape the user's intent into a concrete outcome with bounded scope and grounds f
 
 This skill covers goal definition and goal-tool creation only. Do not create intermediate planning artifacts, durable snapshots, ledgers, decision logs, or resume files from this skill.
 
-The Gold Standard independently assesses useful working state for an actual
-task, with or without Goal. Goal creation alone does not require Notebook and
-definition alone does not authorize executing the proposed task. Keep any
-necessary operational notes under Task Notebook's conditional policy, outside
-this definition procedure; native Goal state remains authoritative.
+Only root Main manages native Goal. Its selection adds no tests, review,
+delegation, permissions or other workflows. The Gold Standard independently
+assesses useful working state, with or without Goal. Notebook may automatically
+join a selected Goal under its own conditions, without another manual request;
+Goal alone does not require it. Keep useful operational notes under that policy,
+outside this definition procedure; native objective and status remain authoritative.
+
+Definition alone does not authorize executing the proposed task. Goal never
+replaces required approval or execution confirmation: ToSpec preparation does
+not start the future execution Goal, while an explicitly selected preparation
+Goal concerns only the requested preparation result. Automatic selection does
+not override a user pause or turn a blocker, approval wait, turn end or
+cancellation without discard into completion. Follow actual native status rules;
+completion requires the actual result and all already mandatory actions.
 
 ## Workflow
 
-1. Confirm that goal definition is actually needed.
-   - Use this skill when the user asks for `$define-goal`, asks to create or set a goal, asks for the goal tool, or wants help turning an intention into a clear objective.
-   - If the user only asks for ordinary implementation work, do the work directly instead of forcing goal creation.
+1. Assess whether Goal is useful for the actual current order.
+   - Automatically select it when an independently requested outcome needs continuity through dependent stages, substantive research or uncertainty, or prolonged execution, subject to the authority check in step 6.
+   - Short questions, straightforward brief edits and discussion of possible future work do not require Goal. Requested discovery can itself have a concrete outcome; discussing it does not authorize executing it.
+   - A direct `$goal`, request to create a goal or request for goal definition selects this skill regardless of complexity. An instruction to work without Goal takes precedence over automatic selection for the affected task.
+   - Reassess after a material change in the task, not on every tool call; use no thresholds for commands, minutes or files.
 
 2. Restate the likely goal in concrete terms.
    A usable goal names:
@@ -45,16 +56,18 @@ this definition procedure; native Goal state remains authoritative.
 
 5. Check active goal state before creating a goal.
    - Call `get_goal`.
-   - If there is no active goal and the objective meets the quality bar, call `create_goal`.
-   - If there is an active goal that still matches the user's intent, continue using it instead of creating a duplicate.
-   - If there is an active goal that conflicts with the new request, ask whether to finish the current goal, mark it complete if done, or start a separate goal-backed thread.
+   - If there is no unfinished goal, the objective meets the quality bar and step 6 permits creation, call `create_goal`.
+   - Reuse a matching unfinished goal according to current user instructions and native state; repeated selection does not create a duplicate or repeat completed operations.
+   - Preserve a conflicting unfinished goal. Do not reset, replace or mark it complete solely to make room. Resolve only the material conflict through an allowed native path or a focused user question; do not require a new thread.
 
 6. Create the goal only after it passes the quality bar.
+   - Choosing this skill does not by itself authorize `create_goal`. Follow the actual tool instructions and higher-priority rules. Express user adoption of conditional automatic Goal, or an applicable system/developer instruction, supplies a standing request only where those rules accept it. Skill availability or an ordinary task alone is not that authority; if the host requires a separate explicit request, do not infer permission against that requirement.
+   - If native Goal is unavailable or not permitted, do not simulate it with files or another controller. Continue compatible authorized work; disclose the concrete limitation only when material to the result or an explicitly requested Goal.
    - Use a single concise objective string.
    - Include sufficient grounds for completion: the requested result assessed through reading and logic, plus any explicitly mandatory evidence. Every added threshold or method must follow the request; writing it into the objective creates no authority.
    - Include scope bounds when they constrain the work.
    - Include a token budget only when the user explicitly requested one.
-   - Do not call `create_goal` for an ordinary multi-step task unless the user explicitly asked for goal-backed work.
+   - Formulate a clear permitted goal without asking again merely to enable the mode or approve its technical wording. Ask only when a missing choice materially changes the requested result, authority or mandatory evidence. A definition-only request remains definition-only.
 
 ## Goal Quality Bar
 
