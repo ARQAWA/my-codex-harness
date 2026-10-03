@@ -90,7 +90,7 @@ identity приходит в hook из composer. `additional_context` перед
 Cursor wrapper также использует read-only refresh из native RequestContext
 (MCH_PLUGIN_CONTEXT) и full lunatron_context developer preservation в Rust
 adapter. Команды режима применяются только к новому пользовательскому вводу;
-refresh после compact/resume не пишет mode state. Совместимая поставка v0.2.8 содержит новую production-сборку
+refresh после compact/resume не пишет mode state. Совместимая поставка v0.2.9 содержит новую production-сборку
 для изменённой request normalization; v0.2.7 не содержит этого переноса. Установка ниже выбирает согласованную
 совместимую поставку, а не считает текущие исходники установленным runtime.
 
