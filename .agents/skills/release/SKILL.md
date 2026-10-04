@@ -1,12 +1,12 @@
 ---
 name: release
-description: Release or install selected my-codex-harness components, including Codex and Cursor harness; ordinary edits do not trigger release.
+description: Release or install selected Codex components of my-codex-harness; ordinary edits do not trigger release.
 ---
 
 # Release
 
 Codex-части заморожены до прямой разморозки владельцем; процедуры для них
-ниже сохраняются как архивный baseline и не выполняются. Активно Cursor-направление.
+ниже сохраняются как архивный baseline и не выполняются.
 Общий статус и границы установки: [INSTALL_FOR_AGENTS.md](../../../INSTALL_FOR_AGENTS.md).
 
 Триггер: «выпустить» или «установить» эти компоненты.
@@ -22,12 +22,6 @@ Codex-части заморожены до прямой разморозки в�
 явной активации, извлечения и разморозки пользователем. Общий release harness
 не включает его и не разрешает чтение/поиск архива, build, push или install
 форка. Штатный Codex CLI из App для активных компонентов остаётся доступен.
-
-Во время заморозки общий release промпта включает только Cursor; явно частичный
-заказ только Codex или только Cursor не расширяй. Для Cursor выбранная
-инструкция — `install-instructions/cursor-harness.md`; она ведёт в отдельный
-checkout `cursor-codex-provider`, его `HARNESS.md` и `UPDATING.md`. Сам Cursor
-не является Codex plugin; остальные плагины автоматически не устанавливай.
 
 Analysis-only не меняет состояние. Полный релиз включает подготовку нужных
 исходников/поставки, source commit, push, публикацию и локальную установку
@@ -55,20 +49,6 @@ Analysis-only не меняет состояние. Полный релиз вк
 Версия системного промпта определяется source commit. Придуманный номер версии
 не добавляй.
 
-Если Cursor входит в source release, выполни подготовку из его `UPDATING.md`
-(исходники и пункты 1–3 поставки): дословно синхронизируй
-`new-model-instructions-cursor.md` выбранной ревизии в
-`prompts/model-instructions.md` до source commit/build. Rust/embedded prompt
-изменён — production `cargo build --release --locked`; только patcher/docs —
-переиспользуй сохранённый локальный binary с известным source/hash. Новый prompt
-не обновляется одним Markdown copy. Обе базовые версии промпта самодостаточны:
-не переносить в них Goal/Notebook/cleanup или другие механики плагинов.
-Синхронизация здесь означает только дословную доставку независимого central
-исходника потребителям. Cargo/tag version меняется один раз
-только при source release; plugin cachebuster к Cursor не относится. Поставка:
-macOS ARM64 binary, `cursor-patch.mjs`, `CURSOR-UPDATE.md`, `SHA256SUMS`, реальные
-source/prompt revision и hashes; новые target/builders не добавляй.
-
 Выполняй только проверки, прямо заказанные или required выбранной процедурой.
 Сохрани их результат. Не придумывай count и дополнительные тесты.
 
@@ -76,8 +56,6 @@ source/prompt revision и hashes; новые target/builders не добавля
 
 После подготовки версии и перед коммитом выполни обязательный
 [finalize-work](../finalize-work/SKILL.md) на полном сдаваемом результате.
-Для Cursor включи контракт обоих репозиториев, source/runtime различия,
-prompt-копию, patcher, release/installation документы и provenance поставки.
 Тот же gate обязателен перед push и завершением release; переиспользуй CLEAN
 только пока результат и основания проверки остаются неизменными.
 
@@ -86,13 +64,6 @@ prompt-копию, patcher, release/installation документы и provenanc
 выполняй push только если он входит в него.
 
 ## 4. Публикация и установка
-
-Для полного release или явно заказанной публикации Cursor выполни
-оставшийся пункт 5 его
-`UPDATING.md`: private release с assets/checksum на фактический source commit.
-Push выполняется только в разрешённой части. Не повторяй bump/build/source
-commit уже выполненных шагов. Install-only использует выпущенную совместимую
-поставку и не запускает новый source release.
 
 Для выбранных Codex plugins native install выполняй командой `codex plugin add <name>@<marketplace>` только
 когда entry source указывает этот репозиторий и версия соответствует source
@@ -114,15 +85,6 @@ native install уже выполнены release flow.
 Для полного release с Codex-промптом или его install выполни
 `install-instructions/system-prompt.md` той же ревизии. Его исходник —
 `new-model-instructions.md` в корне репозитория.
-
-Для полного release Cursor или явно заказанного install выполни
-`install-instructions/cursor-harness.md`
-выбранной ревизии без повторных release шагов: доставь затронутые runtime-файлы
-и restart adapter после замены binary. При изменении patcher/route или Cursor
-пользователь полностью закрывает приложение перед apply. Только prompt/binary
-update не требует повторного apply. Сохраняй auth/root key/route/endpoint,
-LaunchAgent/туннель, чужие настройки и истории. Проверки — только из выбранной
-инструкции; runtime не объявляется обновлённым до фактической установки.
 
 ## 5. Ошибки
 

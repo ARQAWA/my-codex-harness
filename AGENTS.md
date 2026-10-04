@@ -5,7 +5,6 @@ Codex-направление заморожено до прямой размор
 Исходники и история Git сохраняются на месте как архивный baseline. Их развитие,
 Check/Update, сборка, release, push и установка не выполняются. Указания для этих
 частей ниже применяются только после явной разморозки; общий заказ её не заменяет.
-Активны Cursor, его provider, Cursor-части плагинов и самостоятельный Cursor-промпт.
 Штатный Codex App/CLI как инструмент работы не заморожен. Runtime, данные,
 настройки и секреты этим статусом не изменяются.
 
@@ -166,22 +165,6 @@ Final/interrupt не доказывают closure или освобождени�
 Подробный runtime-контракт находится в
 [`plugins/lunatron/hooks/lunatron.cjs`](plugins/lunatron/hooks/lunatron.cjs)
 и профилях `plugins/lunatron/agents`; этот файл не заменяет их.
-В том же пакете native Cursor manifest, `cursor/agents/*.md` и
-`hooks/cursor.cjs` используют общий mode/context core. TOML и Markdown каждой
-роли обновляются вместе; оба manifests сохраняют одну версию. Cursor aliases
-используют дефисы, native model IDs провайдера и pinned reasoning; Fast остаётся
-живым native параметром. Native full parent fork и root/child hook identity
-связывает существующий Cursor patcher. В Cursor действуют его фактические
-capacity/nesting limits, а не Codex target 44; недоступная обязательная
-возможность останавливает зависимый блок. Close этой привязкой не добавляется.
-Scope Focus имеет отдельное cursor/ дерево всех skills/rules/reviewers и manifest.
-Native RequestContext обновляет только installed enabled plugin context; Rust
-сохраняет его выделенные полные секции как developer input. Base prompts независимы.
-Scope reviewers fresh readonly, без Lunatron parent fork. Native Goal snapshot
-берётся из реального root; отсутствующие обязательные capabilities не эмулируются.
-Изменение Rust request normalization требует будущей новой сборки, не текущего запуска.
-Lunatron не зависит от ОС; техническая поставка патча Cursor пока Mac Apple Silicon.
-
 ### Правила работы с исходниками
 
 Доступность и версию моделей определяет штатный Codex. Репозиторий закрепляет
@@ -286,14 +269,13 @@ runtime skills.
 плагинов.
 
 Общие инструкции модели описывают поведение и принципы работы без привязки к
-конкретным функциям, командам и переменным окружения. Обе версии системного
-промпта — Codex и Cursor — всегда полностью самодостаточны и независимы
-от плагинов и других механик harness. Они не содержат связей с конкретными
-плагинами, их workflows, состоянием или файлами и работают без их установки.
+конкретным функциям, командам и переменным окружения. Системный промпт Codex
+полностью самодостаточен и независим от плагинов и других механик harness.
+Он не содержит связей с конкретными плагинами, их workflows, состоянием или
+файлами и работает без их установки.
 Правила Goal, Notebook, cleanup и маршрутизации принадлежат соответствующим
 плагинам; изменения этих правил не переносятся в базовые промпты. Общие
 правила использования доступных инструментов не требуют их наличия.
-Cursor-копия дополнительно содержит только необходимые соглашения самой IDE.
 
 Всё собственное tooling проекта, включая hooks, реализуется на Node.js и
 должно работать на macOS, Linux и Windows.
@@ -322,8 +304,8 @@ push и установку. Этот статус действует до явн
 После явной разморозки порядок работы определяется `AGENTS.md`, `HARNESS.md`
 и `UPDATING.md` восстановленного репозитория; текущий путь и состояние нужно
 установить тогда. Заморозка не относится к штатному Codex CLI внутри Codex App,
-используемому как рабочий инструмент. Cursor harness остаётся активным;
-Extension и Codex-части плагинов заморожены по общему статусу выше.
+используемому как рабочий инструмент. Extension и Codex-части плагинов
+заморожены по общему статусу выше.
 
 ## Собственный патч VS Code Extension
 
@@ -351,37 +333,6 @@ Extension и Codex-части плагинов заморожены по общ�
 `UPDATING.md` и сохраняет наши изменения, данные и настройки.
 Skill и этот маршрут не разрешают сборку, тесты, commit, push, release или
 установку вне текущего заказа.
-
-## Cursor harness
-
-Работой Cursor harness управляем из этого проекта. Исходники и история остаются
-в private `https://github.com/ARQAWA/cursor-codex-provider`; текущий checkout:
-`/Users/arkadijcukavin/Documents/Codex/2026-10-01/mycodexharness-rust-kimi-rust/outputs/cursor-codex-provider`.
-Не создавай вторую копию и не перемещай checkout ради управления. На другой
-машине найди реальный checkout выбранной ревизии, не используй путь этого Mac.
-
-Перед работой прочитай его `HARNESS.md` (контракт и выполненная работа) и
-`UPDATING.md` (обновление и поставка). Согласуй изменения с этой документацией.
-Rust adapter остаётся Rust; собственный patcher — `cursor-patch.mjs` на Node.js.
-Сохраняй native routing двух моделей, live reasoning/Fast, WSS, tools и native
-compaction. Поставка Cursor пока только macOS Apple Silicon; контракт
-CLI/Extension для Windows не означает поддержку Cursor на Windows.
-
-Источник IDE-промпта — `new-model-instructions-cursor.md` этого проекта;
-Cursor adapter встраивает его дословную копию `prompts/model-instructions.md`
-при сборке. Runtime не зависит от локального checkout my-codex-harness.
-Общий release системного промпта охватывает Codex и Cursor; явно частичный
-заказ сохраняет границы. Вход поставки — существующий
-[release](.agents/skills/release/SKILL.md), установки —
-[Cursor-инструкция](install-instructions/cursor-harness.md) через
-`INSTALL_FOR_AGENTS.md`. Полный release выбранных компонентов включает
-локальную раскатку на текущем хосте из тех же локальных артефактов, которые
-отправлены в release; их обратное скачивание не требуется. Ограничение только публикацией должно
-быть явно задано пользователем. Для полного результата двух репозиториев действует
-обязательный finalize-work. Обычная правка не разрешает build, commit, push,
-публикацию или установку. Сохраняй auth, root key, route-config, endpoint,
-LaunchAgent, туннель, настройки и чаты. Перед накатом пользователь полностью
-закрывает Cursor; принудительное закрытие не входит в процедуру.
 
 ## История
 

@@ -1,7 +1,7 @@
 # Дизайн Lunatron
 
 Codex-поставка Lunatron заморожена до прямой разморозки владельцем.
-Исходный контракт сохраняется как baseline; дальнейшая разработка — для Cursor.
+Исходный контракт сохраняется как baseline.
 
 Этот файл хранит концепцию Lunatron, действующую механику и историю решений.
 Действующий контракт собран в разделах 1–2. Датированные разделы 3–19 —
@@ -119,44 +119,6 @@ override либо из значения по умолчанию. Автомат�
 заменяют закрытие; успех закрытия требует подтверждения. Закрытые id не
 возобновляются. Hook записывает режим и выдаёт инструкцию; сам агентов не закрывает.
 
-### Native Cursor
-
-Тот же самодостаточный пакет содержит `.cursor-plugin/plugin.json` с явными
-`agents`, `hooks` и `skills`, шесть Markdown профилей `cursor/agents` и
-`cursor/hooks.json`. `hooks/cursor.cjs` обрабатывает `beforeSubmitPrompt`,
-переиспользуя mode/context core `lunatron.cjs`. Только существующий mode file
-управляет режимом; данные по умолчанию находятся в `~/.cursor/lunatron`.
-Native локальная установка использует `~/.cursor/plugins/local/lunatron`;
-отдельный marketplace или перенос Scope Focus не требуются.
-TOML и Markdown каждой роли — два host представления одного контракта и
-обновляются вместе, manifests имеют одну версию.
-
-Существующий Node patcher Cursor связывает внутренний Task/composer путь с
-полным форком непосредственного родителя для каждого нового one-shot.
-Штатные `deepCloneComposer` и `conversationState` сохраняют доступную историю;
-свой копировщик или пересказ не используются. Native idempotent replay
-сохраняется, новое поручение не возобновляет one-shot. Luntik остаётся чистым
-постоянным readonly агентом с выбранными источниками. Native имена сложных ролей
-используют дефисы вместо подчёркиваний; IDs `gpt-5.6-luna` / `gpt-5.6-sol`
-провайдер переводит в `gpt-6-luna` / `gpt-6.1-sol`. Reasoning каждой роли
-закреплён, проверяется в args и живом child composer; Fast остаётся native.
-
-Hook получает root/child identity из native composer, не из background-флага.
-Неизвестный binding блокирует submission. `additional_context` проходит
-существующим user `system_reminder` каналом отдельно от базового промпта;
-child профиль сохраняет INACTIVE и не исполняет унаследованное root поручение.
-После успешного `LNT0` caller останавливает native деревья связанных прямых
-детей текущего root, сохраняя новое сообщение Main и чужие root-задачи.
-Ошибка stop сообщается явно, off остаётся записанным. Native wait, capacity и
-nesting сохраняются; Codex target 44 не переносится в Cursor. Эта привязка не
-открывает agent-close tool и не объявляет final/stop освобождением thread slot.
-
-Общие роли, tools и режим Lunatron не зависят от ОС. Технический патч Cursor
-пока рассчитан на macOS Apple Silicon и изученные seams 3.23.12. Windows
-предполагается после будущей миграции harness через Codex на Windows, без
-текущей реализации. Native package и binding сохранены в source; они ещё не
-выпущены и не установлены. Runtime parity и величина ускорения не проверялись.
-
 ### Работа с кодом
 
 Код обычного блока любой сложности генерирует Luna; Sol передаёт описательные
@@ -231,8 +193,7 @@ execution blocks, без передачи заказа другому planner. �
 Отсутствие закрытия не препятствует запуску. Если обязательная роль или полный
 контекст недоступны либо запрещены вышестоящей инструкцией, Main сообщает
 несовместимость и останавливает зависимый блок, не выполняя его молча сам.
-В Codex плагин не проверяет форму native вызова; Cursor binding проверяет
-свою обязательную пару модели/effort и immediate-parent fork.
+Плагин не проверяет форму native вызова.
 
 Связанные готовые команды Main объединяет в одно поручение с необходимым
 порядком, зависимостями и условиями остановки. Main отмечает готовые операции
@@ -348,8 +309,6 @@ macOS, Linux и Windows. В Windows используется только Git Ba
 | --- | --- |
 | `plugins/lunatron/hooks/lunatron.cjs` | Контракт Main, ручной режим, выбор исполнителя и приёмка блока. |
 | `plugins/lunatron/hooks/hooks.json` | Подключение поддерживаемых событий хоста. |
-| `plugins/lunatron/.cursor-plugin/plugin.json`, `cursor/hooks.json`, `hooks/cursor.cjs` | Native Cursor package и host перевод общего режима/контекста. |
-| `plugins/lunatron/cursor/agents/*.md` | Полные native представления шести ролей с pinned reasoning. |
 | `plugins/lunatron/agents/lunatik.toml` | Самостоятельное исполнение простого блока и исправление рутинных ошибок в заданных границах, без делегирования и приёмки всей задачи. |
 | `plugins/lunatron/agents/luntik.toml` | Чтение и выдача точных мест с существенными ограничениями. |
 | `plugins/lunatron/agents/lunatron_{luna_xhigh,sol_low,sol_medium,sol_xhigh}.toml` | Владение сложным блоком и непосредственная передача всего готового знания. |
@@ -856,17 +815,3 @@ native close с acknowledgment, иначе сообщает ограничени
 запрет Sol назначать исполнителей; удаление guard, два hooks и единственный LNT
 mode остаются действующими. Исторические cap15/minimum16 из раздела 17 не
 дополняют нынешнюю ёмкость. Нового router/state/enforcement или model catalog нет.
-
-## Cursor: актуальное восстановление контекста
-
-Cursor wrapper обособляет полный общий mode/context текст в lunatron_context.
-Native RequestContext host заново читает только установленный включённый hook
-с реальной root/child identity. Refresh явно отделён от пользовательского ввода:
-пустой prompt не применяет LNT1/LNT0, не пишет mode state и не повторяет tree-stop.
-Общий core, capture/context CLI и смысл профилей сохраняются. Root mode остаётся
-единственным control state; CHILD INACTIVE не получает root workflow.
-Host сохраняет full section как developer input поверх самостоятельного base
-prompt и восстанавливает её при повторном context request после compact/resume.
-Три внешних Scope reviewers получают свежий readonly контекст, а не execution fork;
-Luntik остаётся persistent selected-source ролью. Native ограничения и отсутствие
-close сообщаются без обхода; прежний установленный v0.2.7 этим source не обновлён.

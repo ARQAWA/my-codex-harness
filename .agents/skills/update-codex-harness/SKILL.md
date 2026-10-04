@@ -6,7 +6,7 @@ description: "Codex CLI и VS Code-патч заморожены. Check/Update �
 # Check и Update Codex Harness
 
 Codex-части заморожены до прямой разморозки владельцем; процедуры для них
-ниже сохраняются как архивный baseline и не выполняются. Активно Cursor-направление.
+ниже сохраняются как архивный baseline и не выполняются.
 Общий статус и границы установки: [INSTALL_FOR_AGENTS.md](../../../INSTALL_FOR_AGENTS.md).
 
 Рабочая база — корень `my-codex-harness`, содержащий этот repo-local skill.
