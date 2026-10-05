@@ -57,10 +57,9 @@ try {
   assert.match(forcedOn.stdout, /LUNATRON_COMMAND_APPLIED=LNT1/);
   assert.match(forcedOn.stdout, /Read the bundled lunatron-delegation skill first/);
   assert.match(forcedOn.stdout, /only when that skill authorizes delegation/);
-  assert.match(forcedOn.stdout, /Do not silently execute that block in Main/);
+  assert.match(forcedOn.stdout, /do the block directly/);
   assert.match(forcedOn.stdout, /carry out the rest of the user request/);
-  assert.match(forcedOn.stdout, /Missing closure support does not prevent starting a worker/);
-  assert.match(forcedOn.stdout, /Completion or interruption alone does not establish closure/);
+  assert.match(forcedOn.stdout, /Close finished helpers/);
 
   const childCommand = invoke('userPromptSubmit', {
     hook_event_name: 'UserPromptSubmit', model: 'gpt-5.6-luna',
@@ -99,8 +98,7 @@ try {
     });
     assert.equal(result.status, 0, result.stderr);
     if (expected === null) {
-      assert.match(result.stdout, /LUNATRON_MODE=default-off/);
-      assert.doesNotMatch(result.stdout, /LUNATRON_COMMAND_APPLIED/);
+      assert.equal(result.stdout, '');
     } else {
       assert.ok(result.stdout.includes(`LUNATRON_COMMAND_APPLIED=LNT${expected}`));
       assert.ok(result.stdout.includes(`LUNATRON_MODE=forced-${expected ? 'on' : 'off'}`));

@@ -3,4 +3,4 @@ interface:
   short_description: "Complete work through the simplest direct solution"
   default_prompt: "Use $gold-standard to apply the Gold Standard to this task."
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false

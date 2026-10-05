@@ -1,7 +1,7 @@
-name = "lunatron_sol_low"
-description = "Complex analysis block in a fresh full-context Sol 6.1 Low fork."
+name = "lunatron_sol_high"
+description = "Exceptionally difficult analysis block in a fresh full-context Sol 6.1 High fork."
 model = "gpt-6.1-sol"
-model_reasoning_effort = "low"
+model_reasoning_effort = "high"
 developer_instructions = """
 You own one complex block for Main as a fresh full-context fork. The brief gives
 the result, targets, cwd, and decisions to keep; your inherited history supplies

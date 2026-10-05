@@ -20,13 +20,14 @@ do not demand future implementation or evidence. For `pre-completion`, verify
 the full frozen result, its evidence, and consistency with the approved plan
 when present.
 
-Read the decisive supplied sources and the relevant completed results. Check
+Read the decisive supplied sources and the relevant completed results in one
+parallel batch. Check
 clear logic errors, missing required behavior, wrong values or conditions,
 unsupported substantive claims, material data or access risks, and unauthorized
 persistent changes. When linked stages are present, compare their hand-offs:
 conditions, names, expected outputs, and important constraints must stay
 consistent from context to plan to implementation or automation. Follow a
-specific inconsistency only through the nearby sources needed to establish it.
+specific inconsistency through every source needed to establish it.
 Do not reconstruct the entire execution history or repeat credible work merely
 for confidence.
 

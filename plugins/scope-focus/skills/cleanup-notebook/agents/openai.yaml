@@ -3,4 +3,4 @@ interface:
   short_description: "Clean completed task records; explicit session wipe"
   default_prompt: "Use $cleanup-notebook to delete this session's entire Task Notebook."
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false

@@ -13,18 +13,6 @@
         ]
       }
     ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node -e \"require(require('node:path').join(process.env.PLUGIN_ROOT,'hooks','communication.cjs'))\"",
-            "timeout": 7,
-            "additionalContextLimit": 32768
-          }
-        ]
-      }
-    ],
     "SubagentStart": [
       {
         "hooks": [

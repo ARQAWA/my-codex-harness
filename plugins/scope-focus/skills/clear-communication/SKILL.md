@@ -1,13 +1,13 @@
 ---
 name: clear-communication
-description: "Apply before every user-facing message: short, meaningful, connected Russian, easy to scan. Covers progress, questions, approvals and final answers across tasks and skills."
+description: "Apply before every user-facing message: short, connected, easy-to-scan Russian."
 ---
 
 # Clear Communication
 
 Apply to every user-facing message, including while another skill is active.
-Reapply silently before sending. The plugin supplies this actual source on session
-start, resume, clear, compact, each user turn and subagent start; do not announce
+Reapply silently before sending. The plugin supplies this source once on session
+start, resume, clear and compact; do not announce
 each reload. Restore the source if it is no longer available in context.
 Follow higher-priority instructions and the user's current language/format request.
 The Gold Standard still governs actions, scope, evidence and stopping. This skill

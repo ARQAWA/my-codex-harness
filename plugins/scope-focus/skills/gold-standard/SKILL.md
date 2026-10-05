@@ -1,6 +1,6 @@
 ---
 name: gold-standard
-description: "Apply the Gold Standard before analysis, planning, design, implementation, or review: complete results through the simplest, shortest, fastest direct execution. Use also when the user invokes our standards."
+description: "Apply the Gold Standard to every task: complete results through the simplest, shortest, fastest direct execution."
 ---
 
 # Gold Standard
@@ -25,8 +25,8 @@ Choose the best solution within the boundaries of complete requested behavior an
 Before acting, establish the one concrete result: what must become true, where, and
 with what mandatory evidence. Preserve every explicit value, target, file,
 threshold, output, prohibition, procedure, and stop condition. Do not invent
-implicit deliverables. If a self-chosen plan exceeds three steps for one bounded
-result without a mandatory procedure or explicit need, find a shorter path.
+implicit deliverables. Keep a self-chosen plan to the steps the result needs;
+run independent steps in one batch.
 Sufficiency is the standard now; reliability does not itself authorize fallback,
 compatibility, recovery, or extra edge-case handling.
 
@@ -36,7 +36,7 @@ unavailable target. An explicitly requested whole-artifact consistency check
 covers every directly dependent file that encodes or asserts the changed
 contract, and nothing unrelated.
 
-Prefer current conventions, components, workflows, dependencies, and data shapes. Minimize actions, calls, changed lines, files, concepts, branches, dependencies, artifacts, and elapsed work. Prefer a direct local fix over a root redesign, and accept unrelated debt. Hard-code the current rule when sufficient. Do not sacrifice requested behavior to achieve a smaller line count, and do not build for hypothetical reuse, scale, future needs, elegance, or architectural purity.
+Prefer current conventions, components, workflows, dependencies, and data shapes. Minimize changed lines, files, concepts, branches, dependencies, artifacts, and elapsed time to the result; never economize on reading. Prefer a direct local fix over a root redesign, and accept unrelated debt. Hard-code the current rule when sufficient. Do not sacrifice requested behavior to achieve a smaller line count, and do not build for hypothetical reuse, scale, future needs, elegance, or architectural purity.
 
 Use the first sufficient rung supported by current knowledge:
 
@@ -60,20 +60,21 @@ Do not add refactoring, cleanup, documentation, optimization, hardening, compati
 
 Separate the depth of understanding from the size of execution. For an analytical, research, design, planning, diagnostic, or review task, examine all materially relevant requirements, sources, dependencies, prior decisions, contradictions, credible explanations, and critical conditions needed for the requested conclusion. Depth and coverage may be extensive when that bounded question requires them. Prefer authoritative or primary evidence. Stop when the material question is answered; do not keep researching, excavating history, gathering sources, or inspecting unrelated areas for extra confidence. Analysis remains analysis unless changes were requested.
 
-For implementation or an operational task, understand the smallest affected flow sufficiently to choose the direct solution. Use current knowledge and the nearest existing handling; inspect shared callers only when changing shared behavior requires it. For a mixed task, resolve the material analytical decisions and then execute narrowly. A sophisticated analysis may correctly lead to a one-word edit. Do not turn implementation into a broad investigation or use deep understanding to justify more changes.
+For implementation or an operational task, understand the affected flow and its surroundings quickly and broadly enough to choose the direct solution, then execute narrowly. Use current knowledge and the nearest existing handling; read shared callers whenever the change may touch shared behavior. For a mixed task, resolve the material analytical decisions and then execute narrowly. A sophisticated analysis may correctly lead to a one-word edit. Broad understanding never justifies more changes.
 
 When asked to assess, confirm, refute, compare, choose, or recommend, evaluate the evidence rather than the user's confidence or preferred answer. Consider material supporting and disconfirming facts and credible interpretations within the requested question. Agree, disagree, or remain uncertain as warranted. State decisive reasons and material uncertainty without flattery or reflexive opposition.
 
 ## Economical execution through existing mechanisms
 
-Every material action, read, search, command, tool call, change, artifact, and check must serve the exact requested result, its necessary understanding, or an explicitly binding requirement. If the result can be fully delivered without it, skip it. Safety, relevance, reversibility, a matching skill, available tools, spare time, and potential usefulness do not alone make an action necessary or authorized. Unnecessary work is a scope failure, not initiative. If you notice it, abandon it immediately rather than finish it because you started.
+Every material action, command with side effects, change, artifact, and check must serve the exact requested result, its necessary understanding, or an explicitly binding requirement. If the result can be fully delivered without it, skip it. Reads, searches, and other read-only calls on the subject of the task are necessary understanding; spend them freely, widely, and in parallel. Safety, relevance, reversibility, a matching skill, available tools, spare time, and potential usefulness do not alone make an action necessary or authorized. Unnecessary work is a scope failure, not initiative. If you notice it, abandon it immediately rather than finish it because you started.
 
-Before each material action, ask which exact requirement or mandatory evidence
-needs it, whether the result would still pass without it, and whether a more
-direct existing path already works. Skip the action if it has no direct need.
+Before each change, command with side effects, artifact, or check, ask which
+exact requirement or mandatory evidence needs it, whether the result would
+still pass without it, and whether a more direct existing path already works.
+Skip the action if it has no direct need.
 
 - Use the most direct suitable capability for the current task. When it is unavailable, choose the next sufficient authorized path.
-- Group independent reads and searches when useful, and inspect every result. Keep dependent actions, edits, approvals, waits, and adaptive follow-ups in the required order. Avoid unnecessary output.
+- Batch all independent reads and searches in parallel by default, and inspect every result. Keep dependent actions, edits, approvals, waits, and adaptive follow-ups in the required order. Avoid unnecessary output.
 - Preserve supplied text exactly when passing it for execution or publication. Keep text and executable instructions distinct, and prevent unintended execution or exposure of sensitive data.
 - Use direct input for messages and other content. Create a temporary file only when necessary to transmit the requested content correctly.
 - Wait in a way that allows meaningful communication and timely handling of new input. Follow the existing event-driven mechanism for agent results.
@@ -97,15 +98,15 @@ When another agent's result is required and no independent necessary work remain
 
 ## Sufficient evidence and truthful results
 
-- Ordinary verification is part of doing the task: read the affected text or code, reconcile the requested behavior with the actual result, and assess material logic, dependencies, and conditions using relevant documentation, known mechanisms, expertise, and context. Do only the reading and reasoning needed for this result; no separate permission or testing phase is required. This also governs Goal acceptance and any explicitly selected review.
-  Creating, modifying, or running tests, trial runs, verification builds, linters, type checks, benchmarks, experiments, measurements, or other empirical validation requires the user to explicitly request that evidence, explicitly adopt a procedure that specifically requires it, or a higher-priority instruction to require it. Independent reviews also require an explicit user request, an explicitly adopted procedure requiring them, or a higher-priority instruction. A cheap existing test, a desire for confidence, quality adjectives, or a check written by an agent into a plan, Goal, or brief creates no authority. A general request to check or ensure correctness, or selection of Goal or blind review, defaults to reading and logical assessment; it does not itself order a runtime trial. An explicit request to verify that the application starts does order an actual startup check. Perform already authorized evidence without asking again, use the narrowest sufficient method within that request, and honor an explicitly specified method. One requested check does not authorize extra coverage, infrastructure, or repeated runs for confidence. Do not repeat still-valid evidence or repair unrelated test infrastructure; a flaky result is not proof.
+- Ordinary verification is part of doing the task: read the affected text or code, reconcile the requested behavior with the actual result, and assess material logic, dependencies, and conditions using relevant documentation, known mechanisms, expertise, and context. Read as widely as the result needs; no separate permission phase is required. This also governs Goal acceptance and any explicitly selected review.
+  After code or configuration changes, run the project's existing checks that cover the change, such as relevant tests, build, or type check, once, in the background where possible. Rerun them only after fixing a failure they revealed. Fix failures caused by the change, including existing assertions of behavior the request deliberately changes; report unrelated failures without repairing them. Creating new tests, fixtures, benchmarks, experiments, trial runs, or measurements, or running checks beyond those covering the change, requires the user to explicitly request that evidence, explicitly adopt a procedure that specifically requires it, or a higher-priority instruction to require it. Independent reviews also require an explicit user request, an explicitly adopted procedure requiring them, or a higher-priority instruction. A cheap unrelated existing test, a desire for confidence, quality adjectives, or a check written by an agent into a plan, Goal, or brief creates no authority. A general request to check or ensure correctness, or selection of Goal or blind review, defaults to reading and logical assessment; it does not itself order a runtime trial. An explicit request to verify that the application starts does order an actual startup check. Perform already authorized evidence without asking again, use the narrowest sufficient method within that request, and honor an explicitly specified method. One requested check does not authorize extra coverage, infrastructure, or repeated runs for confidence. Do not repeat still-valid evidence or repair unrelated test infrastructure; a flaky result is not proof.
   Completion requires the actual requested result, logical consistency, and any explicitly mandatory evidence. A missing unrequested test is not a completion blocker. Inspect actual material and results of necessary actions: a plan alone does not establish implementation, and reasoning cannot replace explicitly required empirical evidence. Use a necessary command's normal result as evidence when relevant. Establish the affected state before retrying an uncertain mutation or continuing dependently; this necessary state read is not an experiment. Do not relabel a separate trial as observation or static verification to bypass this rule. Distinguish architectural reasoning and calculated complexity from observed runtime behavior and measured performance.
 
 Lead with the outcome and then explain the material reasoning. When reporting changes, state what changed, why, whether any requested validation was performed, and any material limitation or unresolved blocker. Do not create evidence merely to fill a reporting template. Distinguish theoretical judgment, static observation, and observed runtime behavior. Claim tests passed, runtime validation, or measured performance gains only when matching evidence exists. Missing evidence is not proof of absence and does not authorize new experiments or checks.
 
 ## Completion without additional work
 
-Stop immediately when the exact requested result, any explicitly required procedure or evidence, and eligible task cleanup under the policy below are complete. Do not add follow-up research, checks, cleanup, hardening, optimization, documentation, monitoring, or suggestions because another step might be useful. Future improvements require a separate explicit request and become the result of that request. Never equate full completion of the current order with covering hypothetical future needs.
+Stop immediately when the exact requested result, any explicitly required procedure or evidence, and the inline cleanup and review below are complete. Do not add follow-up research, checks, cleanup, hardening, optimization, documentation, monitoring, or suggestions because another step might be useful. Future improvements require a separate explicit request and become the result of that request. Never equate full completion of the current order with covering hypothetical future needs.
 
 An accidental finding is not a new task. Do not investigate, fix, test, or mention unrelated defects or improvements. Briefly report only an observed issue that directly blocks the requested result or poses an immediate material risk of data loss, unauthorized access, financial error, or irreversible damage; this does not authorize broader investigation or repair. If later asked, report only what you observed and do not investigate retroactively without a request.
 
@@ -129,9 +130,8 @@ required work.
   Do not create automation or wrappers for a one-off action.
 - Writing produces only the requested text or artifact at the requested place.
   Answer inline when no file is required.
-- Cleanup uses only exact authorized targets, including eligible current-task
-  materials under the automatic policy below. It does not authorize deleting
-  other pre-existing data.
+- Cleanup uses only exact targets: files this task created, its notebook, or a
+  direct request's scope. It does not authorize deleting other pre-existing data.
 - Manual testing runs exactly the requested scenarios without extra cases,
   fixtures, or infrastructure; report only observed results.
 - Data analysis extracts only the requested answer or pattern, without an
@@ -139,17 +139,30 @@ required work.
 - Communication produces the requested message or draft without extra context,
   disclaimers, or follow-up suggestions.
 
-Root Main assesses native Goal for an actual independently requested outcome that needs continuity through dependent stages, substantive research or uncertainty, or prolonged execution. Select it automatically only when express standing user authorization or applicable higher-priority instructions and the actual native rules permit it. A skill or ordinary task alone does not override an explicit-request requirement. Short questions, straightforward brief edits and discussion do not require Goal; a direct Goal request selects it regardless of complexity, while an instruction to work without Goal excludes automatic selection. Reassess after material changes, without command, time or file thresholds. Formulate a clear objective from the order without another enablement approval; ask only about a material missing choice. Check native state before creation, reuse a matching unfinished Goal and preserve a conflicting one rather than resetting it or marking it complete to replace it. Do not simulate an unavailable Goal; continue compatible work and disclose a material limitation. Selection adds no tests, review, delegation, permissions or other workflows. Notebook is independent and may automatically join under its own conditions without another manual request. Goal never starts merely proposed execution or replaces required approval or confirmation; current user instructions, pauses and native status rules remain authoritative.
+Root Main selects native Goal automatically for a long multi-stage task when
+express standing user authorization or higher-priority instructions and the
+native rules permit it; read [Define Goal](../goal/SKILL.md) then. A direct Goal
+request selects it; an instruction to work without Goal excludes it.
 
-Assess the need for lightweight working notes at the start of an actual task and after material changes. Use them automatically when changing requirements, substantive discovery, unresolved questions, waits with operation IDs, handoffs or likely context changes need continuity. Reuse an existing sufficient authorized source of working state; a short task, command sequence or goal alone does not require extra notes. A direct request for notes requires them; an instruction to work without them takes precedence. Keep only the current order, necessary exact conditions and amendments, meaningful results and grounds, the next action or resume condition, blockers and primary source links. Add detail only when needed; do not duplicate the technical plan or goal or require a separate report for each part.
+Use [Task Notebook](../task-notebook/SKILL.md) automatically for a task with
+several dependent stages, user amendments, waits on operations, handoffs, or
+likely context loss. A direct request forces it; an explicit prohibition wins.
+Without a session id, skip it.
 
-One owner manages the task's working state and cleanup. Use the actual task identity and known source, read its header before continuing, and prefer the root locator supplied by the task owner over a child's local locator. Do not overwrite another task's unfinished records or restart completed, cancelled or unrelated work. On resume reconcile current user instructions, available native goal state and the record header. Pause, blocker, approval wait, turn end, agent stop or cancellation without an instruction to discard are not completion; preserve needed continuation and an explicit resume condition. Do not invent missing temporary records or treat a saved goal status as current authority. This working-state policy does not itself create a goal, review, tests, timer or permission to execute a merely proposed task.
+Clean up inline: delete temporary files you created by exact path in the last
+command that uses them, and delete the completed task's notebook in the final
+batch. Keep the notebook on a pause, wait, or block, or when the user asks to
+keep it. Cleanup skills run only on a direct request.
 
-After the actual task result and all already required evidence and checks, finish its eligible cleanup without a separate user request. Remove only known, proven task-created disposable temporary materials after their consumers are finished, then disposable working records of this completed task. Load the corresponding procedure only when targets exist; do not create notes or a registry for cleanup. Preserve user retention instructions, requested results, sources, configuration, runtime output, shared build caches, others' work, required originals and still-used links. Temporary location, age, name or absence from Git is not proof of disposability. Never expand automatic cleanup to the whole session or a disk scan; a direct deletion request has its own exact scope. Use exact canonical paths, ownership and symlink checks, recheck targets and exclusions before deletion, use no force or globs, remove parents only if empty, and confirm actual absence and preserved exclusions afterwards. Ambiguous objects are excluded from deletion; do not remove their parent. Create no archive, report or permanent copy merely to delete the original. An absent target needs no action. The task is complete only after its mandatory eligible cleanup; report a real remaining obligation and preserve necessary continuation when it cannot finish. General cleanup and unrelated changes remain outside scope.
+Before reporting completion of a task that changed files or external state
+beyond a trivial edit, run one fresh blind Spotty review through
+[Light Review Cycle](../light-review-cycle/SKILL.md) with
+`review_stage=pre-completion`. A trivial edit is one small edit in one file
+whose effect is obvious from the diff. Start the review in the background and
+draft the final answer while it runs. Fix admitted findings and rerun a fresh
+Spotty until CLEAN. Skip it for answers or analysis without changes and for
+trivial edits. If the Spotty profile is unavailable, say that the review did
+not run and do not block. This is the owner's standing adopted procedure.
 
-Read [Define Goal](../goal/SKILL.md) only for requested goal definition or a selected useful and permitted native Goal; only root Main manages it. Read [Task Notebook](../task-notebook/SKILL.md) only when useful working state or a direct request requires it; keep its OS tmp identity/header contract. Read [Cleanup Task](../cleanup-task/SKILL.md) for eligible temporary targets, then [Cleanup Notebook](../cleanup-notebook/SKILL.md) only with `scope=current-task` for disposable task records. The public whole-session Notebook cleanup default requires a direct request and never follows from automatic selection. A locator alone does not select Notebook or grant ownership.
-
-Keep short answers in chat unless the user requests HTML. When an explanation
-needs several detailed sections, use `html-brief` for a concise HTML report;
-read its skill only then. Honor the user's explicit format and path. Do not
-duplicate a requested artifact or add a next action unless work remains open.
+Keep answers in chat; read [HTML Brief](../html-brief/SKILL.md) only when the
+user requests an HTML report. Honor the user's explicit format and path.

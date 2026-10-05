@@ -1,22 +1,15 @@
 ---
 name: cleanup-notebook
-description: Automatically clean only disposable Notebook records of the completed current task; a direct public invocation without a scope deletes the entire current session's Notebook.
+description: On a direct request, delete this session's Task Notebook, or with scope=current-task only the current task's records.
 ---
 
 # Cleanup Notebook
 
-Automatic selection by Main or its designated owner always uses only
-`scope=current-task` below, never the whole-session default. Use it when proven
-disposable records exist, after the result and required checks and after task
-scratch cleanup has finished using their ownership/links. Otherwise do not start
-a cleanup workflow. Retention instructions, requested Notebook results, required
-originals and still-used links are exclusions. Do not move or archive them merely
-to enable deletion. Pause, blocker, approval wait, turn end, agent stop and
-cancellation without discard are not completion; preserve needed continuation.
-A direct public invocation without that
-scope authorizes removing the whole Task Notebook directory for this Codex
-session, including completed records. For that public default, do not wait for
-task completion or ask for a second confirmation.
+Use only on a direct request; the Gold Standard deletes a completed task's
+notebook inline. A direct invocation without a scope removes the whole Task
+Notebook directory for this Codex session, including completed records, without
+waiting for task completion or a second confirmation. Retention instructions,
+requested Notebook results and required originals are exclusions.
 
 ## Whole-session public default
 
@@ -43,8 +36,8 @@ exact reason. Do not create a replacement notebook automatically.
 
 ## scope=current-task
 
-Use automatically for eligible current-task records or on an explicit request
-naming this scope. It never authorizes whole-session deletion.
+Use only on an explicit request naming this scope. It never authorizes
+whole-session deletion.
 Wait for the actual substantive result, required evidence and every selected
 or mandatory CLEAN, plus the closing notebook outcome with cleanup still pending.
 Keep records needed for continuation while any of these conditions is unmet.

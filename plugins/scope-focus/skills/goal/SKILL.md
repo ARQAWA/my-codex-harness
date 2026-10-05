@@ -1,6 +1,6 @@
 ---
 name: goal
-description: Automatically select native Goal, when user authority and native rules permit, for independently requested work whose outcome spans dependent stages, substantial research or uncertainty, or prolonged execution. Also use for an explicit $goal request or goal definition and refinement. Short questions, simple edits and discussion do not require Goal; it does not manage working notes or authorize execution.
+description: Select native Goal automatically for a long multi-stage task when standing user authority and native rules permit; also for a direct $goal request or goal definition.
 ---
 
 # Define Goal
@@ -29,7 +29,7 @@ completion requires the actual result and all already mandatory actions.
 ## Workflow
 
 1. Assess whether Goal is useful for the actual current order.
-   - Automatically select it when an independently requested outcome needs continuity through dependent stages, substantive research or uncertainty, or prolonged execution, subject to the authority check in step 6.
+   - Automatically select it for a long multi-stage task, subject to the authority check in step 6.
    - Short questions, straightforward brief edits and discussion of possible future work do not require Goal. Requested discovery can itself have a concrete outcome; discussing it does not authorize executing it.
    - A direct `$goal`, request to create a goal or request for goal definition selects this skill regardless of complexity. An instruction to work without Goal takes precedence over automatic selection for the affected task.
    - Reassess after a material change in the task, not on every tool call; use no thresholds for commands, minutes or files.
@@ -41,7 +41,6 @@ completion requires the actual result and all already mandatory actions.
    - how the actual result will be established by reading and logical assessment, plus any explicitly required evidence
    - what is in scope
    - what is out of scope when ambiguity would matter
-   - the stop condition for asking the user instead of grinding
 
 3. Use criteria that represent the requested result.
    - Derive outcome, artifact paths, scope, format, values, and binary completion conditions from the request.
@@ -55,7 +54,7 @@ completion requires the actual result and all already mandatory actions.
    - Reject pure activity goals such as "make progress," "keep investigating," "improve things," or "work on X" unless they are sharpened into a verifiable outcome.
 
 5. Check active goal state before creating a goal.
-   - Call `get_goal`.
+   - Call `get_goal` in the same batch as the first reads; call `create_goal` with the first work calls.
    - If there is no unfinished goal, the objective meets the quality bar and step 6 permits creation, call `create_goal`.
    - Reuse a matching unfinished goal according to current user instructions and native state; repeated selection does not create a duplicate or repeat completed operations.
    - Preserve a conflicting unfinished goal. Do not reset, replace or mark it complete solely to make room. Resolve only the material conflict through an allowed native path or a focused user question; do not require a new thread.
@@ -63,7 +62,7 @@ completion requires the actual result and all already mandatory actions.
 6. Create the goal only after it passes the quality bar.
    - Choosing this skill does not by itself authorize `create_goal`. Follow the actual tool instructions and higher-priority rules. Express user adoption of conditional automatic Goal, or an applicable system/developer instruction, supplies a standing request only where those rules accept it. Skill availability or an ordinary task alone is not that authority; if the host requires a separate explicit request, do not infer permission against that requirement.
    - If native Goal is unavailable or not permitted, do not simulate it with files or another controller. Continue compatible authorized work; disclose the concrete limitation only when material to the result or an explicitly requested Goal.
-   - Use a single concise objective string.
+   - Write the objective in one or two sentences.
    - Include sufficient grounds for completion: the requested result assessed through reading and logic, plus any explicitly mandatory evidence. Every added threshold or method must follow the request; writing it into the objective creates no authority.
    - Include scope bounds when they constrain the work.
    - Include a token budget only when the user explicitly requested one.
@@ -77,7 +76,6 @@ Before `create_goal`, the objective should answer:
 - What actual material and logical grounds establish it, and what empirical evidence did the user explicitly require?
 - What requested outcome or meaningful binary or quantitative condition defines success?
 - What scope boundaries matter?
-- What should cause the agent to stop and ask?
 
 Good:
 

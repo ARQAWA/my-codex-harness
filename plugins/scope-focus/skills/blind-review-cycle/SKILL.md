@@ -5,7 +5,7 @@ description: Run only when explicitly invoked for one fresh blind CLEAN pass wit
 
 # Blind Review Cycle
 
-Use only on explicit invocation.
+Run Blind Review Cycle only on explicit invocation.
 
 Direct invocation of `$blind-review-cycle` selects `agent_type=smarty` (`gpt-6.1-sol`, reasoning `medium`)
 and one clean pass per checkpoint.
@@ -100,6 +100,6 @@ If any finding is admitted, batch-fix all admitted findings, invalidate only
 affected evidence, rebuild the compact packet, and use a new fresh reviewer of
 the same selected profile on the full updated object. Repeat autonomously until
 the selected cycle reaches its required clean-pass count. A single cycle stops
-after one clean pass. The user's
-explicit invocation starts the whole cycle; no new invocation is required after
+after one clean pass. The
+invocation starts the whole cycle; no new invocation is required after
 a repair. Do not add passes beyond the selected cycle's requirement.

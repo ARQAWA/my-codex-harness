@@ -1,18 +1,13 @@
 ---
 name: cleanup-task
-description: Automatically remove proven disposable temporary materials of the completed current task after its result and required checks, or perform an explicitly scoped task cleanup.
+description: On a direct request, remove proven temporary materials of a task, including a finished ToSpec workspace.
 ---
 
 # Cleanup Task
 
-Main or its designated owner applies this skill automatically when known
-task-created materials have become disposable after the actual result, required
-evidence and all selected or mandatory checks. If there are no targets, do not
-start a cleanup workflow or create a notebook/registry for it. Explicit retention
-instructions override automatic deletion. A direct cleanup request follows its
-exact scope and exclusions; only an explicit discard permits removing unfinished
-materials. Pause, blocker, approval wait, turn end, agent stop or cancellation
-without discard are not completion. ToSpec preparation/readiness preserves inputs
+Use only on a direct request; ordinary task cleanup happens inline under the
+Gold Standard. Follow the request's exact scope and exclusions; only an explicit
+discard permits removing unfinished materials. ToSpec preparation/readiness preserves inputs
 needed for later execution.
 
 Remove only exactly proven task-created temporary or intermediate files, directories, staging, extracted copies, temporary downloads, obsolete intermediate cache/package versions, backups, and an explicit Goal Memory directory if present. Preserve deliverables, source/config/runtime result, final active cache/archive, research/report artifacts, and every pre-existing, user-owned, or ambiguous object, except the explicitly scoped finished ToSpec material below.

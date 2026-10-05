@@ -1,11 +1,11 @@
 ---
 name: html-brief
-description: Deliver concise, clear HTML reports in the fixed dark template; keep ordinary short answers in chat.
+description: Write a concise HTML report in the fixed dark template only when the user requests HTML.
 ---
 
 # HTML Brief
 
-Use this skill for HTML reports and explanations that need several detailed sections. Keep short answers in chat unless the user requests HTML. Honor an explicit user format, including JSON, code, a letter, a long inline answer, or a prohibition on files. Do not duplicate an already requested suitable artifact. A request to explain in detail without another format uses HTML when several detailed sections are needed.
+Use this skill only when the user requests an HTML report. Honor an explicit user format, including JSON, code, a letter, a long inline answer, or a prohibition on files. Do not duplicate an already requested suitable artifact.
 
 Read [the template](assets/report.html). Fill `{{TITLE}}`, `{{SUMMARY}}`, and `{{BLOCKS}}`. Put the direct result, what it means, and any material limitation in the visible summary. Repeat the supplied native details/summary block only for questions needed to answer the request. Escape inserted text as HTML. Long lines wrap and wide tables/code remain readable within their block.
 
