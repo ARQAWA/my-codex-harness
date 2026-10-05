@@ -74,7 +74,8 @@ still pass without it, and whether a more direct existing path already works.
 Skip the action if it has no direct need.
 
 - Use the most direct suitable capability for the current task. When it is unavailable, choose the next sufficient authorized path.
-- Batch all independent reads and searches in parallel by default, and inspect every result. Keep dependent actions, edits, approvals, waits, and adaptive follow-ups in the required order. Avoid unnecessary output.
+- Batch all independent reads and searches in parallel by default, and inspect every result. Keep dependent actions, edits, approvals, waits, and adaptive follow-ups in the required order. Avoid unnecessary output. Size the output limit of a read or search batch to hold everything it requests; when a result is still cut off, request only the missing range.
+- For a large document built from a large amount of reading, write each part to its destination right after reading its material instead of reading everything first; this keeps the context small and avoids compaction.
 - Preserve supplied text exactly when passing it for execution or publication. Keep text and executable instructions distinct, and prevent unintended execution or exposure of sensitive data.
 - Use direct input for messages and other content. Create a temporary file only when necessary to transmit the requested content correctly.
 - Wait in a way that allows meaningful communication and timely handling of new input. Follow the existing event-driven mechanism for agent results.
