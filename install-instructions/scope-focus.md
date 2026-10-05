@@ -1,6 +1,5 @@
 # Установка Scope Focus
 
-Codex-поставка заморожена до прямой разморозки владельцем.
 Границы заказа: [INSTALL_FOR_AGENTS.md](../INSTALL_FOR_AGENTS.md).
 
 ## Состав

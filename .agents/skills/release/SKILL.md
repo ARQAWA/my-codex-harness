@@ -5,8 +5,8 @@ description: Release or install selected Codex components of my-codex-harness; o
 
 # Release
 
-Codex-части заморожены до прямой разморозки владельцем; процедуры для них
-ниже сохраняются как архивный baseline и не выполняются.
+Форк Codex CLI и VS Code Extension заморожены до прямой разморозки владельцем;
+процедуры для них ниже не выполняются. Codex-части плагинов и промпта активны.
 Общий статус и границы установки: [INSTALL_FOR_AGENTS.md](../../../INSTALL_FOR_AGENTS.md).
 
 Триггер: «выпустить» или «установить» эти компоненты.
