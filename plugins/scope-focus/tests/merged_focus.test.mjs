@@ -38,7 +38,7 @@ for (const file of ['SKILL.md', 'agents/openai.yaml', 'LICENSE.txt']) {
 const notebook = readFileSync(path.join(root, 'skills', 'task-notebook', 'SKILL.md'), 'utf8');
 for (const term of [
   'Use automatically for a task',
-  "path.join(os.tmpdir(), 'scope-focus', 'task-notebook'",
+  "path.join(process.env.CODEX_HOME || path.join(os.homedir(), '.codex'), 'scope-focus', 'task-notebook'",
   "Buffer.from(session_id, 'utf8').toString('hex'), 'plan.md')",
   '`working`',
   '`waiting`',

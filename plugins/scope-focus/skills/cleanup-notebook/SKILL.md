@@ -5,7 +5,7 @@ description: On a direct request, delete this session's Task Notebook, or with s
 
 # Cleanup Notebook
 
-Use only on a direct request; the Gold Standard deletes a completed task's
+Use only on a direct request; the Gold Standard recycles a completed task's
 notebook inline. A direct invocation without a scope removes the whole Task
 Notebook directory for this Codex session, including completed records, without
 waiting for task completion or a second confirmation. Retention instructions,
@@ -16,7 +16,7 @@ requested Notebook results and required originals are exclusions.
 Take the current `session_id` only when it is explicitly available in the
 Codex task context. With Node.js built-ins, compute `sessionKey` as
 `Buffer.from(session_id, 'utf8').toString('hex')`, then compute the exact target
-as `path.join(os.tmpdir(), 'scope-focus', 'task-notebook', sessionKey)`.
+as `path.join(process.env.CODEX_HOME || path.join(os.homedir(), '.codex'), 'scope-focus', 'task-notebook', sessionKey)`.
 Require a nonempty session ID. If it is unavailable, delete nothing and report
 that the current session's notebook cannot be identified. Never infer a session
 from a directory listing, an old notebook, or another task.
@@ -51,8 +51,8 @@ session-key path above. For a supplied manual path, validate the original
 `Session:` header against its session-key directory and the explicit relationship
 to this task; do not reassign it to the current session.
 
-Resolve actual `os.tmpdir()` with `fs.realpathSync`. Require the notebook session
-directory to be directly inside its `scope-focus/task-notebook` namespace. The
+Resolve the actual notebook namespace above with `fs.realpathSync`. Require the
+notebook session directory to be directly inside it. The
 namespace, session and task directories must be real directories, not symlinks;
 the entry plan, when present, must be a regular file. Validate canonical
 containment and every affected path component before mutation. A task key must

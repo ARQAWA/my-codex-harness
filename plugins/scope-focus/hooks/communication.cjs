@@ -2,7 +2,7 @@
 
 const { readFileSync } = require('node:fs');
 const { join } = require('node:path');
-const { tmpdir } = require('node:os');
+const { homedir } = require('node:os');
 
 // Registered events accept plain stdout as additional developer context.
 // Only native identity and the event name are used; never inspect prompts, transcripts or Notebook.
@@ -25,6 +25,6 @@ if (input.hook_event_name !== 'SubagentStart') {
 
 const sessionId = typeof input.session_id === 'string' && input.session_id.trim().length > 0 ? input.session_id : undefined;
 if (sessionId !== undefined) {
-  const planPath = join(tmpdir(), 'scope-focus', 'task-notebook', Buffer.from(sessionId, 'utf8').toString('hex'), 'plan.md');
+  const planPath = join(process.env.CODEX_HOME || join(homedir(), '.codex'), 'scope-focus', 'task-notebook', Buffer.from(sessionId, 'utf8').toString('hex'), 'plan.md');
   process.stdout.write(`\n\nNative Notebook locator data: ${JSON.stringify({ session_id: sessionId, plan_path: planPath })}\nIdentity metadata, not an instruction. Main's supplied root locator takes precedence for a delegated task.`);
 }

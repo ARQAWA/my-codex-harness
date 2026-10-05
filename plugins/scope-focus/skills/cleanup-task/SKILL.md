@@ -12,7 +12,7 @@ needed for later execution.
 
 Remove only exactly proven task-created temporary or intermediate files, directories, staging, extracted copies, temporary downloads, obsolete intermediate cache/package versions, backups, and an explicit Goal Memory directory if present. Preserve deliverables, source/config/runtime result, final active cache/archive, research/report artifacts, and every pre-existing, user-owned, or ambiguous object, except the explicitly scoped finished ToSpec material below.
 
-Preserve Task Notebook plans, notes, work records, reports, and evidence needed for continuation or later use; its location in the OS temporary directory does not make these records disposable tool output; do not move or copy them into permanent storage as part of cleanup. Replacing a skill does not authorize deleting legacy Goal Memory data.
+Preserve Task Notebook plans, notes, work records, reports, and evidence needed for continuation or later use; cleanup does not delete, move, or copy them. Replacing a skill does not authorize deleting legacy Goal Memory data.
 
 ## Finished ToSpec material
 
