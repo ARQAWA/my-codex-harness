@@ -15,6 +15,9 @@ try {
 
 const standard = join(__dirname, '..', 'skills', 'gold-standard', 'SKILL.md');
 process.stdout.write(`Apply the full Gold Standard to all work. Apply silently. Source: ${standard}\n\n${readFileSync(standard, 'utf8')}`);
+const tools = join(__dirname, '..', 'skills', 'codex-tools', 'SKILL.md');
+process.stdout.write(`\n\nApply the following Codex tool mechanics to every tool call. Source: ${tools}\n\n${readFileSync(tools, 'utf8')}`);
+process.stdout.write(`\nReader CLI: node "${join(__dirname, '..', 'tools', 'read.cjs')}"`);
 if (input.hook_event_name !== 'SubagentStart') {
   const communication = join(__dirname, '..', 'skills', 'clear-communication', 'SKILL.md');
   process.stdout.write(`\n\nApply the following communication skill before every user-facing message. Source: ${communication}\n\n${readFileSync(communication, 'utf8')}`);

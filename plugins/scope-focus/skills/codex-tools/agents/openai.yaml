@@ -1,0 +1,6 @@
+interface:
+  display_name: "Механика инструментов Codex"
+  short_description: "Лимиты вывода exec, скрипты code mode и CLI чтения"
+  default_prompt: "Use $codex-tools to apply Codex tool mechanics to this task."
+policy:
+  allow_implicit_invocation: false

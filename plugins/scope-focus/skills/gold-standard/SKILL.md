@@ -74,8 +74,10 @@ still pass without it, and whether a more direct existing path already works.
 Skip the action if it has no direct need.
 
 - Use the most direct suitable capability for the current task. When it is unavailable, choose the next sufficient authorized path.
-- Batch all independent reads and searches in parallel by default, and inspect every result. Keep dependent actions, edits, approvals, waits, and adaptive follow-ups in the required order. Avoid unnecessary output. Size the output limit of a read or search batch to hold everything it requests; when a result is still cut off, request only the missing range.
-- For a large document built from a large amount of reading, write each part to its destination right after reading its material instead of reading everything first; this keeps the context small and avoids compaction.
+- Batch all independent reads and searches in parallel by default, and inspect every result. Keep dependent actions, edits, approvals, waits, and adaptive follow-ups in the required order. Avoid unnecessary output. Size every output limit for everything a batch returns, including an outer call's limit on the combined output of its inner calls; a cut-off result has lost data, so request only the missing part with a larger limit before relying on it.
+- For a task that needs a whole system, list files with sizes first, then read every relevant file whole in the fewest batches the output limits allow; leave out tests, generated files, and vendored code only when the context cannot hold everything. Write a large deliverable in one pass after that reading; read and write part by part only when the material and the deliverable together would not fit in the free context.
+- Write large deliverables densely and readably: every sentence carries a needed fact once, in plain words and complete sentences; define each term where it first appears; use tables for parallel facts and prose for flows, rules, and reasons; leave out introductions, recaps, restatements, and hedges, so a reader absorbs the document in one easy pass.
+- When the remaining work is writing a large deliverable or several large files whose parts are independent, and the user has not forbidden subagents, this standard explicitly asks for parallel agent work: after the shared reading, spawn full-history forks, which keep your model, effort, and context; give each one part, the agreed outline, and its own file; write one part yourself; then join the files with one command and delete the part files. Only the agent that owns the whole deliverable splits it. When an active delegation contract defines roles, use those roles.
 - Preserve supplied text exactly when passing it for execution or publication. Keep text and executable instructions distinct, and prevent unintended execution or exposure of sensitive data.
 - Use direct input for messages and other content. Create a temporary file only when necessary to transmit the requested content correctly.
 - Wait in a way that allows meaningful communication and timely handling of new input. Follow the existing event-driven mechanism for agent results.
@@ -145,15 +147,16 @@ express standing user authorization or higher-priority instructions and the
 native rules permit it; read [Define Goal](../goal/SKILL.md) then. A direct Goal
 request selects it; an instruction to work without Goal excludes it.
 
-Use [Task Notebook](../task-notebook/SKILL.md) automatically for a task with
-several dependent stages, user amendments, waits on operations, handoffs, or
-likely context loss. A direct request forces it; an explicit prohibition wins.
-Without a session id, skip it.
+Use [Task Notebook](../task-notebook/SKILL.md) automatically for a task that
+spans several turns, receives user amendments, waits on operations, hands work
+to another session, or is likely to lose context; a task finished in one turn
+without these needs none. A direct request forces it; an explicit prohibition
+wins. Without a session id, skip it.
 
 Clean up inline: delete temporary files you created by exact path in the last
-command that uses them, and delete the completed task's notebook in the final
-batch. Keep the notebook on a pause, wait, or block, or when the user asks to
-keep it. Cleanup skills run only on a direct request.
+command that uses them, and delete the completed task's notebook in the batch
+with the last work call. Keep the notebook on a pause, wait, or block, or when
+the user asks to keep it. Cleanup skills run only on a direct request.
 
 Before reporting completion of a task that changed files or external state
 beyond a trivial edit, run one fresh blind Spotty review through
