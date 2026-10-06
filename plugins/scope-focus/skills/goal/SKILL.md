@@ -106,6 +106,8 @@ Weak:
 
 Ask only when a reasonable rewrite would risk pursuing the wrong outcome. Keep the question short and oriented around the missing validator or scope boundary.
 
+Ask through one `request_user_input_async` card, in automatic selection and on explicit invocation alike: put all questions in one call, give each a `title` that is the complete question with its context and reason, and give short `options` with your recommendation first. The user can always type an own answer, so add no "Other" option. The call returns at once: continue independent reads, and call `create_goal` only after the answer arrives as a user message. Without questions, send no card.
+
 Useful question shapes:
 
 - "What metric should define success here: latency, cost, accuracy, or user-visible behavior?"

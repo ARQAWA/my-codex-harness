@@ -1,12 +1,13 @@
 ---
 name: high-review-cycle
-description: Run only when explicitly invoked for one fresh blind CLEAN pass with Bossy (gpt-6.1-sol / xhigh) and an autonomous batch-fix loop.
+description: Run on explicit invocation or when a selected procedure such as ToSpec requires it, for one fresh blind CLEAN pass with Bossy (gpt-6.1-sol / high) and an autonomous batch-fix loop.
 ---
 
 # High Review Cycle
 
-Use only on explicit invocation. Select `agent_type=bossy` (`gpt-6.1-sol`,
-reasoning `xhigh`) and one clean pass per checkpoint.
+Use on explicit invocation or when a selected procedure such as ToSpec requires
+it. Select `agent_type=bossy` (`gpt-6.1-sol`, reasoning `high`) and one clean
+pass per checkpoint.
 
 Read and follow the [shared blind contract](../blind-review-cycle/SKILL.md),
 including target selection, `review_stage` (`pre-action` or `pre-completion`),

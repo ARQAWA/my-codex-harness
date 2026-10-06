@@ -7,15 +7,14 @@
 Для Codex пакет содержит два hook-определения (`SessionStart` и
 `UserPromptSubmit`), skill с поручением делегировать при активном Lunatron,
 Node.js CLI для извлечения фрагментов (`tools/context.cjs`) и полного захвата
-большого вывода (`tools/capture.cjs`) и шесть профилей:
-`agents/lunatik.toml`, `agents/luntik.toml`, `agents/lunatron_luna_high.toml`,
+большого вывода (`tools/capture.cjs`) и пять профилей:
+`agents/lunatik.toml`, `agents/lunatron_luna_high.toml`,
 `agents/lunatron_sol_low.toml`, `agents/lunatron_sol_medium.toml` и
 `agents/lunatron_sol_high.toml`.
 Lunatik (`gpt-6-luna/medium`) — свежий полный форк для исполнения блока;
-постоянный read-only Luntik (`gpt-6-luna/medium`) отвечает на вопрос к
-выбранным большим данным; Luna High (`gpt-6-luna/high`) — сложный блок;
-Sol Low, Medium и High (`gpt-6.1-sol`) — блок, которому нужен более сильный
-анализ. Main на Luna использует только Luna.
+Luna High (`gpt-6-luna/high`) — сложный блок; Sol Low, Medium и High
+(`gpt-6.1-sol`) — блок, которому нужен более сильный анализ. Main на Luna
+использует только Luna.
 
 Lunatron ускоряет результат: Main делегирует только большой блок, независимый
 от своего следующего шага и выполнимый параллельно, а короткую и
@@ -34,7 +33,7 @@ Lunatron ускоряет результат: Main делегирует толь
 ## Требования
 
 Для Codex нужны CLI с поддержкой плагинов, hooks, app-server, native full-context
-fork, Node.js и все шесть профилей помощников.
+fork, Node.js и все пять профилей помощников.
 В `config.toml` активного Codex home установи штатный предел одновременных
 дочерних задач не ниже 44, сохранив более высокое существующее значение:
 
@@ -83,7 +82,7 @@ codex plugin add "lunatron@<marketplace>" --json
 Настрой `agents.max_concurrent_threads_per_session` в `config.toml` как указано
 в разделе «Требования», не уменьшая уже заданный предел.
 
-Подключи все шесть профилей из состава выше из установленного пакета в каталог
+Подключи все пять профилей из состава выше из установленного пакета в каталог
 `agents` активного Codex home (обычно `~/.codex/agents`). Профили не требуют
 отдельного Fast; не включай Fast у Main.
 
@@ -118,9 +117,9 @@ codex plugin add "lunatron@<marketplace>" --json
 ### Codex
 
 Обнови пакет через тот же `codex plugin add
-"lunatron@<marketplace>" --json`, затем обнови все шесть packaged profiles из
+"lunatron@<marketplace>" --json`, затем обнови все пять packaged profiles из
 одной версии. Удали из каталога `agents` активного Codex home прежние
-`lunatron_luna_xhigh.toml` и `lunatron_sol_xhigh.toml`, только если файл
+`luntik.toml`, `lunatron_luna_xhigh.toml` и `lunatron_sol_xhigh.toml`, только если файл
 совпадает с одной из своих packaged версий в истории репозитория:
 
 ```bash

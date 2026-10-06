@@ -98,8 +98,7 @@ Lunatron не ограничивают Main ролями Lunatron и не зап
 субагенту в границах его блока.
 
 Роли закреплены профилями: `lunatik` (`gpt-6-luna/medium`) — свежий полный форк
-для исполнения; `luntik` (`gpt-6-luna/medium`) — постоянный read-only помощник
-для вопроса к выбранным большим данным; `lunatron_luna_high` (`gpt-6-luna/high`)
+для исполнения; `lunatron_luna_high` (`gpt-6-luna/high`)
 — сложный блок; `lunatron_sol_low`, `lunatron_sol_medium`, `lunatron_sol_high`
 (`gpt-6.1-sol` с соответствующим effort) — блок, которому нужен более сильный
 анализ. Main на Luna использует только Luna. Sol реализует свой блок сам или
@@ -143,7 +142,7 @@ Lunatron не ограничивают Main ролями Lunatron и не зап
 Для проверочных запусков Lunatron использовать самую дешёвую подходящую
 модель: тестовый Main — `gpt-6-sol` с `model_reasoning_effort = "low"`.
 Не запускать для этих проверок Astra и не повышать модель или reasoning
-самостоятельно. Luntik и Lunatik используют профили проверяемой версии.
+самостоятельно. Lunatik использует профиль проверяемой версии.
 
 Сохранять пользовательские изменения. В migration без запроса не менять
 location, format или value секретов.

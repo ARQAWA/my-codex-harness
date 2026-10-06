@@ -26,9 +26,6 @@ const profiles = {
   'plugins/lunatron/agents/lunatik.toml': [
     'model = "gpt-6-luna"', 'model_reasoning_effort = "medium"',
   ],
-  'plugins/lunatron/agents/luntik.toml': [
-    'model = "gpt-6-luna"', 'model_reasoning_effort = "medium"',
-  ],
 };
 for (const [file, terms] of Object.entries(profiles)) {
   const text = read(file);

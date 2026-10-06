@@ -30,7 +30,7 @@ assert.ok(blindCheck.includes('the selected cycle reaches its required clean-pas
 assert.ok(blindCheck.includes('no new invocation is required after\na repair'));
 const highCheck = readFileSync(path.join(root, 'skills', 'high-review-cycle', 'SKILL.md'), 'utf8');
 assert.ok(highCheck.includes('agent_type=bossy'));
-assert.ok(highCheck.includes('reasoning `xhigh`'));
+assert.ok(highCheck.includes('reasoning `high`'));
 for (const file of ['SKILL.md', 'agents/openai.yaml', 'LICENSE.txt']) {
   assert.ok(existsSync(path.join(root, 'skills', 'goal', file)), file);
 }

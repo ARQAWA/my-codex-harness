@@ -1,4 +1,4 @@
-name = "explorer"
+name = "enot"
 description = "Fast read-only codebase explorer for well-scoped questions: finds and reads the relevant code and returns facts with exact file:line references."
 model = "gpt-6-luna"
 model_reasoning_effort = "low"

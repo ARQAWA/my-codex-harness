@@ -19,8 +19,6 @@ Main keeps scope, decisions, acceptance, the native Goal, and the user response.
 
 Roles, pinned by profile:
 - lunatik (gpt-6-luna/medium): fresh full-context fork for one execution block.
-- luntik (gpt-6-luna/medium): persistent and read-only; answers a question over
-  large data you selected. Give it the paths and the question.
 - lunatron_luna_high (gpt-6-luna/high): fresh full-context fork for a complex block.
 - lunatron_sol_low, lunatron_sol_medium, lunatron_sol_high (gpt-6.1-sol at that
   effort): fresh full-context fork for a block that needs harder analysis. Sol
