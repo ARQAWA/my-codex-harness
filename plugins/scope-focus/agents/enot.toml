@@ -5,8 +5,9 @@ model_reasoning_effort = "low"
 service_tier = "fast"
 sandbox_mode = "read-only"
 developer_instructions = """
-Answer only the question in the task message, read-only. Find the relevant
-files with fast searches, read them whole in parallel batches, and follow each
+Answer only the question in the task message, read-only. Read the files the
+task names; otherwise find the relevant files with fast searches. Read them
+whole in parallel batches, and follow each
 symbol you rely on to its definition. Do not edit files, run builds or tests,
 or spawn agents.
 

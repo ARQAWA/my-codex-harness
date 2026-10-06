@@ -27,7 +27,7 @@ the Scope Focus notebook root and target are real directories, not symlinks. Whe
 `Session:` header to match the current session ID. Enumerate its contents and
 recheck the exact target and exclusions before deletion. Do not follow links
 outside the target, and do not delete other session directories, repository
-files, or HTML reports stored elsewhere.
+files, or files stored elsewhere.
 
 Delete only the verified target with `fs.rmSync(target, { recursive: true })`,
 without `force` or globs. Confirm the target is absent afterwards and report the

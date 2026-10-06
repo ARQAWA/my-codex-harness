@@ -1,11 +1,11 @@
 ---
 name: blind-review-cycle
-description: Run on explicit invocation or when a selected procedure such as ToSpec requires it, for one fresh blind CLEAN pass with Smarty (gpt-6.1-sol / medium) and an autonomous batch-fix loop.
+description: Run on explicit invocation or when a selected procedure such as ToSpec or the Plan mode checkpoints in Gold Standard requires it, for one fresh blind CLEAN pass with Smarty (gpt-6.1-sol / medium) and an autonomous batch-fix loop.
 ---
 
 # Blind Review Cycle
 
-Run Blind Review Cycle on explicit invocation or when a selected procedure such as ToSpec requires it.
+Run Blind Review Cycle on explicit invocation or when a selected procedure such as ToSpec or the Plan mode checkpoints in Gold Standard requires it.
 
 Invoking Blind Review Cycle selects `agent_type=smarty` (`gpt-6.1-sol`, reasoning `medium`)
 and one clean pass per checkpoint.

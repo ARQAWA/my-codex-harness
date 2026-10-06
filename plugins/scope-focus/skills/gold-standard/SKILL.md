@@ -123,6 +123,19 @@ work. After removing excess, reassess only affected grounds. Completion requires
 the requested result, logical consistency, mandatory evidence, and no remaining
 required work.
 
+In Codex Plan mode, root Main runs two automatic checkpoints of
+[Blind Review Cycle](../blind-review-cycle/SKILL.md); this is the owner's
+standing adopted procedure. Before presenting a `<proposed_plan>`, review the
+complete plan with `review_stage=pre-action` against the user's request,
+amendments and binding decisions, and present only a plan that reached CLEAN.
+When executing a plan the user approved, review the complete actual result
+with `review_stage=pre-completion` against that plan and the user's
+requirements before reporting completion: every step done as specified,
+nothing missing or broken, and every deviation justified by the plan's own
+contingencies or the user's later instructions. At each checkpoint, fix all
+admitted findings and repeat with a fresh Smarty until CLEAN. ToSpec keeps its
+own checkpoints.
+
 ## Task-specific boundaries
 
 - Research and discovery return the exact requested facts with sufficient
@@ -160,5 +173,4 @@ folder in the batch with the last work call, as Task Notebook describes. Keep
 the notebook on a pause, wait, or block, or when the user asks to keep it.
 Cleanup skills run only on a direct request.
 
-Keep answers in chat; read [HTML Brief](../html-brief/SKILL.md) only when the
-user requests an HTML report. Honor the user's explicit format and path.
+Keep answers in chat. Honor the user's explicit format and path.
