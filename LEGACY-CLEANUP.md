@@ -106,10 +106,9 @@ Lunatron, Task Notebook, ToSpec и профиль `enot` удалены из п�
 | `features.multi_agent_v2 = false` | прежний config-пакет | точное значение |
 | `[features.token_budget]` (таблица с `guidance_message` про Context Router) и `features.context_management` | Context Router и LCM | текст про Context Router или LCM |
 | `model_provider = "luna_fast_proxy"` и `[model_providers.luna_fast_proxy]` | Luna Fast proxy | `base_url = "http://127.0.0.1:18080/v1"`; верни прежний provider по выбору пользователя |
-| `hooks.state.*` с ключами `scope-focus` или `lunatron`, которых нет среди текущих определений `hooks/list` (прежние `UserPromptSubmit` Scope Focus, `PreToolUse`, `PostToolUse` Lunatron) | прежние hooks плагинов | ключ указывает на плагин и отсутствует в `hooks/list`; текущие ключи сохрани |
+| `hooks.state.*` с ключами `scope-focus` или `lunatron`, которых нет среди текущих определений `hooks/list` (прежние `UserPromptSubmit` и второй `SessionStart` Scope Focus; `SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse` Lunatron) | прежние hooks плагинов | ключ указывает на плагин и отсутствует в `hooks/list`; текущие ключи сохрани |
 | `mcp_optional_startup_grace_ms` | filesystem-search на Windows | значение `0`, добавленное для CBM |
 | `shell_environment_policy.set` с переменными CBM, `tgrep` или `FILESYSTEM_SEARCH_*` | filesystem-search | имена переменных |
-
 
 ## Файлы в Codex home
 
@@ -175,4 +174,5 @@ Notebook, Goal Memory, отчёты и сохранённые результат
 
 После зачистки прочитай `config.toml`, `<CODEX_HOME>/AGENTS.md` и каталог
 `agents`: удалённые цели отсутствуют, текущие компоненты на месте. Через
-app-server `hooks/list` проверь, что hooks `scope-focus` доверены и включены. Сообщи удалённые цели, оставленные объекты с причиной и конфликты.
+app-server `hooks/list` проверь, что hooks `scope-focus` доверены и включены.
+Сообщи удалённые цели, оставленные объекты с причиной и конфликты.
