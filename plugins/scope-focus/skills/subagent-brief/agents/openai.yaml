@@ -1,0 +1,4 @@
+interface:
+  display_name: "Subagent Brief"
+  short_description: "How Main briefs code_writer and shell_runner"
+  default_prompt: "Use $subagent-brief to write this brief."

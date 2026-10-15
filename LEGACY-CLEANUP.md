@@ -26,12 +26,9 @@ legacy. Установка и обновление её не запускают.
   MCP-записи, переменные окружения, блоки `AGENTS.md`, кэши, индексы и
   runtime показывай отдельной группой и удаляй только после ответа
   пользователя, что этот инструмент он отдельно не использует.
-- Текущие компоненты не трогай: плагины `scope-focus` и `lunatron`, профили
-  `spotty`, `smarty`, `bossy`, `enot`, `lunatik`, `lunatron_luna_high`,
-  `lunatron_sol_low`, `lunatron_sol_medium`, `lunatron_sol_high`,
-  `model_instructions_file` с его копией, `<CODEX_HOME>/scope-focus`,
-  `<tmpdir>/scope-focus-tospec-*` текущего ToSpec, `PLUGIN_DATA/modes`
-  и `PLUGIN_DATA/artifacts` Lunatron, `agents.max_concurrent_threads_per_session`.
+- Текущие компоненты не трогай: плагин `scope-focus`, профили `code_writer`,
+  `shell_runner`, `spotty`, `smarty`, `bossy`, `model_instructions_file` с его
+  копией.
 
 ## Удалённые плагины Codex
 
@@ -62,6 +59,21 @@ legacy. Установка и обновление её не запускают.
 | `~/.local/share/ctx-mgr-local-native/` или папка из прежних настроек `ctx-mgr-local-native` | SQLite, журналы и настройки Context Router |
 | `~/.cache/codebase-memory-mcp/`, `${XDG_CACHE_HOME:-~/.cache}/tgrep-agent/`, `<CODEX_HOME>/tgrep/index/`, `<CODEX_HOME>/tools/filesystem-search/`, `<CODEX_HOME>/filesystem-search/` | индексы и инструменты filesystem-search |
 | `<repo>/.codebase-memory/graph.db.zst` | экспорт CBM в известных пользователю репозиториях |
+
+## Удалённый плагин Lunatron и прежние части Scope Focus
+
+Lunatron, Task Notebook, ToSpec и профиль `enot` удалены из поставки 2026-10-15.
+
+| Цель | Действие |
+|---|---|
+| плагин `lunatron@my-codex-harness` | `codex plugin remove`, затем записи `hooks.state.*` и `[plugins."lunatron@…"]` в `config.toml` и копия в `<CODEX_HOME>/plugins/cache/my-codex-harness/lunatron/` |
+| `agents/lunatik.toml`, `agents/lunatron_luna_high.toml`, `agents/lunatron_sol_low.toml`, `agents/lunatron_sol_medium.toml`, `agents/lunatron_sol_high.toml` | удалить по проверке профиля ниже с `<plugin>` = `lunatron` |
+| `agents/enot.toml` | удалить по проверке профиля ниже с `<plugin>` = `scope-focus` |
+| `<CODEX_HOME>/plugins/data/lunatron-*/` (`modes`, `artifacts`) | данные пользователя по правилам выше |
+| `<CODEX_HOME>/scope-focus/` (Task Notebook и его корзина) | данные пользователя по правилам выше |
+| путь `<CODEX_HOME>/scope-focus` в `sandbox_workspace_write.writable_roots` | убрать только этот элемент вместе с удалением данных Notebook |
+| `<tmpdir>/scope-focus-tospec-*` | рабочие папки ToSpec; данные пользователя по правилам выше |
+| `agents.max_concurrent_threads_per_session` в `config.toml` | значение, которое требовал Lunatron; настройка пользователя, менять только по его просьбе |
 
 ## Прежняя поставка через marketplace `personal`
 
@@ -98,8 +110,6 @@ legacy. Установка и обновление её не запускают.
 | `mcp_optional_startup_grace_ms` | filesystem-search на Windows | значение `0`, добавленное для CBM |
 | `shell_environment_policy.set` с переменными CBM, `tgrep` или `FILESYSTEM_SEARCH_*` | filesystem-search | имена переменных |
 
-`sandbox_workspace_write.writable_roots` с `<CODEX_HOME>/scope-focus`
-оставь: это текущий Notebook.
 
 ## Файлы в Codex home
 
@@ -165,5 +175,4 @@ Notebook, Goal Memory, отчёты и сохранённые результат
 
 После зачистки прочитай `config.toml`, `<CODEX_HOME>/AGENTS.md` и каталог
 `agents`: удалённые цели отсутствуют, текущие компоненты на месте. Через
-app-server `hooks/list` проверь, что hooks `scope-focus` и `lunatron` доверены
-и включены. Сообщи удалённые цели, оставленные объекты с причиной и конфликты.
+app-server `hooks/list` проверь, что hooks `scope-focus` доверены и включены. Сообщи удалённые цели, оставленные объекты с причиной и конфликты.

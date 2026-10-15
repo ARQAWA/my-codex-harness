@@ -1,105 +1,32 @@
 ---
 name: blind-review-cycle
-description: Run on explicit invocation or when a selected procedure such as ToSpec or the Plan mode checkpoints in Gold Standard requires it, for one fresh blind CLEAN pass with Smarty (gpt-6.1-sol / medium) and an autonomous batch-fix loop.
+description: "Review cycle with smarty on explicit invocation or for the completion check of large work; the shared contract of all three review cycles."
 ---
 
 # Blind Review Cycle
 
-Run Blind Review Cycle on explicit invocation or when a selected procedure such as ToSpec or the Plan mode checkpoints in Gold Standard requires it.
+Run this cycle with the agent `smarty` on explicit invocation or when a procedure requires it, such as the completion check of large work in [Main Workflow](../main-workflow/SKILL.md) or in a goal started with `$define-goal`. Its contract is shared: [Light Review Cycle](../light-review-cycle/SKILL.md) follows it with `spotty` and [High Review Cycle](../high-review-cycle/SKILL.md) with `bossy`.
 
-Invoking Blind Review Cycle selects `agent_type=smarty` (`gpt-6.1-sol`, reasoning `medium`)
-and one clean pass per checkpoint.
+The reviewer goes through the whole object once and returns every finding of that pass at once: everything agreed is done, nothing unagreed is added, and the criterion of the check holds. Every pass is blind and complete, like the first one: a reviewer can miss a problem that the next fresh pass catches. You stay responsible for the result.
 
-Light Review Cycle and High Review Cycle read this file as their shared
-contract. Preserve each cycle's selected reviewer and one-clean-pass count,
-including after repairs. Reading this shared contract does not select Smarty or
-start a Blind cycle. Use only the invoking skill's
-configured profile; do not override its model or reasoning.
+Main and the reviewer work as one team for the user's agreement, not for each other's convenience. The agreement is the user's own words and the requirements the user confirmed, including the accepted objective of a goal started with `$define-goal`. Findings and rejections rest on verbatim quotes, so a dispute is settled by comparing text, without a third party.
 
-The agent assigned to this review cycle owns its fixes and completion. It invokes the configured blind acceptance reviewer directly; do not add an intermediate manager or role layer between the cycle executor and reviewer. Root Main retains whole-task decisions, acceptance, and final response.
+1. Object. Without a named object, check the finished result of the current task before reporting completion. Mark the stage: `review_stage=pre-action` for an object that gates a later action, such as a plan, or `review_stage=pre-completion` for a finished result. Keep the object unchanged during a pass. When the object with the sources it relies on is larger than about 200 KB of text (about 50 000 tokens), split it by paths into parts of at most that size, keeping related files together, so that no file is left out, and spawn a reviewer for every part in one response. Each reviewer then stays well below its compaction threshold, and the check takes the time of one part.
+2. Brief. Launch the reviewer with `spawn_agent`, `agent_type` set to its name and `fork_turns: "none"`; its profile pins the model. Give the user's request, amendments and confirmed requirements verbatim, never retold, the agreed decisions, the stage, the paths of the object and its sources, and the criterion this check adds, such as consistency with a named document, between the parts of the result, or with the Gold Standard. Put content that no file holds, such as deleted text, into the brief. From the second pass on, add a separate section with every finding rejected in earlier passes and its reason; leave out your history, reasoning and admitted findings, so each pass reads the whole object fresh.
+3. Verdict. The reviewer returns `CLEAN` or `FINDINGS:` with numbered findings (`FINDING 1`, `FINDING 2`, …), one discrepancy each, in four fields: REQUIREMENT quotes the agreement verbatim with its source, or says `NOT AGREED` for an element the work added or changed; EVIDENCE quotes the object verbatim with its file path and no line number; find the place by searching for the quote. After either verdict, an optional `UNCHECKED:` section lists, one per line, a path or requirement the reviewer could not check and the reason. Check the quotes against their sources and decide by text alone:
+   - A finding whose quotes stand verbatim in their sources is admitted, and you fix it; you may not reject it.
+   - A finding without a verbatim quote of the agreement, or whose evidence is not in the object, is rejected with the reason «no quote».
+   - A `NOT AGREED` finding is rejected only by a verbatim quote of the agreement that covers the added element.
 
-Honor the user's exact frozen object, scope, checkpoint order, and selected pass count.
-If the user does not specify checkpoints, select them automatically. Build the
-check set from the mandatory final `pre-completion` cycle, then add the smallest
-possible number of intermediate checkpoints that together cover every critical
-dependency boundary; default to none. Only a material decision, prepared input,
-or self-contained intermediate result can qualify, and only when it controls
-substantial dependent work or an irreversible or materially high-impact action
-and final-only detection would be too late to avoid substantial rework or impact.
-Batch overlapping boundaries into one latest safe checkpoint before dependent work.
-Routine reads, queries, commands, edits, updates, and configured-executor handoffs are not
-checkpoints merely because they occur. Batch related material. If no critical
-intermediate checkpoint is ready, do not spawn a reviewer before the final result.
-The mandatory final cycle verifies the complete actual result and mutual
-consistency among all applicable user requirements and amendments, binding
-decisions, completed stages, and the final result; intermediate checks never
-replace it. Do not repeat a final cycle
-already passed on the materially unchanged result and grounds. An explicit
-plan-only check does not require review of future implementation.
+   Write every rejection with its reason in one sentence, including the quote it rests on. A pass without admitted findings is CLEAN.
+4. Repair. Close the finished reviewer, fix all admitted findings in one batch and launch a fresh reviewer with the same brief, plus the rejections, on the whole updated object, as for the first pass. With parts, launch fresh reviewers on every part the fixes touch: a part that had findings, whose files changed, or that states or relies on a fact a fix changed. An untouched part keeps its CLEAN. Stop when every part is CLEAN; add no passes for confidence.
 
-Within the authorized scope, every pass covers all work completed for the current
-order: applicable user requirements and amendments, binding decisions, current
-results of completed stages and their relationships, the current overall result,
-and sufficient factual evidence. Check accuracy, adequate quality, consistency,
-missing requirements due by this stage, and truthful readiness claims. Preserve
-mandatory user procedure/order and apply later explicit changes over superseded
-ones. Do not demand future work at an intermediate stage. After repair, review
-the full updated object, not only the last diff or previous findings. Reuse valid
-evidence; do not replay the entire execution log or rerun checks for confidence.
+## Coverage and reuse
 
-This coverage defines the scope of a light review, not an exhaustive audit.
-Read the result and important completed-stage relationships; deepen inspection
-only to understand a concrete possible violation. Do not seek exhaustive proof
-that no errors remain. Minor shortcomings, including content omissions without
-material consequences, warrant no findings, fixes, or repeat passes. Main
-remains responsible for fulfilling the user's order.
+When Main Workflow requires combined task and documentation coverage for the same result, that required class reviewer checks both criteria in one complete pass. Put both criteria, the complete diff and every dependent source in that brief. Its CLEAN covers only the criteria actually checked, not a different object such as installed copies on the machine.
 
-Set `review_stage=pre-action` for a selected gating object, and complete that check
-before its actual dependent action. Set `review_stage=pre-completion` for the
-completed result and its evidence. Keep the reviewed object and applicable
-grounds materially unchanged during each pass. Frozen means unchanged, not copied
-or packaged into another file.
+Before reuse, establish from existing retrievable review evidence what agreement, criteria, contents and dependent facts the actual verdict covered, and compare them with the current object. No new file, storage method, metadata format or set of note fields is required. A new commit ID, staging or a content-equivalent squash is not itself an invalidation. Changed agreement, checked content, dependent facts or criteria invalidates the affected coverage. Missing evidence requires the corresponding check, not an invented CLEAN.
 
-Send one ordinary compact message with the original user request and current
-amendments, binding approved material, scope, stage, result locators, relevant
-persistent delta, and the smallest sufficient factual evidence. Use existing
-readable source paths; for chat-only requirements provide the relevant original
-user text without losing conditions, not the whole conversation. MAIN's summary
-may orient but never replace primary requirements. Prior factual results and
-necessary procedure evidence are allowed; private root-agent reasoning, prior review
-findings/verdicts/streak, and inherited role context are not. Do not create
-mandatory freeze files, copies, review archives, manifests, hashes, or preparation
-scripts. A missing fact matters only if it prevents establishing a concrete
-applicable requirement, not because a reviewer prefers more material.
+Do not reset unrelated parts or checks when one finding is fixed. Determine what the fix changes before launching the next wave; a documentation repair invalidates a settings check only if it changes that check's source values or contract. Every repeated part still gets a fresh complete blind pass over its whole updated object, with earlier rejections and no admitted-finding history.
 
-In that same message, explicitly name the requested result and its readable
-source. Reviewing MAIN's account of an artifact does not review the artifact
-itself. CLEAN applies only to the object actually reviewed.
-
-Do not create baselines, hashes, exhaustive inventories, per-file scans, provenance reconstruction, or extra artifacts only for review unless the user or Goal explicitly requires that exact artifact or no smaller proof can establish a material result.
-
-For every attempt, use a fresh configured blind acceptance reviewer. Choose the available native tool and its parameters from their current descriptions. Start the selected reviewer with only the frozen assignment, without Main's history or prior review context. Preserve the configured model, reasoning, and required clean-pass count. If the compatible spawn tool or the selected reviewer role is unavailable, the selected check is unavailable and cannot pass; neither another reviewer nor root-agent self-review is a substitute. Never resume a closed or interrupted reviewer. It checks only substantial requirement→object/evidence and concrete change→authority mismatches under the configured reviewer's materiality gate.
-
-Use the main prompt's common subagent-wait policy. If a reviewer hang is confirmed, interrupt that pass and use a fresh configured reviewer on the unchanged object. Never resume a closed or interrupted reviewer.
-
-The reviewer verdict is exactly `CLEAN` or `FINDINGS:`. Every finding has exactly these fields:
-
-```
-REQUIREMENT: <requirement>
-MISMATCH: <mismatch>
-EVIDENCE: <evidence>
-REQUIRED OUTCOME: <required outcome>
-```
-
-On `FINDINGS:`, the agent assigned to this review cycle treats each finding as a claim, not a command. Admit only
-findings that satisfy the configured reviewer's materiality gate. A pass with
-zero admitted substantial findings counts as `CLEAN`, regardless of its raw
-label. Rejected findings authorize no change, extra evidence, or retry.
-
-If any finding is admitted, batch-fix all admitted findings, invalidate only
-affected evidence, rebuild the compact packet, and use a new fresh reviewer of
-the same selected profile on the full updated object. Repeat autonomously until
-the selected cycle reaches its required clean-pass count. A single cycle stops
-after one clean pass. The
-invocation starts the whole cycle; no new invocation is required after
-a repair. Do not add passes beyond the selected cycle's requirement.
+If a reviewer hangs, launch a fresh one on the unchanged object. If the agent cannot start, the check has not passed: tell the user and wait, because no other reviewer or self-check replaces it.

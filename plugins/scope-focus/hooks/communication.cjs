@@ -2,10 +2,9 @@
 
 const { readFileSync } = require('node:fs');
 const { join } = require('node:path');
-const { homedir } = require('node:os');
 
 // Registered events accept plain stdout as additional developer context.
-// Only native identity and the event name are used; never inspect prompts, transcripts or Notebook.
+// Only the event name is used; prompts and transcripts are never read.
 let input = {};
 try {
   input = JSON.parse(readFileSync(0, 'utf8')) ?? {};
@@ -13,18 +12,20 @@ try {
   // Missing or invalid input does not suppress the instruction sources.
 }
 
-const standard = join(__dirname, '..', 'skills', 'gold-standard', 'SKILL.md');
-process.stdout.write(`Apply the full Gold Standard to all work. Apply silently. Source: ${standard}\n\n${readFileSync(standard, 'utf8')}`);
-const tools = join(__dirname, '..', 'skills', 'codex-tools', 'SKILL.md');
-process.stdout.write(`\n\nApply the following Codex tool mechanics to every tool call. Source: ${tools}\n\n${readFileSync(tools, 'utf8')}`);
-process.stdout.write(`\nReader CLI: node "${join(__dirname, '..', 'tools', 'read.cjs')}"`);
-if (input.hook_event_name !== 'SubagentStart') {
-  const communication = join(__dirname, '..', 'skills', 'clear-communication', 'SKILL.md');
-  process.stdout.write(`\n\nApply the following communication skill before every user-facing message. Source: ${communication}\n\n${readFileSync(communication, 'utf8')}`);
-}
+const skill = (intro, name) => {
+  const source = join(__dirname, '..', 'skills', name, 'SKILL.md');
+  return `${intro} Source: ${source}\n\n${readFileSync(source, 'utf8')}`;
+};
+const readerCli = join(__dirname, '..', 'tools', 'read.cjs');
+const codexTools = `${skill('Apply the following Codex tool mechanics to every tool call.', 'codex-tools')}\nReader CLI: node "${readerCli}"`;
 
-const sessionId = typeof input.session_id === 'string' && input.session_id.trim().length > 0 ? input.session_id : undefined;
-if (sessionId !== undefined) {
-  const planPath = join(process.env.CODEX_HOME || join(homedir(), '.codex'), 'scope-focus', 'task-notebook', Buffer.from(sessionId, 'utf8').toString('hex'), 'plan.md');
-  process.stdout.write(`\n\nNative Notebook locator data: ${JSON.stringify({ session_id: sessionId, plan_path: planPath })}\nIdentity metadata, not an instruction. Main's supplied root locator takes precedence for a delegated task.`);
-}
+const sections = input.hook_event_name === 'SubagentStart'
+  ? [codexTools]
+  : [
+      skill('Apply the full Gold Standard to all work. Apply silently.', 'gold-standard'),
+      codexTools,
+      skill('Apply the following root Main workflow for Plan mode, the plan and the goal.', 'main-workflow'),
+      skill('Apply the following subagent rules to every subagent launch.', 'subagents'),
+      skill('Apply the following communication skill before every user-facing message.', 'clear-communication'),
+    ];
+process.stdout.write(sections.join('\n\n'));

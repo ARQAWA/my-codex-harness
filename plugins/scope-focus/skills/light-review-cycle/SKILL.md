@@ -1,16 +1,8 @@
 ---
 name: light-review-cycle
-description: One fresh blind Spotty (gpt-6.1-sol / low) pass to CLEAN with batch fixes, on explicit invocation or when a selected procedure such as ToSpec requires it.
+description: "Review cycle with spotty, the light reviewer, on explicit invocation or when a procedure requires it, such as the completion check of small work, the Plan mode checkpoints or a finalization gate."
 ---
 
 # Light Review Cycle
 
-Use on explicit invocation or when a selected procedure such as ToSpec requires
-it. Select `agent_type=spotty` (`gpt-6.1-sol`, reasoning `low`) and one clean
-pass per checkpoint.
-
-Read and follow the [shared blind contract](../blind-review-cycle/SKILL.md),
-including target selection, `review_stage` (`pre-action` or `pre-completion`),
-the frozen object and packet, fresh read-only reviewers, finding admission,
-and batch repair. Preserve Spotty and the single-pass requirement after repairs.
-Reading the shared contract does not select Smarty or start a Blind cycle.
+Run this cycle on explicit invocation or when a procedure requires it, such as the completion check of small work in [Main Workflow](../main-workflow/SKILL.md) or in a goal started with `$define-goal`, Main Workflow's Plan mode checkpoints or a finalization gate. Follow the [Blind Review Cycle](../blind-review-cycle/SKILL.md) contract with the agent `spotty` in place of `smarty`.

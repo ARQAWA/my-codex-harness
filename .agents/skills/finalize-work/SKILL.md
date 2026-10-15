@@ -1,72 +1,46 @@
 ---
 name: finalize-work
-description: "Обязательная финализация изменений в этом репозитории перед сдачей задачи, commit, push или завершением release. Автоматически выбирай этот skill: слепой blind reviewer проверяет согласованность кода и всей документации результата, устаревшие сведения, мусор и конфликты; без CLEAN завершение запрещено."
+description: "Release-time finalization: reuse unchanged Spotty evidence for the installed copies and combine the task and release-documentation criteria in one work-class review. Micro releases use a diff-only Spotty; a due Bossy audit runs after ordinary repairs and covers documentation consistency."
 ---
 
-# Финализация работы
+# Work finalization
 
-Gate обязателен по постоянному поручению пользователя в `AGENTS.md`.
-Он применяется к задачам с изменениями в этом репозитории, включая изменения
-только документации. Чистое обсуждение или read-only анализ его не запускают.
-Gate не разрешает commit, push, release или установку без отдельного запроса.
+Run during a release before the squash merge into `master` and push. Ordinary handover, task-branch stage commits, discussion and read-only analysis do not start this gate. Finalization alone authorizes no publication or installation.
 
-## Объект и согласованность
+## Prepare
 
-Определи сдаваемый результат по запросу пользователя и фактическим изменениям.
-Включи код, конфигурацию и всю документацию, описывающую этот результат,
-в том числе неизменённые связанные документы: инструкции, дизайн, описания
-skills, контракты в `AGENTS.md`, ссылки и примеры. Для нескольких компонентов
-проверь также их описанное взаимодействие. Не ограничивайся списком diff;
-не включай посторонние компоненты и чужие незавершённые изменения.
+Incorporate current `master` in the task worktree. Main establishes the active Codex home (`CODEX_HOME`, usually `~/.codex`), compares the file pairs below with `cmp`, reads the installed `scope-focus` version from `codex plugin list --json`, and prepares `git diff --find-renames master...HEAD` and its changed paths. Include subsequent uncommitted fixes in refreshed evidence, or commit them to the task branch before regenerating it. Keep temporary reviewer evidence in the OS temporary directory; exclude secrets and machine-specific data.
 
-Сверь реализацию и документы в обе стороны с согласованным результатом.
-Устрани противоречия, неверные ссылки и примеры, устаревшие действующие
-инструкции, ненужные дубли и временный мусор в этой области. При расхождении
-кода и документа нельзя автоматически считать любой из них правильным:
-основание — актуальный запрос и принятые решения. Недостающее существенное
-решение запроси у пользователя.
+The installed-copies check and the documentation check remain separate checks with separate inputs and coverage. Apply the shared [Blind Review Cycle](../../../plugins/scope-focus/skills/blind-review-cycle/SKILL.md) coverage and reuse rules; do not start another reviewer merely because the task reached a new stage or got a new commit ID.
 
-Если согласованная переделка делает прежнюю реализацию ненужной, удаляй её
-связанные устаревшие части в затронутой области по Золотому стандарту.
-Не создавай архивные копии или записи об отмене ради сохранения прошлого:
-история остаётся в Git. Сохраняй сведения о действующем решении, необходимые
-доказательства, чужую работу и пользовательские данные. Посторонние исторические
-материалы не входят в cleanup этой задачи. Если исправление требует
-выхода за область заказа или неоднозначного удаления, останови затронутый
-gate и назови необходимое решение. Общий рефакторинг и косметическая чистка
-не входят в эту проверку.
+## Installed copies check
 
-## Слепой blind review
+| Installed | Repository source |
+|---|---|
+| the file named by `model_instructions_file` in `config.toml` | `new-model-instructions.md` |
+| `<CODEX_HOME>/agents/<name>.toml` for every profile in `plugins/scope-focus/agents` | `plugins/scope-focus/agents/<name>.toml` |
+| the installed `scope-focus` version | `version` in `plugins/scope-focus/.codex-plugin/plugin.json` of `master` |
 
-Прочитай [blind-review-cycle](../../../plugins/scope-focus/skills/blind-review-cycle/SKILL.md):
-это общий blind contract. Этот gate — постоянное явное поручение
-пользователя на такой цикл; отдельное повторное приглашение не требуется.
-Используй свежего `agent_type=smarty` (`gpt-6.1-sol`, `medium`) без истории Main.
-Reviewer только читает; Main либо назначенный исполнитель делегированного
-`finalize-work` исправляет принятые существенные замечания. Main сохраняет
-ответственность за финальную сдачу и CLEAN.
+Compare the current inputs with the last actual Spotty CLEAN using retrievable existing evidence, such as an existing reviewer-result artifact. The verdict covers only the input contents and criterion actually reviewed; it is not authority to skip changed or unchecked inputs. No additional file name, storage location, metadata format or service is required. Exclude credentials, secrets, account data and unrelated settings.
 
-Передай исходные требования и уточнения, границы результата, пути к реальным
-файлам и имеющиеся доказательства. Явно задай проверку согласованности
-реализации со всей относящейся к результату документацией, отсутствия
-устаревших действующих сведений, мусора и конфликтов. Не передавай свои
-рассуждения, прошлые замечания или вердикты. Заморозь объект на время прохода
-без создания копий и служебных файлов.
+The evidence must establish the actual Spotty verdict, its checked criterion and scope, both sides of each file comparison, the installed version and the installation instructions that define the installed-copies contract. Use existing evidence rather than imposing a new record schema.
 
-Перед commit или push используй `review_stage=pre-action`; перед сдачей
-готовой работы — `pre-completion`. Следуй общему контракту при совмещении
-этапов: CLEAN по тому же полному результату и основаниям переиспользуется,
-повторного ревью только из-за перехода к commit, push или final нет.
-Изменение результата или существенных оснований требует нового прохода.
+Recompare live inputs at each release. Reuse CLEAN only when its evidence exists and every checked file content, version, scope and criterion still matches. An unrelated document edit, staging or a content-equivalent squash does not invalidate it. The version change that this release's own cachebuster makes after the check is a deliberate task change installed by the update step and does not invalidate it either. Changed inputs, an actual mismatch, incomplete evidence or no prior CLEAN requires [Light Review Cycle](../../../plugins/scope-focus/skills/light-review-cycle/SKILL.md) with `spotty`, `review_stage=pre-action`.
 
-Для FINDINGS примени правила допуска из общего контракта, исправь все
-принятые существенные проблемы одним блоком и передай весь обновлённый
-результат новому слепому Smarty. Продолжай до одного CLEAN; не добавляй
-проходов для уверенности. Существующий заказанный blind review можно
-совместить с этим gate, если он покрывает весь указанный объект и критерии.
+Give Spotty the comparisons; equality evidence suffices for equal pairs, and differing pairs need their diff. Its criterion is that the owner's local changes to the installed copies are reflected in their repository sources and deliberate task changes will be installed by their installation instructions. This check covers installed copies, not unrelated documentation or the task requirements.
 
-Без CLEAN не объявляй работу завершённой и не выполняй commit или push.
-Если Smarty недоступен, gate не пройден: не заменяй его самопроверкой.
-Проверка основана на чтении и логике. Gate сам по себе не требует запуска
-тестов, сборок или приложения; выполняй их только по отдельному основанию.
-В финальном ответе кратко сообщи результат gate или конкретный блокер.
+Main reconciles admitted differences: carry a local owner change into the source, or install a deliberate source change by its instruction. `code_writer` changes profiles and other configuration, Main changes prompts and documents. Ask the owner in chat if the direction is unclear. After repairs, recompare and repeat fresh Spotty passes until CLEAN, then retain the evidence of that actual result where Main can retrieve it at the next release. Never infer Spotty CLEAN from equality alone or from a repository audit.
+
+## Task and release documentation
+
+The documentation criterion is that every changed fact agrees with the code and all documents that state or rely on it. All changed names, values, counts, paths, commands and behavior need their required references. Search removed or renamed elements across the repository and clear obsolete references wherever they stand; leave history in Git, not archives or removal notes. Read the complete release diff and changed files, then use targeted searches to find dependent documents, including unchanged ones. Do not audit unrelated historical drift or add cleanup outside the changed contract.
+
+For small or large tasks, the required class pass must combine this criterion with the task requirements: Spotty for small, Smarty for large, one brief containing both criteria, the full diff and dependent sources. At handover Main Workflow obtains that combined coverage without starting the installed-copies check or an audit; reuse its CLEAN at release while all covered inputs and grounds match. If a class CLEAN was already obtained without documentation coverage, retain it and run only the missing documentation check with Spotty. When both criteria need a fresh review, use one combined class pass rather than two overlapping reviewers.
+
+Micro has no handover class review; at release, obtain the documentation coverage with a diff-only Spotty unless an unchanged covering result already exists. A CLEAN [repo-audit](../repo-audit/SKILL.md) on the prepared result covers this documentation criterion, never installed copies or the required class review. When an audit is due, finish any required class check and ordinary repairs first, then obtain the documentation coverage from that audit instead of a duplicate diff-only pass. A combined class pass already obtained need not be repeated just because an audit follows.
+
+## Completion
+
+Complete normal edits and reconcile known differences of installed copies before launching review on a frozen result. Run independent checks in parallel; wait for their complete verdicts before one batch of repairs. Run a due repository audit only after ordinary work and its admitted findings are settled, then repair and recheck only the audit parts and prior checks whose files, values or dependent facts those repairs change.
+
+Merge and push require valid CLEAN coverage for installed copies and documentation and any mandatory work-class review. Reuse unchanged coverage through staging, content-equivalent squash and installation. These checks add no test runs: reuse existing test evidence for unchanged tested inputs and repeat only a check whose coverage was affected. If a required reviewer cannot start, report the blocker and wait. Report the finalization results at release handover.

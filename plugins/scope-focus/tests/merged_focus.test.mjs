@@ -1,57 +1,65 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const read = file => readFileSync(path.join(root, file), 'utf8');
+const opening = 'developer_instructions = """\n';
+const bodyOf = text => {
+  const start = text.indexOf(opening);
+  assert.ok(start >= 0, 'developer_instructions');
+  return text.slice(start + opening.length, text.lastIndexOf('"""'));
+};
 
-const spotty = readFileSync(path.join(root, 'agents', 'spotty.toml'), 'utf8');
-for (const term of [
-  'name = "spotty"',
-  'model = "gpt-6.1-sol"',
-  'model_reasoning_effort = "low"',
-  'sandbox_mode = "read-only"',
-  'review_stage',
-  '`pre-action`',
-  '`pre-completion`',
-  'substantial',
-  'stage',
-]) assert.ok(spotty.includes(term), term);
-assert.ok(!spotty.includes('properliler'));
+const reviewers = [['spotty', 'low'], ['smarty', 'medium'], ['bossy', 'high']];
+const bodies = reviewers.map(([name, effort]) => {
+  const text = read(`agents/${name}.toml`);
+  for (const term of [
+    `name = "${name}"`,
+    'model = "gpt-6.1-sol"',
+    `model_reasoning_effort = "${effort}"`,
+    'sandbox_mode = "read-only"',
+  ]) assert.ok(text.includes(term), `${name}: ${term}`);
+  return bodyOf(text);
+});
+assert.equal(bodies[1], bodies[0], 'smarty developer_instructions');
+assert.equal(bodies[2], bodies[0], 'bossy developer_instructions');
 
-for (const skill of ['blind-review-cycle', 'high-review-cycle']) {
-  const text = readFileSync(path.join(root, 'skills', skill, 'SKILL.md'), 'utf8');
-  assert.ok(text.includes('frozen object'), skill);
-  assert.ok(text.includes('pre-action'), skill);
-}
-const blindCheck = readFileSync(path.join(root, 'skills', 'blind-review-cycle', 'SKILL.md'), 'utf8');
-assert.ok(blindCheck.includes('agent_type=smarty'));
-assert.ok(blindCheck.includes('the selected cycle reaches its required clean-pass count'));
-assert.ok(blindCheck.includes('no new invocation is required after\na repair'));
-const highCheck = readFileSync(path.join(root, 'skills', 'high-review-cycle', 'SKILL.md'), 'utf8');
-assert.ok(highCheck.includes('agent_type=bossy'));
-assert.ok(highCheck.includes('reasoning `high`'));
-for (const file of ['SKILL.md', 'agents/openai.yaml', 'LICENSE.txt']) {
-  assert.ok(existsSync(path.join(root, 'skills', 'goal', file)), file);
+for (const name of ['code_writer', 'shell_runner']) {
+  const text = read(`agents/${name}.toml`);
+  for (const term of [`name = "${name}"`, 'model = "gpt-6-luna"', 'model_reasoning_effort = "medium"']) {
+    assert.ok(text.includes(term), `${name}: ${term}`);
+  }
 }
 
-const notebook = readFileSync(path.join(root, 'skills', 'task-notebook', 'SKILL.md'), 'utf8');
-for (const term of [
-  'Use automatically for a task',
-  "path.join(process.env.CODEX_HOME || path.join(os.homedir(), '.codex'), 'scope-focus', 'task-notebook'",
-  "Buffer.from(session_id, 'utf8').toString('hex'), 'plan.md')",
-  '`working`',
-  '`waiting`',
-  '`blocked`',
-  '`complete`',
-  '`cancelled`',
-  'Create only `plan.md` initially',
-]) assert.ok(notebook.includes(term), term);
-assert.ok(!existsSync(path.join(root, 'skills', 'goal-memory')));
-
-const cleanup = readFileSync(path.join(root, 'skills', 'cleanup-task', 'SKILL.md'), 'utf8');
-for (const term of ['Use only on a direct request', 'Task Notebook', '`rm -f`', '`--force`']) {
-  assert.ok(cleanup.includes(term), term);
+for (const skill of ['main-workflow', 'subagents', 'subagent-brief', 'define-goal']) {
+  for (const file of ['SKILL.md', 'agents/openai.yaml']) {
+    assert.ok(existsSync(path.join(root, 'skills', skill, file)), `${skill}/${file}`);
+  }
 }
 
-console.log('PASS: Scope Focus review, Goal, Task Notebook, and cleanup contracts.');
+const hooks = JSON.parse(read('hooks/hooks.json')).hooks;
+assert.equal(hooks.SessionStart[0].hooks[0].additionalContextLimit, 65536, 'SessionStart');
+assert.equal(hooks.SubagentStart[0].hooks[0].additionalContextLimit, 32768, 'SubagentStart');
+
+const runHook = eventName => {
+  const result = spawnSync(process.execPath, [path.join(root, 'hooks', 'communication.cjs')], {
+    input: JSON.stringify({ hook_event_name: eventName }),
+    encoding: 'utf8',
+  });
+  assert.equal(result.status, 0, `${eventName}: ${result.stderr}`);
+  return result.stdout;
+};
+
+const session = runHook('SessionStart');
+for (const term of ['# Gold Standard', '# Main Workflow', '# Subagents', '# Clear Communication']) {
+  assert.ok(session.includes(term), term);
+}
+const subagent = runHook('SubagentStart');
+for (const term of ['# Codex tool mechanics', 'Reader CLI:']) assert.ok(subagent.includes(term), term);
+assert.ok(!subagent.includes('# Main Workflow'));
+assert.ok(!subagent.includes('# Gold Standard'));
+
+console.log('PASS: Scope Focus profiles, skills and hook.');

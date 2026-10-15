@@ -1,99 +1,78 @@
 ---
 name: release
-description: Release or install selected Codex components of my-codex-harness; ordinary edits do not trigger release.
+description: "Release, commit, push, sync or install my-codex-harness: installed-copies and documentation coverage, one combined task review and a due Bossy audit, then cachebuster, squash merge, push and installation of the changed parts; ordinary edits and stage commits do not trigger release."
 ---
 
 # Release
 
-Форк Codex CLI и VS Code Extension заморожены до прямой разморозки владельцем;
-процедуры для них ниже не выполняются. Codex-части плагинов и промпта активны.
-Общий статус и границы установки: [INSTALL_FOR_AGENTS.md](../../../INSTALL_FOR_AGENTS.md).
+General status and installation bounds: [INSTALL_FOR_AGENTS.md](../../../INSTALL_FOR_AGENTS.md).
 
-Триггер: «выпустить» или «установить» эти компоненты.
-Обычное редактирование release не запускает.
+The words release, commit, push and sync («релиз», «коммит», «пуш»,
+«синхронизация» and their verb forms) each order one full release of this
+repository as one package: the installed-copies check, every check and the
+finalize-work gate, the cachebuster, the squash merge of the task branch into
+`master`, push, installation on the current host and removal of the task's
+branch and worktree. Merge and push require valid CLEAN coverage for installed
+copies, release documentation and any required work-class review; a clean
+repository audit can cover only the documentation criterion. They never run
+without the rest of the package. The stage commits that `AGENTS.md` requires
+during the work go to the task branch and are not a release. «Установить» or
+«обновить» without them order installation only, by `INSTALL_FOR_AGENTS.md`,
+without a merge or a push.
+Every release reuses completed steps whose checked inputs and grounds still
+match. Main hands every program run below to `shell_runner` and keeps only git,
+`gh`, `codex plugin`, file copies and reading scripts in its own calls.
 
-## 1. Область и источники
+`<task>` is the task branch, `<worktree>` its worktree, and `<clone>` the main
+clone on `master`.
 
-Определи явно заказанные компоненты и части release. Прочитай
-`INSTALL_FOR_AGENTS.md`, затем выбранный
-`install-instructions/<component>.md`. Сохрани чужой delta.
+1. In `<worktree>`, commit every remaining change of the task to `<task>` with
+   `git add` of its exact paths, without other people's changes. If `master`
+   has moved since the branch started, merge `master` into `<task>` and resolve
+   the conflicts there, so that the checks and the gate see the result that
+   will land.
+2. Fetch the published `audit` tag if present and retain its object ID for the
+   later explicit push lease; an unpublished local tag is not proof of a
+   previous shared audit. Read its tagger timestamp and changes counter by
+   [repo-audit](../repo-audit/SKILL.md). When the tag is absent, has no audit
+   timestamp, or is at least seven days old, schedule the Bossy audit after
+   ordinary work and its admitted findings are settled in step 3.
+3. Obtain the existing `node tests/run.mjs` result for the affected inputs: run
+   once if no valid result exists for the changed code, configuration or
+   document contracts it tests; fix a revealed failure and rerun its check.
+   Apply [finalize-work](../finalize-work/SKILL.md): installed copies, one
+   combined class review of requirements and release documentation for
+   small/large work, a diff-only Spotty for micro unless the due audit covers
+   it, then the scheduled audit. Run independent checks in parallel on a
+   frozen result, fix all admitted findings in one batch and repeat only
+   affected checks or parts. Commit fixes to `<task>`.
+4. If `plugins/scope-focus` changed, have `shell_runner` run
+   `node tools/update-plugin-cachebuster.mjs scope-focus` once in `<worktree>`;
+   Main commits the manifest to `<task>`. The version bump is metadata and needs
+   no new review.
+5. In `<clone>`: squash merge only: `git merge --squash <task>`, then
+   `git commit` with a message that sums up the task, then
+   `git push origin master`.
+6. If this release ran a CLEAN audit, move and publish its annotated `audit`
+   tag on the new `master` commit by repo-audit's recording procedure.
+   Otherwise leave the marker unchanged. A rejected tag lease is a blocker.
+7. Install on the current host from `<clone>`: a changed plugin, only when its
+   marketplace entry source points at this repository and its version matches
+   the source commit, by the update
+   section of [scope-focus.md](../../../install-instructions/scope-focus.md),
+   a changed prompt by [system-prompt.md](../../../install-instructions/system-prompt.md).
+   Reuse installed dependencies and unchanged installation evidence; run only
+   affected checks from the selected instructions. Do not update unrelated
+   components. Ask the owner to start a new Codex task.
+8. In `<clone>`: `git worktree remove <worktree>` and `git branch -D <task>`
+   (after a squash merge git does not count the branch as merged).
 
-Форк Codex CLI заморожен, временно архивирован и исключён из любых работ до
-явной активации, извлечения и разморозки пользователем. Общий release harness
-не включает его и не разрешает чтение/поиск архива, build, push или install
-форка. Штатный Codex CLI из App для активных компонентов остаётся доступен.
+Add no service files for a release. The standard cachebuster is
+`tools/update-plugin-cachebuster.mjs`; create no UI metadata or README.
 
-Analysis-only не меняет состояние. Полный релиз включает подготовку нужных
-исходников/поставки, source commit, push, публикацию и локальную установку
-выбранных компонентов на текущем хосте с проверками из инструкции. Остановка
-после GitHub Release не завершает полный релиз. Уже выполненные части
-переиспользуй. Публикуй локально подготовленные артефакты и устанавливай
-эти же локальные файлы; обратное скачивание своего release не выполняй.
-Явно заказанная только публикация или только установка
-сохраняет эту границу.
-Частичный запрос выполняет только его явно заказанную часть. Install-only
-пропускает source preparation/build/bump/commit и переходит к установке
-готовой выбранной поставки.
+## Errors
 
-## 2. Версии и проверки
-
-Для изменённых плагинов один раз запусти из корня репозитория
-`node tools/update-plugin-cachebuster.mjs <имя-plugin> [...]` перед source commit.
-Скрипт берёт timestamp UTC, сохраняет JSON в читаемом UTF-8 и проверяет,
-что marketplace source указывает на `./plugins/<имя-plugin>` этого репозитория.
-Неизменённые плагины не передавай. Внешний plugin-creator и Python не нужны.
-
-Сделай одно повышение версии до исходного коммита. Не повторяй bump из
-`INSTALL` после коммита.
-
-Версия системного промпта определяется source commit. Придуманный номер версии
-не добавляй.
-
-Выполняй только проверки, прямо заказанные или required выбранной процедурой.
-Сохрани их результат. Не придумывай count и дополнительные тесты.
-
-## 3. Исходный коммит
-
-После подготовки версии и перед коммитом выполни обязательный
-[finalize-work](../finalize-work/SKILL.md) на полном сдаваемом результате.
-Тот же gate обязателен перед push и завершением release; переиспользуй CLEAN
-только пока результат и основания проверки остаются неизменными.
-
-`git add` выполняй только для exact requested paths и source commit. Чужой delta
-не включай. Полный release разрешает push выбранных source commits; при частичном заказе
-выполняй push только если он входит в него.
-
-## 4. Публикация и установка
-
-Для выбранных Codex plugins native install выполняй командой `codex plugin add <name>@<marketplace>` только
-когда entry source указывает этот репозиторий и версия соответствует source
-commit. Соблюдай профили из выбранного документа: Scope Focus — `spotty`,
-`smarty`, `bossy`, `enot`; Lunatron — `lunatik`, `lunatron_luna_high`,
-`lunatron_sol_low`, `lunatron_sol_medium`, `lunatron_sol_high`. Scope Focus обновляет четыре
-профиля и коммуникационные hooks по своей установочной инструкции. Fresh hook
-trust нужен для компонентов, чьи выбранная инструкция и установленный пакет
-действительно содержат hooks, включая Scope Focus и Lunatron. Trust не обходи.
-
-После native install выполни только оставшиеся applicable setup/check шаги из
-выбранного документа. Не повторяй cachebuster или native add, уже выполненные
-release flow. При обычном update обнови весь runtime: native package,
-packaged profiles и отдельные runtime-файлы.
-
-Не запускай второй cachebuster или native add из выбранного документа: bump и
-native install уже выполнены release flow.
-
-Для полного release с Codex-промптом или его install выполни
-`install-instructions/system-prompt.md` той же ревизии. Его исходник —
-`new-model-instructions.md` в корне репозитория.
-
-## 5. Ошибки
-
-Если выбран blind cycle, соблюдай именно его count и stage. Final делай после
-полного результата. Не запускай автоматически многократный цикл по старой
-истории.
-
-При uncertain install сначала прочитай affected state. Не повторяй install
-вслепую. Сообщи незавершённый этап и не объявляй release завершённым.
-
-Не добавляй служебные файлы для отдельного релиза. Штатный cachebuster хранится
-в `tools/update-plugin-cachebuster.mjs`; UI metadata и README не создавай.
+When a push or installation is uncertain, read the state first (`git status`,
+`git log -1 origin/master`, `git worktree list`, `codex plugin list --json`)
+instead of repeating blindly, report the unfinished stage and do not declare
+the release complete.
