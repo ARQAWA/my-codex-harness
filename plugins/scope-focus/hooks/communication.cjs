@@ -25,7 +25,7 @@ const sections = input.hook_event_name === 'SubagentStart'
   : [
       skill('Apply the full Gold Standard to all work. Apply silently.', 'gold-standard'),
       `${codexTools}\nTodo CLI: node "${todoCli}"`,
-      skill('Apply the following root Main workflow for Plan mode, the todo list and the goal.', 'main-workflow'),
+      skill('Apply the following root Main workflow for the work classes, the todo list and the goal.', 'main-workflow'),
       skill('Apply the following subagent rules to every subagent launch.', 'subagents'),
       skill('Apply the following communication skill before every user-facing message.', 'clear-communication'),
     ];

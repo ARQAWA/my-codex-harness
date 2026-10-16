@@ -17,8 +17,7 @@ Scope Focus делает из Codex harness по `WORKFLOW-MANIFEST.md`: аге�
 решениях сверх его слов. Review запускается автоматически по классу, который
 Main определяет сам: micro — без проверки, small проверяет Spotty, large —
 Smarty; ответ или запрошенный файл-отчёт без правок проекта и настроек review по классу не
-запускается; `$define-goal` записывает класс в цель. В Codex Plan
-mode идут две проверки Spotty. Gate финализации идёт только при release; аудит
+запускается; `$define-goal` записывает класс в цель. Gate финализации идёт только при release; аудит
 Bossy — при release раз в неделю или по прямой просьбе владельца. Это действующий текстовый контракт, не доказательство
 runtime-надёжности.
 
@@ -32,9 +31,9 @@ runtime-надёжности.
 и автоматической подачей root Main. Skill описывает способ работы владельца:
 кратчайший путь с минимумом нужных сведений, тяжёлая работа только по приказу,
 проверка чтением и остановка после результата. Системный промпт Codex —
-базовые инструкции GPT-5.5 без пяти вырезов и не ссылается на плагин; правила
-todo-списка, Goal, review и субагентов поступают только из плагина и в промпт не
-переносятся.
+промпт Cursor для GPT-5.5, переработанный под Codex, и не ссылается на плагин;
+правила todo-списка, Goal, review и субагентов поступают только из плагина и в
+промпт не переносятся.
 Разделы о личности, стиле речи и оформлении PR в стандарт не переносятся. Skill самодостаточен и не читает рабочий репозиторий.
 Явный вызов доступен для повторного применения; `allow_implicit_invocation: false`, текст подаёт hook;
 сам вызов не требует отдельного отчёта, чек-листа или дополнительного workflow.
@@ -188,11 +187,18 @@ Release и установка не выполнялись.
 
 CLI и hooks проверены пробными вызовами во временном `CODEX_HOME`; `CODEX_THREAD_ID` в shell модели совпадает с `session_id` rollout в живом `codex exec`. Проверка формата ответа субагентов (`SubagentStop`) и реестр решений в этот перенос не входят.
 
-## 2026-10-16: системный промпт — оригинал GPT-5.5
+## 2026-10-16: системный промпт — промпт Cursor для GPT-5.5
 
-Владелец поручил: «Я хочу, чтобы наш системный промпт, кастомный, в кодексе был GPT-5.5.», «чтобы у нас системный промпт был буквально GPT 5.5.» и «Но при этом чтобы поверх него был весь наш harness.» Main оценил подстановку и предложил три варианта; владелец выбрал вариант b («1b»): оригинал GPT-5.5 без фронтенд-раздела и без пунктов, которые спорят с harness (follow-ups, обновления каждые 30 с, `multi_tool_use`, расширение тестов). Владелец также поручил проверить каждый вырезанный блок слепой проверкой и сдать всю работу через слепую проверку.
+Владелец поручил: «Давай мы заменим этот промпт, который ты взял, на курсоровский промпт GPT-5 5.», «сравни с нашим системным промптом и проверь на соответствие, чтобы не было никаких конфликтов» и «усыновим его себе, чтобы всё было суперконсистентно и нигде ничего не конфликтовало». Main сравнил промпты и предложил для каждого решения варианты; владелец ответил «1a 2b 3a»:
+
+- 1a: текст Cursor с заменой Cursor на Codex, без блоков под инструменты Cursor (`mode_selection`, `dynamic_tools`, terminals, `@`, `Lxxx`, формат цитат и картинки), `ApplyPatch` и `ReadFile` переименовываются в инструменты Codex, прежние конфликты вырезаются;
+- 2b: пункты об обновлениях перед поиском и перед правками остаются, как у Cursor;
+- 3a: две проверки Spotty в Codex Plan mode снимаются, как в omp.
 
 Выполненное изменение:
 
-- `new-model-instructions.md` — оригинал `gpt-5.5` из `openai/codex` (поле `model_messages.instructions_template`, sha256 `2351631d…3242e`) с пятью вырезами: раздел «Frontend guidance»; фраза о `multi_tool_use.parallel` в пункте о параллельных вызовах; пункт о расширении тестового покрытия; часть «You suggest follow ups…» пункта о финальном ответе, при этом запрет заканчивать ответ словами «If you want» оставлен; пункт «every 30s» об обновлениях.
-- `AGENTS.md`, `install-instructions/system-prompt.md` и этот файл описывают новый источник и вырезы. Прежнее правило «промпт без привязки к инструментам» снято: оригинал называет `rg`, `apply_patch` и `exec_command`.
+- `new-model-instructions.md` — промпт Cursor для GPT-5.5 (раздел `<general>`, `<editing_constraints>`, `<engineering_judgment>`, `<special_user_requests>`, `<working_with_the_user>`, `<main_goal>`) под Codex. Убраны строка `You are GPT-5.5.`, рамка и инструменты Cursor, `multi_tool_use.parallel`, пункт о расширении тестов, предложение «suggest follow ups» (запрет «If you want» оставлен), пункты об обновлениях «every 30s». В пункте «Try to use `ApplyPatch`…» сняты обороты «but it is fine to explore other options to make the edit if it does not work well» и «or when scripting is more efficient (such as search and replacing a string across a codebase)», потому что `codex-tools` разрешает писать файлы только через `apply_patch`. Пример «ReadFile over cat» при переименовании в `cat` стал бы «cat over cat», поэтому в примере стоят `apply_patch` и `cat`. Сверх вариантов 1a–3a Main снял ещё четыре места, которые спорят с правилами плагина, опираясь на слова владельца «нигде ничего не конфликтовало»: правило о заголовках («Headers are optional…») и абзац «On larger tasks, use at most 2-4 high-level sections…» (спорят с Clear Communication) предложение «Do not use `ApplyPatch` for changes that are auto-generated…» (спорит с правилом `codex-tools` писать файлы только через `apply_patch`) и слова «and can contain formatting» в пункте о длинном плане (спорят с Clear Communication). Правило ссылок на файлы взято из оригинала Codex (кликабельные markdown-ссылки) вместо правила Cursor «в обратных кавычках».
+- Из `main-workflow`, `subagents`, `light-review-cycle`, hook `communication.cjs`, `AGENTS.md`, `WORKFLOW-MANIFEST.md` и `install-instructions/scope-focus.md` удалены проверки Plan mode; строки `main-workflow` и `$define-goal` о цели в Plan mode остались.
+- `AGENTS.md`, `install-instructions/system-prompt.md` и этот файл описывают новый источник.
+
+Остальные изменения my-omp-harness от 2026-10-16 (панель статуса, herdr, hook реестра решений) в Codex не переносились.

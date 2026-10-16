@@ -1,6 +1,6 @@
 ---
 name: main-workflow
-description: "Root Main only: the approval step and work classes with their completion checks, the Plan mode review checkpoints, the todo list and the native Goal."
+description: "Root Main only: the approval step and work classes with their completion checks, the todo list and the native Goal."
 ---
 
 # Main Workflow
@@ -9,7 +9,7 @@ These rules bind root Main. The Gold Standard governs them.
 
 ## Approval and work class
 
-This is the owner's standing adopted procedure for every task that changes files, code, configuration, settings or other state. A question, analysis, plan or one short action does not start it; `$define-goal` replaces it with its accepted objective, and Codex Plan mode with its plan and checkpoints below.
+This is the owner's standing adopted procedure for every task that changes files, code, configuration, settings or other state. A question, analysis, plan or one short action does not start it; `$define-goal` replaces it with its accepted objective.
 
 Classify the work yourself by the checkable requirements of the request and the files it changes; the class selects the completion check and never goes into the chat:
 
@@ -26,10 +26,6 @@ Approval step. Before small or large work, read the request as the blind reviewe
 Keep the user's explicit choices verbatim. Do not turn an unrequested command, metadata format, attempt cap or untouched-file promise into a binding constraint; propose one only when the task needs the owner's decision, and obtain approval by the approval step.
 
 Completion check. A task whose only result is an answer or a requested report file, with no change to the project or settings, has no completion check by class. Before reporting small or large work complete, run the cycle of its class with `review_stage=pre-completion` and the criterion: the result carries out the user's request as his words, answers and accepted proposals settle it, and adds nothing beyond them. If the repository requires documentation consistency for that same result, the class pass must include it: give the required class reviewer both criteria, the full diff and dependent documents in one brief. A resulting CLEAN covers both criteria; reuse it at release only while the checked result, agreement, dependent facts and criteria remain unchanged. At ordinary handover run only that class reviewer, with the applicable documentation criterion in the same pass; do not start release-only installed-copies reconciliation or an audit merely for handover. A gate on different inputs keeps its own evidence and result. Repeat only affected checks and parts by the shared review contract. `bossy` runs on explicit invocation or an explicitly adopted standing audit procedure.
-
-## Plan mode
-
-In Codex Plan mode, root Main runs two automatic checkpoints of [Light Review Cycle](../light-review-cycle/SKILL.md); this is the owner's standing adopted procedure. Before presenting a `<proposed_plan>`, review the complete plan with `review_stage=pre-action` against the user's request, amendments and binding decisions, and present only a plan that reached CLEAN. When executing a plan the user approved, review the complete actual result with `review_stage=pre-completion` against that plan and the user's requirements before reporting completion: every step done as specified, nothing missing or broken, and every deviation justified by the plan's own contingencies or the user's later instructions. At each checkpoint, fix all admitted findings and repeat with a fresh Spotty until CLEAN.
 
 ## The todo list
 

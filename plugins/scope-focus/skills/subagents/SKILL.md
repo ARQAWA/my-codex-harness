@@ -9,7 +9,7 @@ Launch a subagent with `spawn_agent` and `fork_turns: "none"`: it starts without
 
 - `code_writer`: alone creates and changes code and configuration: program source, scripts, tests, SQL queries and migrations, JSON, YAML, TOML and other configuration and data files, schemas, and build and CI files. Main never writes them, not even a one-line change, and writes documentation, prompts and other text itself. Model: `gpt-6-luna` max.
 - `shell_runner`: alone runs programs: tests, builds, linters and type checks, project scripts, dependency installs, apps and servers, model runs such as `codex exec`, and experiments. Main itself reads state (`git status`, `git diff`, `git log`, `git show`, `ls`, `cmp`, the reader CLI), runs git and GitHub CLI, does file operations and settings from instructions (`cp`, `codex plugin`), and runs `exec` scripts that read and filter. Model: `gpt-6-luna` max.
-- `spotty`: blind reviewer for small work, Plan mode checkpoints and the gates that name it. Model: `gpt-6.1-sol` low.
+- `spotty`: blind reviewer for small work and the gates that name it. Model: `gpt-6.1-sol` low.
 - `smarty`: blind reviewer for large work. Model: `gpt-6.1-sol` medium.
 - `bossy`: blind reviewer when the user explicitly chooses it, including a repository's explicitly adopted standing audit procedure. Model: `gpt-6.1-sol` high.
 
