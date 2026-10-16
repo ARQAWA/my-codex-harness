@@ -4,12 +4,11 @@
 
 ## Состав
 
-[`new-model-instructions.md`](../new-model-instructions.md) — копия последнего
-RC2 `gpt-6.1-sol-rc2.md` из сессии `01a141ad-07c9-77b8-af86-0a299c14be03`
-в my-omp-harness, коммит `9b9002a`. Изменена только первая строка:
-`You are GPT-6.1 Sol.` заменена на `You are GPT Model.`. Остальной текст совпадает
-дословно, включая OMP и инструменты Cursor; под инструменты Codex он не
-адаптирован.
+[`new-model-instructions.md`](../new-model-instructions.md) — RC2
+`gpt-6.1-sol-rc2.md` из my-omp-harness (`research/cursor/remaster/prompts`,
+коммит `9b9002a`), перенесённый под Codex. Модель названа `GPT Model`, продукт —
+Codex; инструменты и рамка OMP и Cursor, которых нет в Codex, убраны или
+заменены аналогами Codex.
 
 Это отдельный компонент поставки, подключаемый через `model_instructions_file`
 вместо встроенных инструкций. Он не входит в пакет плагина и не требует
