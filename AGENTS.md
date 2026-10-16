@@ -52,7 +52,10 @@ Gold Standard задаёт always-on точный scope, кратчайший п
 
 Hook `SessionStart` подаёт root Main Gold Standard, `codex-tools`,
 `main-workflow`, `subagents` и Clear Communication; `SubagentStart` подаёт
-субагенту только `codex-tools`, остальное он берёт из профиля и брифа. Root Main
+субагенту только `codex-tools`, остальное он берёт из профиля и брифа. Ещё три hooks
+`todo.cjs` (всего пять) держат план в силе механически: `PostToolUse` на `update_plan`
+записывает его в `PLUGIN_DATA`, `UserPromptSubmit` подаёт его или напоминание
+создать, `Stop` один раз за ход возвращает модель к открытым шагам. Root Main
 ведёт план `update_plan` для любой задачи, кроме одного ответа или одного
 короткого действия, и всегда для работы с review. Для задачи из нескольких
 зависимых этапов Main сам ставит native Goal. Перед работой с изменениями,

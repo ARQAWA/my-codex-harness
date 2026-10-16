@@ -28,13 +28,20 @@ Skills:
 | `smarty` | `gpt-6.1-sol / medium` | review большой работы |
 | `bossy` | `gpt-6.1-sol / high` | review по выбору владельца и аудит |
 
-Два hooks подают правила через `hooks/communication.cjs`: `SessionStart`
+Пять hooks. Два подают правила через `hooks/communication.cjs`: `SessionStart`
 (startup, resume, clear, compact) — root Main получает Gold Standard,
 `codex-tools` с путём CLI чтения, `main-workflow`, `subagents` и
 `clear-communication`; `SubagentStart` — субагент получает только
 `codex-tools` с путём CLI чтения. У `SessionStart` `additionalContextLimit = 65536`, у `SubagentStart` 32768.
-Hooks читают источники из установленного пакета и ничего не записывают.
+`communication.cjs` читает источники из установленного пакета и ничего не записывает.
 Подача не гарантирует следование модели.
+
+Три hooks ведут план root Main через `hooks/todo.cjs`: `PostToolUse` на
+`update_plan` записывает план в файл каталога `PLUGIN_DATA`, `UserPromptSubmit`
+подаёт текущий план или напоминание создать его, `Stop` один раз за ход
+возвращает модель к работе, пока в плане есть шаги `pending` или `in_progress`.
+События субагентов `todo.cjs` пропускает. Это единственная запись hooks, и она
+идёт только в `PLUGIN_DATA`.
 
 Системный промпт — отдельный компонент: [system-prompt.md](system-prompt.md).
 
@@ -62,7 +69,7 @@ codex plugin add "scope-focus@<marketplace>" --json
 `agents` активного Codex home (обычно `~/.codex/agents`). Остальные профили
 сохрани.
 
-Через штатный Codex app-server `hooks/list` найди два текущих определения
+Через штатный Codex app-server `hooks/list` найди пять текущих определений
 hooks Scope Focus этого пакета. После штатного review/trust запиши через
 `config/batchWrite` их точные ключи в `hooks.state`, `enabled = true` и
 `trusted_hash = currentHash` текущего определения. Совпадающие записи не
@@ -76,9 +83,9 @@ hooks Scope Focus этого пакета. После штатного review/tr
 
 На целевой ОС проверь: пакет установлен и включён; пять профилей в
 `<CODEX_HOME>/agents` совпадают с файлами пакета; в пакете есть
-`hooks/communication.cjs`, `tools/read.cjs` и `SKILL.md` всех skills из
-состава; по `hooks/list` оба hooks включены, доверены и ссылаются на
-установленный пакет. На Windows используй Git Bash. Запросы к моделям и
+`hooks/communication.cjs`, `hooks/todo.cjs`, `tools/read.cjs` и `SKILL.md`
+всех skills из состава; по `hooks/list` все пять hooks включены, доверены и
+ссылаются на установленный пакет. На Windows используй Git Bash. Запросы к моделям и
 пробные задачи в проверку не входят.
 
 ## Обновление
