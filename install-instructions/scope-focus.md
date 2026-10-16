@@ -14,9 +14,9 @@ Skills:
 | `codex-tools` | механика инструментов Codex: лимиты `exec`, code mode, `apply_patch`, CLI чтения `tools/read.cjs` |
 | `main-workflow` | шаг согласования, классы работы micro/small/large (ответ или файл-отчёт без правок проекта и настроек без review по классу), todo-список через CLI `tools/todo.cjs`, native Goal |
 | `subagents`, `subagent-brief` | роли агентов и брифы `code_writer` и `shell_runner` |
-| `clear-communication` | короткие ответы с главным первым, вопросы в чате |
+| `clear-communication` | русский язык, формат ответов и вопросов; частоту обновлений задаёт системный промпт |
 | `light-review-cycle`, `blind-review-cycle`, `high-review-cycle` | слепой review на цитатах со Spotty, Smarty и Bossy |
-| `define-goal` | `$define-goal`: согласование цели с цитатами и review перед завершением |
+| `define-goal` | `$define-goal`: цель с цитатами, старт без «го» при отсутствии вопросов, review перед завершением |
 
 Профили агентов в `agents/`:
 
