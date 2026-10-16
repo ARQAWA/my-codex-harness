@@ -29,7 +29,7 @@ assert.equal(bodies[2], bodies[0], 'bossy developer_instructions');
 
 for (const name of ['code_writer', 'shell_runner']) {
   const text = read(`agents/${name}.toml`);
-  for (const term of [`name = "${name}"`, 'model = "gpt-6-luna"', 'model_reasoning_effort = "max"']) {
+  for (const term of [`name = "${name}"`, 'model = "gpt-6-luna"', 'model_reasoning_effort = "medium"']) {
     assert.ok(text.includes(term), `${name}: ${term}`);
   }
 }

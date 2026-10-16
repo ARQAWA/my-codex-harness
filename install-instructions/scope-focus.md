@@ -22,8 +22,8 @@ Skills:
 
 | Профиль | Модель | Роль |
 |---|---|---|
-| `code_writer` | `gpt-6-luna / max` | пишет код и конфигурацию по брифу Main |
-| `shell_runner` | `gpt-6-luna / max` | запускает тесты, сборки и программы по брифу Main |
+| `code_writer` | `gpt-6-luna / medium` | пишет код и конфигурацию по брифу Main |
+| `shell_runner` | `gpt-6-luna / medium` | запускает тесты, сборки и программы по брифу Main |
 | `spotty` | `gpt-6.1-sol / low` | review небольшой работы |
 | `smarty` | `gpt-6.1-sol / medium` | review большой работы |
 | `bossy` | `gpt-6.1-sol / high` | review по выбору владельца и аудит |
