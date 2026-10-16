@@ -17,14 +17,15 @@ const skill = (intro, name) => {
   return `${intro} Source: ${source}\n\n${readFileSync(source, 'utf8')}`;
 };
 const readerCli = join(__dirname, '..', 'tools', 'read.cjs');
+const todoCli = join(__dirname, '..', 'tools', 'todo.cjs');
 const codexTools = `${skill('Apply the following Codex tool mechanics to every tool call.', 'codex-tools')}\nReader CLI: node "${readerCli}"`;
 
 const sections = input.hook_event_name === 'SubagentStart'
   ? [codexTools]
   : [
       skill('Apply the full Gold Standard to all work. Apply silently.', 'gold-standard'),
-      codexTools,
-      skill('Apply the following root Main workflow for Plan mode, the plan and the goal.', 'main-workflow'),
+      `${codexTools}\nTodo CLI: node "${todoCli}"`,
+      skill('Apply the following root Main workflow for Plan mode, the todo list and the goal.', 'main-workflow'),
       skill('Apply the following subagent rules to every subagent launch.', 'subagents'),
       skill('Apply the following communication skill before every user-facing message.', 'clear-communication'),
     ];

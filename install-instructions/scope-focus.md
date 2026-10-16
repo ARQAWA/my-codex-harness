@@ -12,7 +12,7 @@ Skills:
 |---|---|
 | `gold-standard` | рабочие принципы: точный scope, кратчайший путь, проверка чтением |
 | `codex-tools` | механика инструментов Codex: лимиты `exec`, code mode, `apply_patch`, CLI чтения `tools/read.cjs` |
-| `main-workflow` | шаг согласования, классы работы micro/small/large (ответ или файл-отчёт без правок проекта и настроек без review по классу), план `update_plan`, native Goal, проверки Plan mode |
+| `main-workflow` | шаг согласования, классы работы micro/small/large (ответ или файл-отчёт без правок проекта и настроек без review по классу), todo-список через CLI `tools/todo.cjs`, native Goal, проверки Plan mode |
 | `subagents`, `subagent-brief` | роли агентов и брифы `code_writer` и `shell_runner` |
 | `clear-communication` | короткие ответы с главным первым, вопросы в чате |
 | `light-review-cycle`, `blind-review-cycle`, `high-review-cycle` | слепой review на цитатах со Spotty, Smarty и Bossy |
@@ -28,20 +28,22 @@ Skills:
 | `smarty` | `gpt-6.1-sol / medium` | review большой работы |
 | `bossy` | `gpt-6.1-sol / high` | review по выбору владельца и аудит |
 
-Пять hooks. Два подают правила через `hooks/communication.cjs`: `SessionStart`
+Четыре hooks. Два подают правила через `hooks/communication.cjs`: `SessionStart`
 (startup, resume, clear, compact) — root Main получает Gold Standard,
 `codex-tools` с путём CLI чтения, `main-workflow`, `subagents` и
 `clear-communication`; `SubagentStart` — субагент получает только
-`codex-tools` с путём CLI чтения. У `SessionStart` `additionalContextLimit = 65536`, у `SubagentStart` 32768.
+`codex-tools` с путём CLI чтения; root Main получает ещё путь todo CLI. У `SessionStart` `additionalContextLimit = 65536`, у `SubagentStart` 32768, у `UserPromptSubmit` 16384.
 `communication.cjs` читает источники из установленного пакета и ничего не записывает.
 Подача не гарантирует следование модели.
 
-Три hooks ведут план root Main через `hooks/todo.cjs`: `PostToolUse` на
-`update_plan` записывает план в файл каталога `PLUGIN_DATA`, `UserPromptSubmit`
-подаёт текущий план или напоминание создать его, `Stop` один раз за ход
-возвращает модель к работе, пока в плане есть шаги `pending` или `in_progress`.
-События субагентов `todo.cjs` пропускает. Это единственная запись hooks, и она
-идёт только в `PLUGIN_DATA`.
+Собственный todo-список root Main ведёт CLI `tools/todo.cjs`: агент вызывает его
+через shell, а CLI по `CODEX_THREAD_ID` пишет список сессии в файл
+`<CODEX_HOME>/scope-focus-todo/todo-<id сессии>.json` (обычно `~/.codex`). Два
+hooks читают этот файл через `hooks/todo.cjs`: `UserPromptSubmit` подаёт список
+с открытыми пунктами или напоминание создать его, `Stop` один раз за ход
+возвращает модель к работе, пока есть пункты `pending` или `in_progress`; пункт
+`blocked` ход не держит. События субагентов `todo.cjs` пропускает, hooks ничего
+не пишут, запись делает только CLI.
 
 Системный промпт — отдельный компонент: [system-prompt.md](system-prompt.md).
 
@@ -69,7 +71,7 @@ codex plugin add "scope-focus@<marketplace>" --json
 `agents` активного Codex home (обычно `~/.codex/agents`). Остальные профили
 сохрани.
 
-Через штатный Codex app-server `hooks/list` найди пять текущих определений
+Через штатный Codex app-server `hooks/list` найди четыре текущих определения
 hooks Scope Focus этого пакета. После штатного review/trust запиши через
 `config/batchWrite` их точные ключи в `hooks.state`, `enabled = true` и
 `trusted_hash = currentHash` текущего определения. Совпадающие записи не
@@ -83,8 +85,8 @@ hooks Scope Focus этого пакета. После штатного review/tr
 
 На целевой ОС проверь: пакет установлен и включён; пять профилей в
 `<CODEX_HOME>/agents` совпадают с файлами пакета; в пакете есть
-`hooks/communication.cjs`, `hooks/todo.cjs`, `tools/read.cjs` и `SKILL.md`
-всех skills из состава; по `hooks/list` все пять hooks включены, доверены и
+`hooks/communication.cjs`, `hooks/todo.cjs`, `tools/read.cjs`, `tools/todo.cjs`
+и `SKILL.md` всех skills из состава; по `hooks/list` все четыре hooks включены, доверены и
 ссылаются на установленный пакет. На Windows используй Git Bash. Запросы к моделям и
 пробные задачи в проверку не входят.
 
