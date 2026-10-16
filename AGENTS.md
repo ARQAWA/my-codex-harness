@@ -93,7 +93,7 @@ Main; документацию и промпты Main пишет сам. Про�
 
 | Профиль | Модель |
 |---|---|
-| `code_writer`, `shell_runner` | `gpt-6-luna / medium` |
+| `code_writer`, `shell_runner` | `gpt-6-luna / max` |
 | `spotty` | `gpt-6.1-sol / low` |
 | `smarty` | `gpt-6.1-sol / medium` |
 | `bossy` | `gpt-6.1-sol / high` |
