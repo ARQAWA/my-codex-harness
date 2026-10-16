@@ -86,16 +86,28 @@ function isFile(p) {
   }
 }
 
+// git check-ignore exits 0 for an ignored path; outside a repository it fails, so the path counts as not ignored.
+function isIgnored(target) {
+  return spawnSync('git', ['check-ignore', '-q', '--', target], { cwd, encoding: 'utf8' }).status === 0;
+}
+
 function listFiles(paths) {
   const targets = (paths.length ? paths : ['.']).map(p => {
     if (!fs.existsSync(path.resolve(cwd, p))) throw new Error(`no such path: ${p}`);
     return shown(p);
   });
-  let list = gitFiles(targets);
+  // A named file is always listed; an ignored named directory is walked, the rest goes through git.
+  const files = targets.filter(isFile);
+  const dirs = targets.filter(t => !isFile(t));
+  const ignored = dirs.filter(t => t !== '.' && isIgnored(t));
+  const gitDirs = dirs.filter(t => !ignored.includes(t));
+  let list = gitDirs.length > 0 ? gitFiles(gitDirs) : [];
   if (list === null) {
     list = [];
-    for (const target of targets) walk(target, list);
+    for (const target of gitDirs) walk(target, list);
   }
+  for (const target of ignored) walk(target, list);
+  list.push(...files);
   return [...new Set(list)].filter(isFile).sort(compare);
 }
 

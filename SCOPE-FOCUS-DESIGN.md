@@ -63,7 +63,7 @@ compatibility-слои, архивные копии и записи об отм�
 Main Gold Standard, `codex-tools` с путём CLI чтения, `main-workflow`,
 `subagents` и Clear Communication; `SubagentStart` подаёт субагенту только
 `codex-tools` с путём CLI чтения. У `SessionStart`
-`additionalContextLimit = 65536`, подача Main занимает около 39 КБ; у
+`additionalContextLimit = 65536`, подача Main занимает около 43 КБ; у
 `SubagentStart` 32768. Подача
 действует при включённом пакете и native trust текущих hooks и не гарантирует
 следование модели. Hook ничего не записывает. Изменение исходников не означает
@@ -91,8 +91,8 @@ release, push или обновление runtime-копий.
 - Добавлен `WORKFLOW-MANIFEST.md` — ядро harness по тексту omp с механикой Codex.
 - Gold Standard, `clear-communication`, три review-цикла, `subagent-brief`
   перенесены из omp; новые skills `main-workflow` (шаг требований, классы
-  micro/small/large, todo-список, native Goal, две проверки Spotty в
-  Plan mode), `subagents` и `define-goal` (`$define-goal`).
+  micro/small/large, todo-список, native Goal), `subagents` и `define-goal`
+  (`$define-goal`).
 - Hook подаёт root Main Gold Standard, `codex-tools`, `main-workflow`,
   `subagents` и Clear Communication, субагенту — только `codex-tools`.
 - Spotty, Smarty и Bossy получили общий промпт omp с находками на дословных

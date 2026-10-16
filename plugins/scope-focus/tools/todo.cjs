@@ -1,6 +1,6 @@
 'use strict';
 
-const { mkdirSync, readFileSync, renameSync, writeFileSync } = require('node:fs');
+const { closeSync, mkdirSync, openSync, readFileSync, renameSync, statSync, unlinkSync, writeFileSync } = require('node:fs');
 const { homedir } = require('node:os');
 const { join } = require('node:path');
 
@@ -144,6 +144,7 @@ function locate(next, query, op) {
   if (query === undefined) {
     throw new OpError(`${op} needs an item`, 'pass item: "<number like 2.3 or the exact item text>"');
   }
+  if (typeof query !== 'string') throw new OpError('item must be a string', 'pass item: "<number like 2.3 or the exact item text>"');
   const text = query.trim();
   const entries = allItems(next);
   if (/^\d+\.\d+$/.test(text)) {
@@ -274,6 +275,7 @@ function applyOp(next, op, report) {
     }
     case 'block': {
       const target = locate(next, op.item, 'block');
+      if (op.reason !== undefined && typeof op.reason !== 'string') throw new OpError('reason must be a string', 'pass reason: "what the item waits for"');
       const reason = op.reason?.trim();
       if (!reason) throw new OpError('block has no reason', 'pass reason: "what the item waits for"');
       target.item.status = 'blocked';
@@ -295,6 +297,7 @@ function applyOp(next, op, report) {
     }
     case 'plan': {
       if (!op.steps?.length) throw new OpError('plan has no steps', 'pass steps: ["first step", "second step"]');
+      if (!Array.isArray(op.steps) || !op.steps.every((step) => typeof step === 'string')) throw new OpError('steps must be a list of strings', 'pass steps: ["first step", "second step"]');
       const target = resolveDefault(next, op.item, 'plan');
       next.plans.set(itemKey(next, target), { steps: op.steps, current: 1 });
       return `plan ${target.num}: ${op.steps.length} steps`;
@@ -422,9 +425,44 @@ function loadState(sessionId) {
 
 function saveState(sessionId, next) {
   const file = stateFile(sessionId);
+  const tmp = `${file}.${process.pid}.tmp`;
   mkdirSync(stateDir(), { recursive: true });
-  writeFileSync(`${file}.tmp`, JSON.stringify({ phases: next.phases, plans: Object.fromEntries(next.plans) }));
-  renameSync(`${file}.tmp`, file);
+  writeFileSync(tmp, JSON.stringify({ phases: next.phases, plans: Object.fromEntries(next.plans) }));
+  renameSync(tmp, file);
+}
+
+const LOCK_WAIT_MS = 10000;
+const LOCK_STALE_MS = 10000;
+const LOCK_RETRY_MS = 20;
+const pause = new Int32Array(new SharedArrayBuffer(4));
+
+// Takes the session's lock file, waiting while another call holds it; null after LOCK_WAIT_MS.
+function acquireLock(sessionId) {
+  const file = `${stateFile(sessionId)}.lock`;
+  mkdirSync(stateDir(), { recursive: true });
+  const deadline = Date.now() + LOCK_WAIT_MS;
+  for (;;) {
+    try {
+      return { file, fd: openSync(file, 'wx') };
+    } catch (error) {
+      if (error.code !== 'EEXIST') throw error;
+    }
+    if (removeStaleLock(file)) continue;
+    if (Date.now() >= deadline) return null;
+    Atomics.wait(pause, 0, 0, LOCK_RETRY_MS);
+  }
+}
+
+// Removes a lock older than LOCK_STALE_MS. Returns true when the lock is gone, so the caller retries at once.
+function removeStaleLock(file) {
+  try {
+    if (Date.now() - statSync(file).mtimeMs <= LOCK_STALE_MS) return false;
+    unlinkSync(file);
+    return true;
+  } catch (error) {
+    if (error.code === 'ENOENT') return true;
+    throw error;
+  }
 }
 
 const USAGE = 'todo needs JSON {"ops":[...]}, as the first argument or on stdin. Fix: pass ops: [{"op":"start","item":"1.1"}].';
@@ -460,6 +498,21 @@ function runCli() {
     return 1;
   }
 
+  const lock = acquireLock(sessionId);
+  if (lock === null) {
+    console.error('todo: the todo list is locked by another call; repeat the call.');
+    return 1;
+  }
+  try {
+    return applyOps(sessionId, ops);
+  } finally {
+    closeSync(lock.fd);
+    unlinkSync(lock.file);
+  }
+}
+
+// Loads the list, applies the ops and saves the result; runCli holds the lock around this call.
+function applyOps(sessionId, ops) {
   const start = loadState(sessionId);
   let working = structuredClone(start);
   const applied = [];

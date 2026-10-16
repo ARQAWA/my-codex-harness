@@ -31,4 +31,10 @@ assert.ok(agents.includes('node tests/run.mjs'));
 assert.ok(agents.includes('WORKFLOW-MANIFEST.md'));
 assert.ok(existsSync(path.join(root, 'WORKFLOW-MANIFEST.md')));
 
+const prompt = read('new-model-instructions.md');
+assert.ok(!prompt.includes('it is fine to explore other options to make the edit'), 'prompt: edits only through apply_patch');
+assert.ok(!prompt.includes('when scripting is more efficient'), 'prompt: no scripted edits');
+const design = read('SCOPE-FOCUS-DESIGN.md').replace(/\s+/g, ' ');
+assert.ok(!design.includes('две проверки Spotty в Plan mode'), 'design: removed Plan mode Spotty checks');
+
 console.log('PASS: repository plugin, install and policy consistency.');

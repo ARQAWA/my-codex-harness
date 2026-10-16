@@ -6,6 +6,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const suites = [
   'plugins/scope-focus/tests/merged_focus.test.mjs',
   'tests/repository_consistency.test.mjs',
+  'tests/boundaries.test.mjs',
 ];
 let failed = false;
 

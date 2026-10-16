@@ -272,7 +272,9 @@ my-omp-harness. Различать предложение, согласован�
 картинок; ссылки на файлы даны по правилу Codex. Убраны также правило о
 заголовках, разрешение форматирования в длинном плане, пункт о расширении
 тестов, 2–4 раздела в ответе, «suggest follow ups» и интервал обновлений
-«every 30s»: они спорят с Clear Communication и `codex-tools`.
+«every 30s»: они спорят с Clear Communication и `codex-tools`. По той же
+причине правило правки файлов требует только `apply_patch`, без правок
+скриптом, как в `codex-tools`.
 Правила Gold Standard, todo-списка, Goal, review и субагентов подаёт Scope Focus;
 механика инструментов Codex находится в skill `codex-tools`.
 
