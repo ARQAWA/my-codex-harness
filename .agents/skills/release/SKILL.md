@@ -41,7 +41,7 @@ clone on `master`.
    once if no valid result exists for the changed code, configuration or
    document contracts it tests; fix a revealed failure and rerun its check.
    Apply [finalize-work](../finalize-work/SKILL.md): installed copies, one
-   combined class review of requirements and release documentation for
+   combined class review of the task agreement and release documentation for
    small/large work, a diff-only Spotty for micro unless the due audit covers
    it, then the scheduled audit. Run independent checks in parallel on a
    frozen result, fix all admitted findings in one batch and repeat only

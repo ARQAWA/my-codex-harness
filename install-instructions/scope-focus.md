@@ -12,7 +12,7 @@ Skills:
 |---|---|
 | `gold-standard` | рабочие принципы: точный scope, кратчайший путь, проверка чтением |
 | `codex-tools` | механика инструментов Codex: лимиты `exec`, code mode, `apply_patch`, CLI чтения `tools/read.cjs` |
-| `main-workflow` | шаг требований, классы работы micro/small/large, план `update_plan`, native Goal, проверки Plan mode |
+| `main-workflow` | шаг согласования, классы работы micro/small/large (ответ или файл-отчёт без правок проекта и настроек без review по классу), план `update_plan`, native Goal, проверки Plan mode |
 | `subagents`, `subagent-brief` | роли агентов и брифы `code_writer` и `shell_runner` |
 | `clear-communication` | короткие ответы с главным первым, вопросы в чате |
 | `light-review-cycle`, `blind-review-cycle`, `high-review-cycle` | слепой review на цитатах со Spotty, Smarty и Bossy |

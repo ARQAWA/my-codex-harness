@@ -68,10 +68,9 @@ is short and easy to read.
 
 When the user must approve or choose, give your proposal, its reason and the
 real alternatives with what each would change, because he decides from them;
-what the user said himself needs no reason. A requirement list before a
-confirmation question, a plan for approval, a goal to accept and a comparison
-or set of options the user asked for keep every item, outside the
-twelve-sentence limit. They still open with one bold sentence that carries the
+what the user said himself needs no reason. A plan for approval, a goal to
+accept and a comparison or set of options the user asked for keep every item,
+outside the twelve-sentence limit. They still open with one bold sentence that carries the
 main point, and each item stays short.
 
 ## Questions
