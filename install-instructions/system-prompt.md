@@ -6,7 +6,8 @@
 
 [`new-model-instructions.md`](../new-model-instructions.md) — RC2
 `gpt-6.1-sol-rc2.md` из my-omp-harness (`research/cursor/remaster/prompts`,
-коммит `9b9002a`), перенесённый под Codex. Модель названа `GPT Model`, продукт —
+коммит `9b9002a`; теперь в [cursor-pi](https://github.com/ARQAWA/cursor-pi)),
+перенесённый под Codex. Модель названа `GPT Model`, продукт —
 Codex; инструменты и рамка OMP и Cursor, которых нет в Codex, убраны или
 заменены аналогами Codex.
 Четыре абзаца об удержании и завершении задачи перенесены дословно из
