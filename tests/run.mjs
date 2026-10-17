@@ -7,6 +7,7 @@ const suites = [
   'plugins/scope-focus/tests/merged_focus.test.mjs',
   'tests/repository_consistency.test.mjs',
   'tests/boundaries.test.mjs',
+  'tests/session_decisions.test.mjs',
 ];
 let failed = false;
 

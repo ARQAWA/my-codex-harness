@@ -1,0 +1,11 @@
+[
+  {"match": "Сохраняй отчёты в папке reports/.", "exact": true, "op": "add", "text": "Сохранять отчёты в папке reports/.", "quote": "Сохраняй отчёты в папке reports/."},
+  {"match": "1a", "exact": true, "op": "add", "text": "Формат отчётов: Markdown.", "quote": "1a", "confirmed": "1a) Markdown"},
+  {"match": "Формат отчётов теперь JSON, а не Markdown.", "exact": true, "op": "replace", "targetQuote": "1a", "text": "Формат отчётов: JSON.", "quote": "Формат отчётов теперь JSON, а не Markdown."},
+  {"match": "Сделай alpha.md, beta.md и gamma.md в папке results/.", "exact": true, "op": "add", "text": "Сделай alpha.md в папке results/.", "quote": "alpha.md"},
+  {"match": "Сделай alpha.md, beta.md и gamma.md в папке results/.", "exact": true, "op": "add", "text": "Сделай beta.md в папке results/.", "quote": "beta.md"},
+  {"match": "Сделай alpha.md, beta.md и gamma.md в папке results/.", "exact": true, "op": "add", "text": "Сделай gamma.md в папке results/.", "quote": "gamma.md"},
+  {"match": "Gamma отменяем.", "exact": true, "op": "cancel", "targetQuote": "gamma.md", "text": "", "quote": "Gamma отменяем."},
+  {"match": "Отмени правило про папку reports/.", "exact": true, "op": "cancel", "targetQuote": "Сохраняй отчёты в папке reports/.", "text": "", "quote": "Отмени правило про папку reports/."},
+  {"match": "Отмени формат JSON, верни Markdown.", "exact": true, "op": "cancel", "targetQuote": "Формат отчётов теперь JSON, а не Markdown.", "text": "", "quote": "Отмени формат JSON, верни Markdown."}
+]

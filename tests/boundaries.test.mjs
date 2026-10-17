@@ -9,6 +9,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const P = path.join(root, 'plugins', 'scope-focus');
 const todoCli = path.join(P, 'tools', 'todo.cjs');
 const readCli = path.join(P, 'tools', 'read.cjs');
+const decisionShim = path.join(root, 'tests', 'fixtures', 'stub-decisions-shim.cjs');
 const failures = [];
 const dirs = [];
 
@@ -94,7 +95,7 @@ await check('todo hook: empty and invalid stdin are silent', () => {
 await check('todo hook: reminder, snapshot, subagent skip, Stop once', () => {
   const home = tmpDir();
   const sid = 'sess-1';
-  const env = { ...process.env, CODEX_HOME: home };
+  const env = { ...process.env, CODEX_HOME: home, NODE_OPTIONS: `--require ${decisionShim}` };
   const prompt = extra => JSON.stringify({ session_id: sid, turn_id: 't', hook_event_name: 'UserPromptSubmit', prompt: 'p', ...extra });
   const stop = extra => JSON.stringify({ session_id: sid, turn_id: 't', hook_event_name: 'Stop', stop_hook_active: false, last_assistant_message: 'x', ...extra });
 

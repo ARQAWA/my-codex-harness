@@ -13,14 +13,24 @@ try {
 }
 
 const main = () => {
+  if (process.env.SCOPE_FOCUS_DECISION_RECORDER === '1') return;
   if (typeof input.agent_id === 'string' && input.agent_id !== '') return;
   if (typeof input.session_id !== 'string' || input.session_id === '') return;
   const { allItems, isOpen, loadState, snapshot, TODO_REMINDER } = require(join(__dirname, '..', 'tools', 'todo.cjs'));
   switch (input.hook_event_name) {
     case 'UserPromptSubmit': {
+      let memory = '';
+      try {
+        const decisions = require(join(__dirname, '..', 'tools', 'decisions.cjs'));
+        decisions.updatePrompt({ sessionId: input.session_id, turnId: input.turn_id, prompt: input.prompt, transcriptPath: input.transcript_path });
+        memory = decisions.memoryText(input.session_id);
+      } catch (error) {
+        process.stdout.write(JSON.stringify({ decision: 'block', reason: `Session decisions were not recorded (${error.message}). The message was not sent; repeat it after fixing the cause.` }));
+        break;
+      }
       const state = loadState(input.session_id);
       const open = allItems(state).some((entry) => isOpen(entry.item.status));
-      process.stdout.write(open ? snapshot(state) : TODO_REMINDER);
+      process.stdout.write([memory, open ? snapshot(state) : TODO_REMINDER].filter((part) => part !== '').join('\n\n'));
       break;
     }
     case 'Stop': {

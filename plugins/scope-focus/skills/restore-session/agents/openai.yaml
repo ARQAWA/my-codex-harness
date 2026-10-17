@@ -1,0 +1,6 @@
+interface:
+  display_name: "Restore Session"
+  short_description: "Rebuild decisions from the full saved history, then the todo"
+  default_prompt: "Use $restore-session to restore this session's decisions and remaining todo from its full saved history."
+policy:
+  allow_implicit_invocation: false

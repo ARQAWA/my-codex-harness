@@ -31,8 +31,8 @@
           {
             "type": "command",
             "command": "node -e \"require(require('node:path').join(process.env.PLUGIN_ROOT,'hooks','todo.cjs'))\"",
-            "timeout": 7,
-            "additionalContextLimit": 16384
+            "timeout": 180,
+            "additionalContextLimit": 65536
           }
         ]
       }

@@ -57,7 +57,16 @@ Hook `SessionStart` подаёт root Main Gold Standard, `codex-tools`,
 в `<CODEX_HOME>/scope-focus-todo`, hook `UserPromptSubmit` подаёт его или
 напоминание создать, hook `Stop` один раз за ход возвращает модель к пунктам
 `pending` и `in_progress`; всего hooks четыре. Вызов todo CLI Main делает сам, как
-CLI чтения. Root Main ведёт todo-список для любой задачи, кроме одного ответа или одного
+CLI чтения. Сессионные решения хранятся отдельно в
+`<CODEX_HOME>/scope-focus-decisions`: `UserPromptSubmit` перед подачей сообщения
+обновляет их одним recorder `gpt-6.1-sol / low` через штатный `codex exec`,
+без фильтра и Anthropic. Вложенный recorder работает без hooks и plugins;
+сбой блокирует сообщение. `SessionStart` подаёт сохранённый реестр и пути
+decisions/history CLI только root Main. `$restore-session` восстанавливает
+решения из полной исходной истории до compaction, затем вызывает
+`$restore-todo`: Main сопоставляет историю и выполненную работу и составляет
+оставшийся список. Восстановление не разрешает выполнение восстановленных
+задач. Root Main ведёт todo-список для любой задачи, кроме одного ответа или одного
 короткого действия, и всегда для работы с review. Для задачи из нескольких
 зависимых этапов Main сам ставит native Goal. Перед работой с изменениями,
 кроме точечных правок с очевидным смыслом (micro), Main спрашивает пользователя

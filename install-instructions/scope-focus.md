@@ -17,6 +17,8 @@ Skills:
 | `clear-communication` | русский язык, формат ответов и вопросов; частоту обновлений задаёт системный промпт |
 | `light-review-cycle`, `blind-review-cycle`, `high-review-cycle` | слепой review на цитатах со Spotty, Smarty и Bossy |
 | `define-goal` | `$define-goal`: цель с цитатами, старт без «го» при отсутствии вопросов, review перед завершением |
+| `restore-session` | `$restore-session`: восстановить решения из полной сохранённой истории, затем вызвать сборку todo |
+| `restore-todo` | `$restore-todo`: Main сопоставляет историю, решения и выполненную работу и восстанавливает оставшиеся задачи |
 
 Профили агентов в `agents/`:
 
@@ -32,8 +34,8 @@ Skills:
 (startup, resume, clear, compact) — root Main получает Gold Standard,
 `codex-tools` с путём CLI чтения, `main-workflow`, `subagents` и
 `clear-communication`; `SubagentStart` — субагент получает только
-`codex-tools` с путём CLI чтения; root Main получает ещё путь todo CLI. У `SessionStart` `additionalContextLimit = 65536`, у `SubagentStart` 32768, у `UserPromptSubmit` 16384.
-`communication.cjs` читает источники из установленного пакета и ничего не записывает.
+`codex-tools` с путём CLI чтения; root Main получает ещё пути todo, decisions и history CLI и сохранённые решения. У `SessionStart` и `UserPromptSubmit` `additionalContextLimit = 65536`, у `SubagentStart` 32768.
+`communication.cjs` читает источники и реестр из установленного пакета и Codex home, ничего не записывает.
 Подача не гарантирует следование модели.
 
 Собственный todo-список root Main ведёт CLI `tools/todo.cjs`: агент вызывает его
@@ -42,8 +44,29 @@ Skills:
 hooks читают этот файл через `hooks/todo.cjs`: `UserPromptSubmit` подаёт список
 с открытыми пунктами или напоминание создать его, `Stop` один раз за ход
 возвращает модель к работе, пока есть пункты `pending` или `in_progress`; пункт
-`blocked` ход не держит. События субагентов `todo.cjs` пропускает, hooks ничего
-не пишут, запись делает только CLI.
+`blocked` ход не держит. События субагентов `todo.cjs` пропускает.
+
+Перед подачей нового сообщения `UserPromptSubmit` обновляет решения через
+`tools/decisions.cjs`. Один recorder на `gpt-6.1-sol / low`, без фильтра,
+вызывает штатный `codex exec` с отключёнными hooks и plugins, во временном
+каталоге и в read-only sandbox. Используются действующие вход и конфигурация
+Codex, настройки не переписываются. Реестр лежит в
+`<CODEX_HOME>/scope-focus-decisions/decisions-<id сессии>.json`;
+`tools/decisions.cjs show` выводит его в читаемом виде с цитатами и источниками.
+При ошибке recorder сообщение блокируется; `Stop` модель не вызывает.
+
+`tools/session-history.cjs` читает исходные rollout из `sessions` и
+`archived_sessions`, включая сообщения до compaction. `$restore-session`
+сначала пересобирает решения и подаёт их в контекст Main, затем вызывает
+`$restore-todo`: Main читает всю
+историю постранично и восстанавливает только оставшуюся согласованную работу.
+Чтение идёт по неизменяемому снимку исходной истории на момент запуска,
+чтобы новые записи самого восстановления не расширяли его вход.
+Снимок и его источник указаны в реестре; прогресс прерванного replay сохраняется
+отдельно от действующих решений.
+Восстановление не запускает эту работу. Чужая сессия выбирается явно и не
+перезаписывает память текущей. Отсутствующая исходная история не заменяется
+пересказами и не объявляется восстановленной.
 
 Системный промпт — отдельный компонент: [system-prompt.md](system-prompt.md).
 
@@ -52,6 +75,9 @@ hooks читают этот файл через `hooks/todo.cjs`: `UserPromptSub
 Нужны Codex CLI с поддержкой плагинов и hooks и Node.js. Поддерживаются macOS,
 Linux и Windows; в Windows используется только Git Bash, без PowerShell.
 Hooks должны быть разрешены и доверены по текущим определениям.
+Для recorder нужен доступ к `gpt-6.1-sol` через текущую конфигурацию Codex;
+отдельный Anthropic и его ключ не нужны. Сжатые rollout `.jsonl.zst` требуют
+Node.js с `zlib.zstdDecompressSync`.
 
 ## Первая установка
 
@@ -85,7 +111,8 @@ hooks Scope Focus этого пакета. После штатного review/tr
 
 На целевой ОС проверь: пакет установлен и включён; пять профилей в
 `<CODEX_HOME>/agents` совпадают с файлами пакета; в пакете есть
-`hooks/communication.cjs`, `hooks/todo.cjs`, `tools/read.cjs`, `tools/todo.cjs`
+`hooks/communication.cjs`, `hooks/todo.cjs`, `tools/read.cjs`, `tools/todo.cjs`,
+`tools/decisions.cjs`, `tools/session-history.cjs`, `prompts/decision-recorder.md`
 и `SKILL.md` всех skills из состава; по `hooks/list` все четыре hooks включены, доверены и
 ссылаются на установленный пакет. На Windows используй Git Bash. Запросы к моделям и
 пробные задачи в проверку не входят.
