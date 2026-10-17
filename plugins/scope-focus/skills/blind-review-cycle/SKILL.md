@@ -1,6 +1,6 @@
 ---
 name: blind-review-cycle
-description: "Review cycle with smarty on explicit invocation or for the completion check of large work; the shared contract of all three review cycles."
+description: "Review cycle with smarty on explicit invocation or for the completion check of large work; the shared contract of Light Review Cycle (spotty) and High Review Cycle (bossy): Main and the reviewer work as one team for the user's agreement, and every finding and rejection rests on verbatim quotes."
 ---
 
 # Blind Review Cycle

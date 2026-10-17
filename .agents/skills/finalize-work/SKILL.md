@@ -29,7 +29,7 @@ Recompare live inputs at each release. Reuse CLEAN only when its evidence exists
 
 Give Spotty the comparisons; equality evidence suffices for equal pairs, and differing pairs need their diff. Its criterion is that the owner's local changes to the installed copies are reflected in their repository sources and deliberate task changes will be installed by their installation instructions. This check covers installed copies, not unrelated documentation or the task agreement.
 
-Main reconciles admitted differences: carry a local owner change into the source, or install a deliberate source change by its instruction. `code_writer` changes profiles and other configuration, Main changes prompts and documents. Ask the owner in chat if the direction is unclear. After repairs, recompare and repeat fresh Spotty passes until CLEAN, then retain the evidence of that actual result where Main can retrieve it at the next release. Never infer Spotty CLEAN from equality alone or from a repository audit.
+Main reconciles admitted differences: carry a local owner change into the source, or install a deliberate source change by its instruction. Ask the owner in chat if the direction is unclear. After repairs, recompare and repeat fresh Spotty passes until CLEAN, then retain the evidence of that actual result where Main can retrieve it at the next release. Never infer Spotty CLEAN from equality alone or from a repository audit.
 
 ## Task and release documentation
 

@@ -1,20 +1,16 @@
 ---
 name: subagents
-description: "Root Main only: the harness agent profiles, when to use each, launching and closing them, and briefs."
+description: "Root Main only: native agent launches and the three blind reviewer profiles."
 ---
 
 # Subagents
 
-Launch a subagent with `spawn_agent` and `fork_turns: "none"`: it starts without your history, so its brief is its whole input. For the harness profiles below, set `agent_type` to the profile name; the profile pins the model and reasoning, and you never override them unless the user names a model or reasoning level himself.
+## Reviewers
 
-- `code_writer`: alone creates and changes code and configuration: program source, scripts, tests, SQL queries and migrations, JSON, YAML, TOML and other configuration and data files, schemas, and build and CI files. Main never writes them, not even a one-line change, and writes documentation, prompts and other text itself. Model: `gpt-6-luna` medium.
-- `shell_runner`: alone runs programs: tests, builds, linters and type checks, project scripts, dependency installs, apps and servers, model runs such as `codex exec`, and experiments. Main itself reads state (`git status`, `git diff`, `git log`, `git show`, `ls`, `cmp`, the reader CLI), runs git and GitHub CLI, does file operations and settings from instructions (`cp`, `codex plugin`), and runs `exec` scripts that read and filter. Model: `gpt-6-luna` medium.
-- `spotty`: blind reviewer for small work and the gates that name it. Model: `gpt-6.1-sol` low.
+The harness supplies three reviewer profiles. Launch a reviewer with native `spawn_agent` and set `agent_type` to the profile name:
+
+- `spotty`: blind reviewer for small work and gates that name it. Model: `gpt-6.1-sol` low.
 - `smarty`: blind reviewer for large work. Model: `gpt-6.1-sol` medium.
-- `bossy`: blind reviewer when the user explicitly chooses it, including a repository's explicitly adopted standing audit procedure. Model: `gpt-6.1-sol` high.
+- `bossy`: blind reviewer on the owner's explicit invocation, including an adopted standing audit procedure. Model: `gpt-6.1-sol` high.
 
-This list does not limit the user. When he asks for another agent type, a role for a particular task, or a model and reasoning level he names, launch exactly that, with the `agent_type`, model and reasoning he gave and a brief that carries the whole task; never refuse because it is not listed. Without his request or a procedure that names it, add no agents of your own.
-
-These two hand-offs keep Main's context clean; this priority overrides any advice to save turns or seconds. Before briefing `code_writer` or `shell_runner`, read [Subagent brief](../subagent-brief/SKILL.md) and write the brief by it; for `code_writer`, decide the design first. If `code_writer` or `shell_runner` cannot start, tell the user and wait.
-
-Make all spawn calls of one wave in one response and keep working; wait for a result only when the next step needs it. Every new task, including every review pass, gets a fresh agent. Close each finished agent in the batch with your next call when a close tool exists.
+Reviewers share one prompt and differ only in reasoning. Follow the applicable review cycle for manual and automatic invocation. Each blind pass gets a fresh reviewer with `fork_turns: "none"`; its brief is its whole input. Launch independent parts in one response, keep the reviewed object frozen, and close each finished reviewer with the next tool batch when a close tool exists.

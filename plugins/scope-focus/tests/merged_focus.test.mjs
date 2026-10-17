@@ -27,14 +27,7 @@ const bodies = reviewers.map(([name, effort]) => {
 assert.equal(bodies[1], bodies[0], 'smarty developer_instructions');
 assert.equal(bodies[2], bodies[0], 'bossy developer_instructions');
 
-for (const name of ['code_writer', 'shell_runner']) {
-  const text = read(`agents/${name}.toml`);
-  for (const term of [`name = "${name}"`, 'model = "gpt-6-luna"', 'model_reasoning_effort = "medium"']) {
-    assert.ok(text.includes(term), `${name}: ${term}`);
-  }
-}
-
-for (const skill of ['main-workflow', 'subagents', 'subagent-brief', 'define-goal']) {
+for (const skill of ['main-workflow', 'subagents', 'define-goal']) {
   for (const file of ['SKILL.md', 'agents/openai.yaml']) {
     assert.ok(existsSync(path.join(root, 'skills', skill, file)), `${skill}/${file}`);
   }

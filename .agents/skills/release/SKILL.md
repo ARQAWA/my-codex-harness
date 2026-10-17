@@ -20,8 +20,7 @@ during the work go to the task branch and are not a release. «Установи�
 «обновить» without them order installation only, by `INSTALL_FOR_AGENTS.md`,
 without a merge or a push.
 Every release reuses completed steps whose checked inputs and grounds still
-match. Main hands every program run below to `shell_runner` and keeps only git,
-`gh`, `codex plugin`, file copies and reading scripts in its own calls.
+match.
 
 `<task>` is the task branch, `<worktree>` its worktree, and `<clone>` the main
 clone on `master`.
@@ -46,7 +45,7 @@ clone on `master`.
    it, then the scheduled audit. Run independent checks in parallel on a
    frozen result, fix all admitted findings in one batch and repeat only
    affected checks or parts. Commit fixes to `<task>`.
-4. If `plugins/scope-focus` changed, have `shell_runner` run
+4. If `plugins/scope-focus` changed, run
    `node tools/update-plugin-cachebuster.mjs scope-focus` once in `<worktree>`;
    Main commits the manifest to `<task>`. The version bump is metadata and needs
    no new review.

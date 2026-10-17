@@ -1,6 +1,0 @@
-interface:
-  display_name: "Restore Todo"
-  short_description: "Rebuild the remaining todo from the full saved session and its decisions"
-  default_prompt: "Use $restore-todo to rebuild the remaining todo of this session from its full saved history."
-policy:
-  allow_implicit_invocation: false

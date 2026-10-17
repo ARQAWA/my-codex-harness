@@ -100,6 +100,9 @@ function itemSpec(spec) {
   const title = (typeof spec === 'string' ? spec : (spec.title ?? '')).trim();
   if (title === '') throw new OpError('an item has no title', 'give every item a title');
   const plan = typeof spec === 'string' ? undefined : spec.plan;
+  if (plan?.length && !(Array.isArray(plan) && plan.every((step) => typeof step === 'string'))) {
+    throw new OpError(`plan of item "${title}" is not a list of strings`, 'pass plan: ["first step", "second step"], or drop plan');
+  }
   return plan?.length ? { title, plan } : { title };
 }
 
@@ -310,8 +313,10 @@ function applyOp(next, op, report) {
       }
       const total = plan.steps.length;
       if (op.step !== undefined) {
-        if (op.step > total) throw new OpError(`step ${op.step} is outside 1..${total}`, `pass step from 1 to ${total}, or omit step to move on by one`);
-        plan.current = op.step;
+        const step = asNumber(op.step);
+        if (step === undefined) throw new OpError('step must be a number', `pass step from 1 to ${total}, or omit step to move on by one`);
+        if (step <= 0 || step > total) throw new OpError(`step ${op.step} is outside 1..${total}`, `pass step from 1 to ${total}, or omit step to move on by one`);
+        plan.current = step;
       } else {
         plan.current = Math.min(plan.current + 1, total + 1);
       }
@@ -382,15 +387,23 @@ function snapshot(next) {
   return lines.join('\n');
 }
 
-// Plans are kept only for items that still exist.
+// The finite number a step counter holds; a numeric string, as an older step op saved it, counts as that number.
+function asNumber(value) {
+  const number = typeof value === 'string' && value.trim() !== '' ? Number(value) : value;
+  return typeof number === 'number' && Number.isFinite(number) ? number : undefined;
+}
+
+// Plans are kept only for items that still exist; a kept plan must have the saved shape.
 function livePlans(raw, phases) {
   const plans = new Map();
-  if (typeof raw !== 'object' || raw === null) return plans;
   const live = new Set(phases.flatMap((phase) => phase.tasks.map((item) => keyOf(phase.name, item.content))));
   for (const [key, plan] of Object.entries(raw)) {
-    if (!plan || !live.has(key)) continue;
-    if (!Array.isArray(plan.steps) || plan.steps.length === 0 || typeof plan.current !== 'number') continue;
-    plans.set(key, { steps: plan.steps, current: plan.current });
+    if (!live.has(key)) continue;
+    const current = asNumber(plan?.current);
+    if (!Array.isArray(plan?.steps) || plan.steps.length === 0 || !plan.steps.every((step) => typeof step === 'string') || current === undefined) {
+      throw new Error('todo list plan has an unexpected shape; it was not changed');
+    }
+    plans.set(key, { steps: plan.steps, current });
   }
   return plans;
 }
@@ -411,16 +424,26 @@ function stateFile(sessionId) {
   return join(stateDir(), `todo-${sessionId.replace(/[^A-Za-z0-9_.-]/g, '_')}.json`);
 }
 
-// A missing or invalid file gives an empty list.
+// Only a missing file means an empty list. A file that cannot be read, is not JSON or has another shape throws
+// and is left alone, so no later save can replace the list that was there.
 function loadState(sessionId) {
+  let text;
+  try {
+    text = readFileSync(stateFile(sessionId), 'utf8');
+  } catch (error) {
+    if (error.code === 'ENOENT') return { phases: [], plans: new Map() };
+    throw new Error(`todo list of session ${sessionId} cannot be read (${error.code || 'error'}); it was not changed`);
+  }
   let data;
   try {
-    data = JSON.parse(readFileSync(stateFile(sessionId), 'utf8'));
+    data = JSON.parse(text);
   } catch {
-    return { phases: [], plans: new Map() };
+    throw new Error(`todo list of session ${sessionId} is not valid JSON; it was not changed`);
   }
-  if (typeof data !== 'object' || data === null || !isPhases(data.phases)) return { phases: [], plans: new Map() };
-  return { phases: data.phases, plans: livePlans(data.plans, data.phases) };
+  const shaped = typeof data === 'object' && data !== null && isPhases(data.phases)
+    && (data.plans === undefined || (typeof data.plans === 'object' && data.plans !== null && !Array.isArray(data.plans)));
+  if (!shaped) throw new Error(`todo list of session ${sessionId} has an unexpected shape; it was not changed`);
+  return { phases: data.phases, plans: livePlans(data.plans ?? {}, data.phases) };
 }
 
 function saveState(sessionId, next) {
@@ -436,16 +459,21 @@ const LOCK_STALE_MS = 10000;
 const LOCK_RETRY_MS = 20;
 const pause = new Int32Array(new SharedArrayBuffer(4));
 
-// Takes the session's lock file, waiting while another call holds it; null after LOCK_WAIT_MS.
+// Takes the session's lock file, waiting while a live call holds it; null after LOCK_WAIT_MS. The file records the owner's PID.
 function acquireLock(sessionId) {
   const file = `${stateFile(sessionId)}.lock`;
   mkdirSync(stateDir(), { recursive: true });
   const deadline = Date.now() + LOCK_WAIT_MS;
   for (;;) {
+    let fd;
     try {
-      return { file, fd: openSync(file, 'wx') };
+      fd = openSync(file, 'wx');
     } catch (error) {
       if (error.code !== 'EEXIST') throw error;
+    }
+    if (fd !== undefined) {
+      writeFileSync(fd, String(process.pid));
+      return { file, fd };
     }
     if (removeStaleLock(file)) continue;
     if (Date.now() >= deadline) return null;
@@ -453,10 +481,23 @@ function acquireLock(sessionId) {
   }
 }
 
-// Removes a lock older than LOCK_STALE_MS. Returns true when the lock is gone, so the caller retries at once.
+// Removes a lock whose owner is gone: its PID no longer runs, or it records no PID and is older than
+// LOCK_STALE_MS. A lock of a live owner stays whatever its age. Returns true when the lock is gone, so the
+// caller retries at once.
 function removeStaleLock(file) {
   try {
-    if (Date.now() - statSync(file).mtimeMs <= LOCK_STALE_MS) return false;
+    const owner = Number(readFileSync(file, 'utf8'));
+    if (Number.isInteger(owner) && owner > 0) {
+      try {
+        process.kill(owner, 0);
+        return false;
+      } catch (probe) {
+        // Only "no such process" proves the owner is gone; any other error keeps the lock.
+        if (probe.code !== 'ESRCH') return false;
+      }
+    } else if (Date.now() - statSync(file).mtimeMs <= LOCK_STALE_MS) {
+      return false;
+    }
     unlinkSync(file);
     return true;
   } catch (error) {
@@ -549,7 +590,12 @@ function applyOps(sessionId, ops) {
 }
 
 if (require.main === module) {
-  process.exitCode = runCli();
+  try {
+    process.exitCode = runCli();
+  } catch (error) {
+    process.stderr.write(`todo: ${error.message}\n`);
+    process.exitCode = 1;
+  }
 }
 
 module.exports = { loadState, allItems, isOpen, snapshot, TODO_REMINDER };

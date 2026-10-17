@@ -9,7 +9,6 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const P = path.join(root, 'plugins', 'scope-focus');
 const todoCli = path.join(P, 'tools', 'todo.cjs');
 const readCli = path.join(P, 'tools', 'read.cjs');
-const decisionShim = path.join(root, 'tests', 'fixtures', 'stub-decisions-shim.cjs');
 const failures = [];
 const dirs = [];
 
@@ -55,10 +54,10 @@ await check('communication: SubagentStart payload', () => {
     transcript_path: null,
     cwd: '/tmp',
     hook_event_name: 'SubagentStart',
-    model: 'gpt-6-luna',
+    model: 'gpt-6.1-sol',
     permission_mode: 'bypassPermissions',
     agent_id: 'a',
-    agent_type: 'shell_runner',
+    agent_type: 'default',
   }));
   assert.equal(r.status, 0, r.stderr);
   assert.ok(r.stdout.includes('# Codex tool mechanics'), '# Codex tool mechanics');
@@ -95,7 +94,7 @@ await check('todo hook: empty and invalid stdin are silent', () => {
 await check('todo hook: reminder, snapshot, subagent skip, Stop once', () => {
   const home = tmpDir();
   const sid = 'sess-1';
-  const env = { ...process.env, CODEX_HOME: home, NODE_OPTIONS: `--require ${decisionShim}` };
+  const env = { ...process.env, CODEX_HOME: home };
   const prompt = extra => JSON.stringify({ session_id: sid, turn_id: 't', hook_event_name: 'UserPromptSubmit', prompt: 'p', ...extra });
   const stop = extra => JSON.stringify({ session_id: sid, turn_id: 't', hook_event_name: 'Stop', stop_hook_active: false, last_assistant_message: 'x', ...extra });
 
