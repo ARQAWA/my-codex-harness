@@ -190,7 +190,9 @@ location, format или value секретов.
 зависимости. Репозиторный `AGENTS.md` описывает разработку и находится вне
 процедуры установки. Компонентов два: Scope Focus
 (`install-instructions/scope-focus.md`) и системный промпт
-(`install-instructions/system-prompt.md`). Все инструкции сохраняют общий
+(`install-instructions/system-prompt.md`). После установки `INSTALL_FOR_AGENTS.md`
+выполняет зачистку следов прежних версий по `LEGACY-CLEANUP.md`. Все
+инструкции сохраняют общий
 порядок разделов: состав, требования, первая установка, проверка после
 установки, обновление.
 
