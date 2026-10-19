@@ -1,0 +1,6 @@
+interface:
+  display_name: "High review"
+  short_description: "Review уровня high текущей работы"
+  default_prompt: "Use $highreview to review the current work."
+policy:
+  allow_implicit_invocation: false

@@ -8,6 +8,8 @@ const USAGE = 'usage: node read.cjs [--sizes [--files]] [--budget N] [--from PAT
 const DEFAULT_BUDGET = 90000;
 const MAX_BUDGET = 200000;
 const MAX_LINE = 2000;
+const FIRST_READ_LINES = 1000;
+const READ_CHAR_LIMIT = 100000;
 const WALK_SKIP = new Set(['.git', 'node_modules', 'target', 'dist', 'build', '.venv', 'venv', '__pycache__']);
 const LOCKFILES = new Set(['package-lock.json', 'yarn.lock', 'pnpm-lock.yaml', 'Cargo.lock', 'poetry.lock', 'uv.lock', 'Gemfile.lock', 'composer.lock']);
 const TEST_DIRS = new Set(['test', 'tests', '__tests__', 'spec', 'specs']);
@@ -181,6 +183,11 @@ function take(entries, maxBytes) {
   return n;
 }
 
+// A plain read prints only the first FIRST_READ_LINES entries of a file.
+const firstPart = entries => entries.slice(0, FIRST_READ_LINES);
+
+const charLimitError = f => new Error(`Requested content exceeds maximum allowed characters (${READ_CHAR_LIMIT} characters). The file is ${fs.statSync(path.resolve(cwd, f.path)).size} bytes. Read specific portions with --lines A-B, or search with rg.`);
+
 const skipSuffix = skip => {
   const parts = [];
   if (skip.binary) parts.push(`binary ${skip.binary}`);
@@ -193,7 +200,7 @@ function sizesText(infos, o, skip) {
   const add = (t, f) => {
     t.files++;
     t.lines += f.lines;
-    t.tok += f.tok;
+    t.tok += f.fullTok;
   };
   const fmt = (label, t) => `${label} ${t.files} files, ${t.lines} lines, ~${t.tok} tok`;
   const total = { files: 0, lines: 0, tok: 0 };
@@ -202,7 +209,7 @@ function sizesText(infos, o, skip) {
   for (const f of infos) {
     add(total, f);
     if (o.files) {
-      out.push(`${f.path} ${f.lines} lines, ~${f.tok} tok\n`);
+      out.push(`${f.path} ${f.lines} lines, ~${f.fullTok} tok\n`);
       continue;
     }
     const parts = f.path.split('/');
@@ -226,6 +233,7 @@ function linesText(infos, o) {
   if (a > f.lines) throw new Error(`${f.path} has ${f.lines} lines`);
   const b = Math.min(requested, f.lines);
   const entries = render(f.path, o).entries.filter(e => e.e >= a && e.n <= b);
+  if (entries.map(e => printLine(e, o)).join('').length > READ_CHAR_LIMIT) throw charLimitError(f);
   const n = take(entries, o.budget * 4);
   const out = [];
   if (o.clamped) out.push(`=== budget clamped to ${MAX_BUDGET} tokens\n`);
@@ -243,22 +251,36 @@ function contentText(infos, o, skip) {
     if (i < 0) throw new Error(`--from path is not in the file set: ${o.from}`);
   }
   const header = f => `=== ${f.path} (${f.lines} lines, ~${f.tok} tok)\n`;
+  // Prints the first n entries of the file's first part; returns false when that text is over the char limit, and the file is not printed.
+  const emit = (f, entries, n) => {
+    const cut = firstPart(entries);
+    const shown = cut.slice(0, n).map(e => printLine(e, o));
+    if (shown.join('').length > READ_CHAR_LIMIT) {
+      if (infos.length === 1) throw charLimitError(f);
+      out.push(header(f), `[Content exceeds ${READ_CHAR_LIMIT} characters; read it with --lines A-B ${quote(f.path)}.]\n`);
+      return false;
+    }
+    out.push(header(f), ...shown);
+    if (n < cut.length) out.push(`=== more: --lines ${cut[n - 1].e + 1}-${f.lines} ${quote(f.path)}\n`);
+    else if (entries.length > FIRST_READ_LINES) out.push(`[Use --lines ${cut[n - 1].e + 1}-${f.lines} ${quote(f.path)} to continue.]\n`);
+    return true;
+  };
   let used = 0;
   let printed = 0;
   let partial = false;
   if (i < infos.length && infos[i].tok > o.budget) {
     const f = infos[i++];
     const entries = render(f.path, o).entries;
-    const n = take(entries, o.budget * 4);
-    out.push(header(f), ...entries.slice(0, n).map(e => printLine(e, o)));
-    if (n < entries.length) out.push(`=== more: --lines ${entries[n - 1].e + 1}-${f.lines} ${quote(f.path)}\n`);
+    emit(f, entries, take(firstPart(entries), o.budget * 4));
     partial = true;
   } else {
     while (i < infos.length && used + infos[i].tok <= o.budget) {
       const f = infos[i++];
-      out.push(header(f), ...render(f.path, o).entries.map(e => printLine(e, o)));
-      used += f.tok;
-      printed++;
+      const entries = render(f.path, o).entries;
+      if (emit(f, entries, firstPart(entries).length)) {
+        used += f.tok;
+        printed++;
+      }
     }
   }
   const rest = infos.slice(i);
@@ -277,7 +299,7 @@ function main() {
     else {
       const r = render(file, o);
       if (r === null) skip.binary++;
-      else infos.push({ path: file, lines: r.lines, tok: r.tok });
+      else infos.push({ path: file, lines: r.lines, tok: tokens(firstPart(r.entries).reduce((sum, e) => sum + e.size, 0)), fullTok: r.tok });
     }
   }
   if (o.sizes) process.stdout.write(sizesText(infos, o, skip));

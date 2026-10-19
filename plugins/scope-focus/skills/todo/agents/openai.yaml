@@ -1,0 +1,6 @@
+interface:
+  display_name: "Todo"
+  short_description: "План задачи в todo CLI"
+  default_prompt: "Use $todo to keep the plan of this task in the todo list."
+policy:
+  allow_implicit_invocation: false

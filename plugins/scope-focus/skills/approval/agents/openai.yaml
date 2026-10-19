@@ -1,0 +1,6 @@
+interface:
+  display_name: "Approval"
+  short_description: "Шаг согласования и классы работы"
+  default_prompt: "Use $approval before this change."
+policy:
+  allow_implicit_invocation: false

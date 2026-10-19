@@ -6,11 +6,12 @@ const { join } = require('node:path');
 
 // Todo list of the scope-focus plugin. Run as a CLI from the Codex shell, it edits the list of the
 // current session; required as a library, it exports the read side that the hooks use.
+// The op grammar and the texts follow the omp todo tool.
 const STATUSES = ['pending', 'in_progress', 'completed', 'abandoned', 'blocked'];
 const MARK = { completed: '✓', in_progress: '●', pending: '○', blocked: '⊘', abandoned: '✗' };
 const TODO_REMINDER = [
   '<todo-reminder>',
-  'No todo items are open. Before the first action of a new task, create its list with init. Extend an unfinished list with append for continued work. Plan items before acting, mark progress during the work, and close every item at handover. A closed list is replaced for the next multi-step task. Skip the list only for one answer, one short action, or the owner\'s explicit request to work without todo.',
+  'No todo list is open. For a task that changes files or runs several stages, init its list together with your first tool calls; a question answered by reading, one answer and one short action need none.',
   '</todo-reminder>',
 ].join('\n');
 
@@ -60,8 +61,16 @@ function label(op) {
   return op.item !== undefined ? `${op.op} ${op.item}` : op.op;
 }
 
-// Drops optional fields that are empty strings or empty arrays, and a non-positive step.
+// A raw op as the failure report names it: its text, its label, or the value itself when it is no op at all.
+function opName(raw) {
+  if (typeof raw === 'string') return raw;
+  if (typeof raw === 'object' && raw !== null && !Array.isArray(raw)) return label(raw);
+  return JSON.stringify(raw);
+}
+
+// Drops optional fields that are null, empty strings or empty arrays, and a non-positive step.
 function clean(value) {
+  if (value === null) return undefined;
   if (typeof value === 'string') return value.trim() === '' ? undefined : value;
   if (typeof value === 'number') return Number.isFinite(value) && value > 0 ? value : undefined;
   if (Array.isArray(value)) {
@@ -96,21 +105,80 @@ function openList(next) {
   return allItems(next).filter((entry) => isOpen(entry.item.status)).map(show).join('; ') || 'none';
 }
 
-function itemSpec(spec) {
-  const title = (typeof spec === 'string' ? spec : (spec.title ?? '')).trim();
-  if (title === '') throw new OpError('an item has no title', 'give every item a title');
-  const plan = typeof spec === 'string' ? undefined : spec.plan;
-  if (plan?.length && !(Array.isArray(plan) && plan.every((step) => typeof step === 'string'))) {
-    throw new OpError(`plan of item "${title}" is not a list of strings`, 'pass plan: ["first step", "second step"], or drop plan');
+// An item sent as an object of the wrong shape, such as {"item": "text"}, can arrive as its JSON text.
+// Such text is read back as the item it meant.
+function parsedJson(text) {
+  const trimmed = text.trim();
+  if (!(trimmed.startsWith('{') && trimmed.endsWith('}')) && !(trimmed.startsWith('[') && trimmed.endsWith(']'))) return undefined;
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return undefined;
   }
+}
+
+const TITLE_KEYS = ['title', 'item'];
+const PLAN_KEYS = ['plan'];
+
+// True for a parsed object that names an item or a plan; other JSON-looking text, such as "[1]", stays plain text.
+function isWrapper(value) {
+  return typeof value === 'object' && value !== null && !Array.isArray(value) && [...TITLE_KEYS, ...PLAN_KEYS].some((key) => key in value);
+}
+
+// A list of step texts from a list, the JSON text of a list of texts, or an object wrapping one; undefined when any part
+// is no step, so the op fails instead of dropping it. Other bracketed text, such as "[1, 2]", stays one step.
+function stepList(value) {
+  if (typeof value === 'string') {
+    const parsed = parsedJson(value);
+    if (isTextList(parsed) && parsed.length > 0) return parsed;
+    return isWrapper(parsed) ? stepList(parsed) : [value];
+  }
+  if (Array.isArray(value)) {
+    const parts = value.map(stepList);
+    return parts.every((part) => part !== undefined) && parts.length > 0 ? parts.flat() : undefined;
+  }
+  if (isWrapper(value)) {
+    for (const key of [...PLAN_KEYS, ...TITLE_KEYS]) {
+      if (value[key] !== undefined) return stepList(value[key]);
+    }
+  }
+  return undefined;
+}
+
+function itemSpec(spec) {
+  let value = spec;
+  if (typeof value === 'string') {
+    const parsed = parsedJson(value);
+    if (isWrapper(parsed)) value = parsed;
+  }
+  let title = '';
+  let plan;
+  if (typeof value === 'string') {
+    title = value.trim();
+  } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+    const key = TITLE_KEYS.find((name) => value[name] !== undefined);
+    const inner = key === undefined ? undefined : value[key];
+    if (typeof inner === 'string' && !isWrapper(parsedJson(inner))) {
+      title = inner.trim();
+    } else if (inner !== undefined) {
+      // A wrapper such as {"item": {"title": ..., "plan": ...}}: the item is inside it.
+      const nested = itemSpec(inner);
+      title = nested.title;
+      plan = nested.plan;
+    }
+    const rawPlan = PLAN_KEYS.map((name) => value[name]).find((part) => part !== undefined);
+    if (rawPlan !== undefined) {
+      plan = stepList(rawPlan);
+      if (plan === undefined) throw new OpError(`the plan of "${title}" is not a list of steps`, 'write the plan as a list of step texts, or add it later with "plan <item>: step | step"');
+    }
+  }
+  if (title === '') throw new OpError('an item has no title', 'write items as text, e.g. "init Phase: first item | second item"');
   return plan?.length ? { title, plan } : { title };
 }
 
 function claim(titles, title) {
   const key = normalize(title);
-  if (titles.has(key)) {
-    throw new OpError(`item "${title}" is listed twice`, 'keep each title once; give one of them another title or drop it');
-  }
+  if (titles.has(key)) throw new OpError(`item "${title}" is listed twice`, 'keep each title once; give one of them another title or drop it');
   titles.add(key);
 }
 
@@ -144,10 +212,7 @@ function defaultPhase(next) {
 
 // Item by number ("2.3") or by text; several text matches resolve to the single open one.
 function locate(next, query, op) {
-  if (query === undefined) {
-    throw new OpError(`${op} needs an item`, 'pass item: "<number like 2.3 or the exact item text>"');
-  }
-  if (typeof query !== 'string') throw new OpError('item must be a string', 'pass item: "<number like 2.3 or the exact item text>"');
+  if (query === undefined) throw new OpError(`${op} needs an item`, 'name the item by number like 2.3 or by its text, e.g. "done 2.3"');
   const text = query.trim();
   const entries = allItems(next);
   if (/^\d+\.\d+$/.test(text)) {
@@ -169,12 +234,12 @@ function locate(next, query, op) {
 function resolveDefault(next, query, op) {
   if (query !== undefined) return locate(next, query, op);
   const active = allItems(next).find((entry) => entry.item.status === 'in_progress');
-  if (!active) throw new OpError(`${op} has no item and none is in progress`, 'pass item: "<number like 2.3 or the exact item text>"');
+  if (!active) throw new OpError(`${op} has no item and none is in progress`, 'name the item by number like 2.3 or by its text, e.g. "done 2.3"');
   return active;
 }
 
 function init(next, op) {
-  if (!op.list?.length) throw new OpError('init has no list', 'pass list: [{phase, items: [...]}]');
+  if (!op.list?.length) throw new OpError('init has no list', 'write "init Phase: item | item"');
   const phases = [];
   const plans = new Map();
   const names = new Set();
@@ -200,7 +265,7 @@ function init(next, op) {
 }
 
 function append(next, op) {
-  if (!op.items?.length) throw new OpError('append has no items', 'pass items: ["title", {title, plan: [...]}]');
+  if (!op.items?.length) throw new OpError('append has no items', 'write "append: item | item"');
   const specs = op.items.map((spec) => itemSpec(spec));
   const taken = new Set(allItems(next).map((entry) => normalize(entry.item.content)));
   let index = -1;
@@ -224,9 +289,7 @@ function append(next, op) {
   const phase = next.phases[index];
   const added = [];
   for (const { title, plan } of specs) {
-    if (taken.has(normalize(title))) {
-      throw new OpError(`item "${title}" already exists`, 'use the existing item by its number, or give this one another title');
-    }
+    if (taken.has(normalize(title))) throw new OpError(`item "${title}" already exists`, 'use the existing item by its number, or give this one another title');
     taken.add(normalize(title));
     phase.tasks.push({ content: title, status: 'pending' });
     if (plan) next.plans.set(keyOf(phase.name, title), { steps: plan, current: 1 });
@@ -255,7 +318,63 @@ function closedLines(next, op) {
   return lines.length > 0 ? lines : ['No closed items.'];
 }
 
+const OP_NAMES = new Set(['init', 'append', 'start', 'done', 'drop', 'block', 'unblock', 'rm', 'plan', 'step', 'closed']);
+
+// A short op written as text, "<op> [item or phase][: text]": "done 1.2", "start 1.3", "step", "step 3",
+// "block 1.4: waits for the key", "plan: first | second", "plan 2.1: first | second", "init Phase: item | item",
+// "append: item | item", "append Phase: item", "closed".
+function parseOpText(text) {
+  const colon = text.indexOf(':');
+  const head = (colon < 0 ? text : text.slice(0, colon)).trim();
+  const tail = colon < 0 ? undefined : text.slice(colon + 1).trim();
+  const [word = '', ...restWords] = head.split(/\s+/);
+  const name = word.toLowerCase();
+  if (!OP_NAMES.has(name)) {
+    throw new OpError(`unknown op "${text}"`, 'write it as "<op> [item][: text]", e.g. "done 1.2" or "plan: first | second"');
+  }
+  const rest = restWords.join(' ').trim();
+  const target = rest === '' ? undefined : rest;
+  const parts = tail === undefined ? [] : tail.split('|').map((part) => part.trim()).filter((part) => part !== '');
+  switch (name) {
+    case 'init':
+      return { op: name, list: [{ phase: target, items: parts }] };
+    case 'append':
+      return { op: name, phase: target, items: parts };
+    case 'block':
+      return { op: name, item: target, reason: tail };
+    case 'plan':
+      return { op: name, item: target, steps: parts };
+    case 'step': {
+      const words = rest === '' ? [] : rest.split(/\s+/);
+      const last = words[words.length - 1];
+      if (last !== undefined && /^\d+$/.test(last)) return { op: name, item: words.slice(0, -1).join(' ') || undefined, step: Number(last) };
+      return { op: name, item: target };
+    }
+    case 'closed':
+      return { op: name, phase: target };
+    default:
+      return { op: name, item: target ?? (tail || undefined) };
+  }
+}
+
+function isTextList(value) {
+  return Array.isArray(value) && value.every((part) => typeof part === 'string');
+}
+
+// The object form arrives as the model wrote it; a field of the wrong type fails here as an op, before any state changes.
+function checkOp(op) {
+  const wrong = (field, want) => new OpError(`${op.op} has ${field} that is not ${want}`, 'write the op as text, e.g. "done 1.2"');
+  for (const field of ['item', 'phase', 'reason']) if (op[field] !== undefined && typeof op[field] !== 'string') throw wrong(field, 'text');
+  if (op.step !== undefined && typeof op.step !== 'number') throw wrong('step', 'a number');
+  if (op.steps !== undefined && !isTextList(op.steps)) throw wrong('steps', 'a list of texts');
+  if (op.items !== undefined && !Array.isArray(op.items)) throw wrong('items', 'a list');
+  if (op.list !== undefined && (!Array.isArray(op.list) || op.list.some((group) => typeof group !== 'object' || group === null || (group.items !== undefined && !Array.isArray(group.items))))) {
+    throw wrong('list', 'a list of phases with items');
+  }
+}
+
 function applyOp(next, op, report) {
+  checkOp(op);
   switch (op.op) {
     case 'init':
       return init(next, op);
@@ -271,16 +390,16 @@ function applyOp(next, op, report) {
     }
     case 'done':
     case 'drop': {
-      const target = locate(next, op.item, op.op);
+      // Without an item, done and drop close the current one.
+      const target = resolveDefault(next, op.item, op.op);
       delete target.item.blocker;
       target.item.status = op.op === 'done' ? 'completed' : 'abandoned';
       return `${op.op === 'done' ? 'done' : 'dropped'} ${target.num}`;
     }
     case 'block': {
       const target = locate(next, op.item, 'block');
-      if (op.reason !== undefined && typeof op.reason !== 'string') throw new OpError('reason must be a string', 'pass reason: "what the item waits for"');
       const reason = op.reason?.trim();
-      if (!reason) throw new OpError('block has no reason', 'pass reason: "what the item waits for"');
+      if (!reason) throw new OpError('block has no reason', 'write "block <item>: what it waits for"');
       target.item.status = 'blocked';
       target.item.blocker = reason;
       return `blocked ${target.num}: ${reason}`;
@@ -299,8 +418,9 @@ function applyOp(next, op, report) {
       return `removed ${target.num} "${target.item.content}"`;
     }
     case 'plan': {
-      if (!op.steps?.length) throw new OpError('plan has no steps', 'pass steps: ["first step", "second step"]');
-      if (!Array.isArray(op.steps) || !op.steps.every((step) => typeof step === 'string')) throw new OpError('steps must be a list of strings', 'pass steps: ["first step", "second step"]');
+      const steps = op.steps === undefined ? undefined : stepList(op.steps);
+      if (!steps?.length) throw new OpError('plan has no steps', 'write "plan: first step | second step"');
+      op.steps = steps;
       const target = resolveDefault(next, op.item, 'plan');
       next.plans.set(itemKey(next, target), { steps: op.steps, current: 1 });
       return `plan ${target.num}: ${op.steps.length} steps`;
@@ -308,13 +428,10 @@ function applyOp(next, op, report) {
     case 'step': {
       const target = resolveDefault(next, op.item, 'step');
       const plan = next.plans.get(itemKey(next, target));
-      if (!plan) {
-        throw new OpError(`${target.num} has no plan`, `add its steps first: {op:"plan", item:"${target.num}", steps:[...]}`);
-      }
+      if (!plan) throw new OpError(`${target.num} has no plan`, `add its steps first: "plan ${target.num}: step | step"`);
       const total = plan.steps.length;
       if (op.step !== undefined) {
-        const step = asNumber(op.step);
-        if (step === undefined) throw new OpError('step must be a number', `pass step from 1 to ${total}, or omit step to move on by one`);
+        const step = op.step;
         if (step <= 0 || step > total) throw new OpError(`step ${op.step} is outside 1..${total}`, `pass step from 1 to ${total}, or omit step to move on by one`);
         plan.current = step;
       } else {
@@ -346,10 +463,10 @@ function nextLine(next) {
   const entries = allItems(next);
   if (!entries.some((entry) => isOpen(entry.item.status))) return 'All items are closed; the list leaves the context.';
   const active = entries.find((entry) => entry.item.status === 'in_progress');
-  if (!active) return 'No item is in progress; start one with {op:"start",item:"…"}.';
+  if (!active) return 'No item is in progress; start one with "start <item>".';
   const plan = next.plans.get(itemKey(next, active));
-  if (!plan) return `Next: ${active.num} "${active.item.content}" has no plan; add its steps with {op:"plan", steps:[…]}.`;
-  if (plan.current > plan.steps.length) return `All steps of ${active.num} are marked; close it with {op:"done"}.`;
+  if (!plan) return `Next: ${active.num} "${active.item.content}" has no plan; add its steps with "plan: step | step".`;
+  if (plan.current > plan.steps.length) return `All steps of ${active.num} are marked; close it with "done".`;
   return `Now: ${active.num} "${active.item.content}", step ${plan.current}/${plan.steps.length} "${plan.steps[plan.current - 1]}".`;
 }
 
@@ -367,7 +484,7 @@ function planText(plan) {
 function snapshot(next) {
   const entries = allItems(next);
   const open = entries.filter((entry) => isOpen(entry.item.status)).length;
-  const lines = ['<todo>', `Your todo list; item numbers work in every todo op. ${open} of ${entries.length} open; closed items are folded, list them with {op:"closed"}.`];
+  const lines = ['<todo>', `Your todo list; item numbers work in every todo op. ${open} of ${entries.length} open; closed items are folded, list them with "closed".`];
   next.phases.forEach((phase, p) => {
     if (phase.tasks.length === 0) {
       lines.push(`${p + 1} ${phase.name} — empty`);
@@ -506,8 +623,38 @@ function removeStaleLock(file) {
   }
 }
 
-const USAGE = 'todo needs JSON {"ops":[...]}, as the first argument or on stdin. Fix: pass ops: [{"op":"start","item":"1.1"}].';
-const NO_OPS = 'todo needs at least one op. Fix: pass ops: [{op: "start", item: "1.1"}].';
+const USAGE = `todo needs ops: text arguments such as 'done 1.2' 'plan: first | second', or JSON {"ops":[...]} as the only argument or on stdin. Fix: node todo.cjs 'start 1.1'.`;
+const NO_OPS = `todo needs at least one op. Fix: node todo.cjs 'start 1.1'.`;
+
+// Parses a JSON ops text: {"ops":[...]} or a bare array. Undefined when the text is not JSON or has no ops array.
+function parseJsonOps(text) {
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return undefined;
+  }
+  const ops = Array.isArray(parsed) ? parsed : parsed?.ops;
+  return Array.isArray(ops) ? ops : undefined;
+}
+
+// The raw ops from argv or, without arguments, from stdin. Undefined when the JSON form is invalid.
+function readOps() {
+  const args = process.argv.slice(2);
+  if (args.length > 0) {
+    if (args.length === 1 && /^[{[]/.test(args[0].trim())) return parseJsonOps(args[0].trim());
+    return args;
+  }
+  let text = '';
+  try {
+    text = readFileSync(0, 'utf8');
+  } catch {
+    // Unreadable input leaves no ops; the no-ops error below reports it.
+  }
+  const trimmed = text.trim();
+  if (/^[{[]/.test(trimmed)) return parseJsonOps(trimmed);
+  return trimmed.split('\n').map((line) => line.trim()).filter((line) => line !== '');
+}
 
 // Applies the ops in order like the todo tool does; stops at the first failing op and keeps the earlier ones.
 function runCli() {
@@ -516,24 +663,12 @@ function runCli() {
     console.error('todo: CODEX_THREAD_ID is not set; run this program from the Codex shell tool.');
     return 1;
   }
-  let text = '';
-  try {
-    text = process.argv.length > 2 ? process.argv[2] : readFileSync(0, 'utf8');
-  } catch {
-    // Unreadable input leaves no ops; the usage error below reports it.
-  }
-  let parsed;
-  try {
-    parsed = JSON.parse(text);
-  } catch {
-    parsed = undefined;
-  }
-  const rawOps = Array.isArray(parsed) ? parsed : parsed?.ops;
-  if (!Array.isArray(rawOps)) {
+  const raw = readOps();
+  if (raw === undefined) {
     console.error(USAGE);
     return 1;
   }
-  const ops = rawOps.map((raw) => clean(raw) ?? {});
+  const ops = raw.map((op) => clean(op)).filter((op) => op !== undefined);
   if (ops.length === 0) {
     console.error(NO_OPS);
     return 1;
@@ -553,20 +688,27 @@ function runCli() {
 }
 
 // Loads the list, applies the ops and saves the result; runCli holds the lock around this call.
-function applyOps(sessionId, ops) {
+function applyOps(sessionId, rawOps) {
   const start = loadState(sessionId);
   let working = structuredClone(start);
   const applied = [];
   const report = [];
   let failure;
-  for (const [index, op] of ops.entries()) {
+  for (const [index, raw] of rawOps.entries()) {
     const trial = structuredClone(working);
     try {
+      if (typeof raw !== 'string' && (typeof raw !== 'object' || raw === null || Array.isArray(raw))) {
+        throw new OpError(`op ${index + 1} is ${JSON.stringify(raw)}, not an op`, 'write it as text, e.g. "done 1.2"');
+      }
+      const op = typeof raw === 'string' ? parseOpText(raw) : raw;
       applied.push(applyOp(trial, op, report));
       working = settle(trial);
     } catch (failed) {
-      if (!(failed instanceof OpError)) throw failed;
-      failure = { index, error: failed };
+      // Malformed input that slipped past the checks fails like any op, never as a crash.
+      const error = failed instanceof OpError
+        ? failed
+        : new OpError(failed instanceof Error ? failed.message : String(failed), 'write the op as text, e.g. "done 1.2"');
+      failure = { index, error };
       break;
     }
   }
@@ -575,13 +717,14 @@ function applyOps(sessionId, ops) {
   const lines = [];
   if (applied.length > 0) lines.push(`${capitalize(applied.join('; '))}.`);
   if (failure) {
-    const parts = [`Stopped at op ${failure.index + 1} (${ops[failure.index].op}): ${failure.error.reason}. Fix: ${failure.error.fix}.`];
-    const rest = ops.slice(failure.index + 1).map((op, offset) => `op ${failure.index + 2 + offset} (${label(op)})`);
+    const parts = [`Stopped at op ${failure.index + 1} (${opName(rawOps[failure.index])}): ${failure.error.reason}. Fix: ${failure.error.fix}.`];
+    const rest = rawOps.slice(failure.index + 1).map((op, offset) => `op ${failure.index + 2 + offset} (${opName(op)})`);
     if (rest.length > 0) parts.push(`Not applied: ${rest.join(', ')}.`);
     lines.push(parts.join(' '));
     lines.push(snapshot(committed));
   } else {
     lines.push(nextLine(committed));
+    if (allItems(committed).some((entry) => isOpen(entry.item.status))) lines.push(snapshot(committed));
   }
   lines.push(...report);
   if (applied.length > 0) saveState(sessionId, committed);
@@ -598,4 +741,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { loadState, allItems, isOpen, snapshot, TODO_REMINDER };
+module.exports = { loadState, allItems, isOpen, snapshot, nextLine, TODO_REMINDER };

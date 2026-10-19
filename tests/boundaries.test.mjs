@@ -40,7 +40,7 @@ await check('communication: empty, invalid and SessionStart stdin', () => {
   for (const input of ['', 'not json', JSON.stringify({ hook_event_name: 'SessionStart', source: 'startup' })]) {
     const r = hookRun('communication.cjs', input);
     assert.equal(r.status, 0, r.stderr);
-    assert.ok(r.stdout.includes('# Gold Standard'), `${JSON.stringify(input)}: # Gold Standard`);
+    assert.ok(r.stdout.includes('# Todo'), `${JSON.stringify(input)}: # Todo`);
     assert.ok(r.stdout.includes('Todo CLI: node "'), `${JSON.stringify(input)}: Todo CLI`);
     const head = r.stdout.trimStart();
     assert.ok(!head.startsWith('{') && !head.startsWith('['), `${JSON.stringify(input)}: JSON output`);
@@ -58,12 +58,31 @@ await check('communication: SubagentStart payload', () => {
     permission_mode: 'bypassPermissions',
     agent_id: 'a',
     agent_type: 'default',
-  }));
+  }), { ...process.env, CODEX_HOME: tmpDir() });
   assert.equal(r.status, 0, r.stderr);
   assert.ok(r.stdout.includes('# Codex tool mechanics'), '# Codex tool mechanics');
   assert.ok(r.stdout.includes('Reader CLI: node "'), 'Reader CLI: node "');
   assert.ok(!r.stdout.includes('Todo CLI:'), 'Todo CLI: must be absent');
-  assert.ok(!r.stdout.includes('# Gold Standard'), '# Gold Standard must be absent');
+  assert.ok(!r.stdout.includes('# Todo'), '# Todo must be absent');
+});
+
+await check('communication: compact and resume add the open todo snapshot', () => {
+  const home = tmpDir();
+  const sid = 'snap-1';
+  const env = { ...process.env, CODEX_HOME: home };
+  const todo = todoArgv(home, sid, initTwo);
+  assert.equal(todo.status, 0, todo.stderr);
+  const run = (source, session = sid) => hookRun('communication.cjs', JSON.stringify({ hook_event_name: 'SessionStart', source, session_id: session }), env);
+  let r = run('compact');
+  assert.equal(r.status, 0, r.stderr);
+  assert.ok(r.stdout.includes('<todo>'), r.stdout);
+  r = run('resume');
+  assert.equal(r.status, 0, r.stderr);
+  assert.ok(r.stdout.includes('<todo>'), r.stdout);
+  r = run('startup');
+  assert.ok(!r.stdout.includes('<todo>'), r.stdout);
+  r = run('compact', 'snap-empty');
+  assert.ok(!r.stdout.includes('<todo>'), r.stdout);
 });
 
 await check('hooks.json command from a plugin path with spaces and Cyrillic', () => {
@@ -125,6 +144,92 @@ await check('todo hook: reminder, snapshot, subagent skip, Stop once', () => {
   assert.equal(r.stdout, '');
 });
 
+await check('subagents hook: Stop waits for a running subagent', () => {
+  const home = tmpDir();
+  const sid = 'sub-1';
+  const env = { ...process.env, CODEX_HOME: home };
+  const rollout = path.join(tmpDir(), 'rollout.jsonl');
+  fs.writeFileSync(rollout, '{"type":"task_started"}\n');
+  const subEvent = (name, extra) => JSON.stringify({ session_id: sid, hook_event_name: name, agent_id: 'a1', ...extra });
+  const stop = extra => JSON.stringify({ session_id: sid, turn_id: 't', hook_event_name: 'Stop', stop_hook_active: false, last_assistant_message: 'x', ...extra });
+
+  let r = hookRun('subagents.cjs', subEvent('SubagentStart', { agent_type: 'spotty', transcript_path: rollout }), env);
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(r.stdout, '');
+
+  r = hookRun('todo.cjs', stop(), env);
+  let decision = JSON.parse(r.stdout);
+  assert.equal(decision.decision, 'block');
+  assert.ok(decision.reason.includes('1 subagent task(s) still running'), decision.reason);
+
+  r = hookRun('todo.cjs', stop({ stop_hook_active: true }), env);
+  decision = JSON.parse(r.stdout);
+  assert.equal(decision.decision, 'block');
+  assert.ok(decision.reason.includes('1 subagent task(s) still running'), decision.reason);
+
+  r = hookRun('subagents.cjs', subEvent('SubagentStop'), env);
+  assert.equal(r.status, 0, r.stderr);
+
+  r = hookRun('todo.cjs', stop(), env);
+  assert.equal(r.stdout, '');
+});
+
+await check('subagents hook: an ended rollout does not hold Stop', () => {
+  const home = tmpDir();
+  const sid = 'sub-2';
+  const env = { ...process.env, CODEX_HOME: home };
+  const rollout = path.join(tmpDir(), 'rollout.jsonl');
+  fs.writeFileSync(rollout, '{"timestamp":"x","type":"event_msg","payload":{"type":"task_complete","turn_id":"t"}}\n');
+  const subEvent = (name, extra) => JSON.stringify({ session_id: sid, hook_event_name: name, agent_id: 'a1', ...extra });
+  const stop = JSON.stringify({ session_id: sid, turn_id: 't', hook_event_name: 'Stop', stop_hook_active: false, last_assistant_message: 'x' });
+
+  let r = hookRun('subagents.cjs', subEvent('SubagentStart', { agent_type: 'spotty', transcript_path: rollout }), env);
+  assert.equal(r.status, 0, r.stderr);
+
+  r = hookRun('todo.cjs', stop, env);
+  assert.equal(r.stdout, '');
+  assert.ok(!fs.existsSync(path.join(home, 'scope-focus-todo', `agents-${sid}`, 'a1')));
+});
+
+await check('subagents hook: a stale record does not hold Stop', () => {
+  const home = tmpDir();
+  const sid = 'sub-3';
+  const env = { ...process.env, CODEX_HOME: home };
+  const subEvent = (name, extra) => JSON.stringify({ session_id: sid, hook_event_name: name, agent_id: 'a2', ...extra });
+  const stop = JSON.stringify({ session_id: sid, turn_id: 't', hook_event_name: 'Stop', stop_hook_active: false, last_assistant_message: 'x' });
+
+  let r = hookRun('subagents.cjs', subEvent('SubagentStart', { agent_type: 'spotty', transcript_path: '' }), env);
+  assert.equal(r.status, 0, r.stderr);
+  const record = path.join(home, 'scope-focus-todo', `agents-${sid}`, 'a2');
+  const old = new Date(Date.now() - 2 * 60 * 60 * 1000);
+  fs.utimesSync(record, old, old);
+
+  r = hookRun('todo.cjs', stop, env);
+  assert.equal(r.stdout, '');
+});
+
+await check('subagents hook: resume and startup clear records of an ended process, compact keeps them', () => {
+  const home = tmpDir();
+  const sid = 'sub-4';
+  const env = { ...process.env, CODEX_HOME: home };
+  const rollout = path.join(home, 'running.jsonl');
+  fs.writeFileSync(rollout, '{"type":"task_started"}\n');
+  const start = () => hookRun('communication.cjs', JSON.stringify({ session_id: sid, hook_event_name: 'SubagentStart', agent_id: 'a3', transcript_path: rollout }), env);
+  const session = source => hookRun('communication.cjs', JSON.stringify({ session_id: sid, hook_event_name: 'SessionStart', source }), env);
+  const stop = () => hookRun('todo.cjs', JSON.stringify({ session_id: sid, turn_id: 't', hook_event_name: 'Stop', stop_hook_active: false }), env).stdout;
+
+  assert.equal(start().status, 0);
+  assert.match(stop(), /1 subagent task\(s\) still running/);
+  assert.equal(session('compact').status, 0);
+  assert.match(stop(), /1 subagent task\(s\) still running/);
+  for (const source of ['resume', 'startup', 'clear']) {
+    assert.equal(start().status, 0);
+    assert.equal(session(source).status, 0);
+    assert.equal(stop(), '', source);
+    assert.equal(fs.existsSync(path.join(home, 'scope-focus-todo', `agents-${sid}`)), false, source);
+  }
+});
+
 await check('todo CLI: CODEX_HOME missing falls back to HOME/.codex', () => {
   const home = tmpDir();
   const env = { ...process.env, HOME: home, USERPROFILE: home, CODEX_THREAD_ID: 's2' };
@@ -153,7 +258,7 @@ await check('todo CLI (BUG): numeric item number', () => {
   r = todoArgv(home, sid, '{"ops":[{"op":"done","item":1.1}]}');
   assert.equal(r.status, 1, r.stdout);
   assert.ok(r.stdout.includes('Stopped at op 1'), r.stdout);
-  assert.ok(r.stdout.includes('item must be a string'), r.stdout);
+  assert.ok(r.stdout.includes('done has item that is not text'), r.stdout);
   assert.ok(!r.stderr.includes('TypeError'), r.stderr);
   const after = state(home, sid).phases[0].tasks[0].status;
   assert.equal(after, before);
@@ -168,7 +273,7 @@ await check('todo CLI (BUG): wrong field type keeps earlier ops', () => {
   r = todoArgv(home, sid, '{"ops":[{"op":"start","item":"1.2"},{"op":"block","item":"1.1","reason":5}]}');
   assert.equal(r.status, 1, r.stderr);
   assert.ok(r.stdout.includes('Stopped at op 2'), r.stdout);
-  assert.ok(r.stdout.includes('reason must be a string'), r.stdout);
+  assert.ok(r.stdout.includes('block has reason that is not text'), r.stdout);
   assert.ok(!r.stderr.includes('TypeError'), r.stderr);
   assert.equal(state(home, sid).phases[0].tasks[1].status, 'in_progress');
 });
@@ -181,7 +286,7 @@ await check('todo CLI (BUG): plan steps that are not a list', () => {
   r = todoArgv(home, sid, '{"ops":[{"op":"plan","steps":"abc"}]}');
   assert.equal(r.status, 1, r.stdout);
   assert.ok(r.stdout.includes('Stopped at op 1'), r.stdout);
-  assert.ok(r.stdout.includes('steps must be a list of strings'), r.stdout);
+  assert.ok(r.stdout.includes('plan has steps that is not a list of texts'), r.stdout);
   assert.ok(!r.stderr.includes('TypeError'), r.stderr);
   r = todoArgv(home, sid, '{"ops":[{"op":"plan","steps":["a",2]}]}');
   assert.equal(r.status, 1, r.stdout);
@@ -258,6 +363,27 @@ await check('reader (BUG): explicitly named git-ignored paths', () => {
   assert.equal(r.status, 0, r.stderr);
   assert.ok(!r.stdout.includes('=== ignored.txt'), r.stdout);
   assert.ok(!r.stdout.includes('=== ignored-dir/f.txt'), r.stdout);
+});
+
+await check('reader: plain read stops at 1000 lines', () => {
+  const tmp = tmpDir();
+  fs.writeFileSync(path.join(tmp, 'long.txt'), `${Array.from({ length: 1500 }, (_, i) => `line ${i + 1}`).join('\n')}\n`);
+  let r = runNode(readCli, ['long.txt'], { cwd: tmp });
+  assert.equal(r.status, 0, r.stderr);
+  assert.ok(r.stdout.includes('\nline 1000\n'), r.stdout);
+  assert.ok(!r.stdout.includes('\nline 1001\n'), r.stdout);
+  assert.ok(r.stdout.includes('[Use --lines 1001-1500 long.txt to continue.]'), r.stdout);
+  r = runNode(readCli, ['--lines', '1001-1500', 'long.txt'], { cwd: tmp });
+  assert.equal(r.status, 0, r.stderr);
+  assert.ok(r.stdout.includes('\nline 1001\n') && r.stdout.includes('\nline 1500\n'), r.stdout);
+});
+
+await check('reader: content over 100000 characters is an error', () => {
+  const tmp = tmpDir();
+  fs.writeFileSync(path.join(tmp, 'wide.txt'), `${'x'.repeat(1900)}\n`.repeat(60));
+  const r = runNode(readCli, ['wide.txt'], { cwd: tmp });
+  assert.equal(r.status, 1, r.stdout);
+  assert.ok(r.stderr.includes('exceeds maximum allowed characters'), r.stderr);
 });
 
 for (const dir of dirs) fs.rmSync(dir, { recursive: true, force: true });

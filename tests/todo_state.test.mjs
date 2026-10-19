@@ -110,13 +110,16 @@ await check('state without plans: loads with no plans, and an append keeps the s
   assert.equal(after.phases[0].tasks[0].content, 'First');
 });
 
-await check('numeric-string current: a saved string loads as a number and a string step saves as one', () => {
+await check('numeric-string current: a saved string loads as a number, a string step fails like omp and a number step saves', () => {
   const home = freshHome();
   const planKey = 'Work\u0000First';
   const phases = [{ name: 'Work', tasks: [{ content: 'First', status: 'in_progress' }] }];
   writeState(home, JSON.stringify({ phases, plans: { [planKey]: { steps: ['a', 'b', 'c'], current: '2' } } }));
   assert.deepEqual(todo.loadState(SID).plans.get(planKey), { steps: ['a', 'b', 'c'], current: 2 });
-  const r = runTodo(home, '{"ops":[{"op":"step","item":"1.1","step":"3"}]}');
+  const text = runTodo(home, '{"ops":[{"op":"step","item":"1.1","step":"3"}]}');
+  assert.equal(text.status, 1);
+  assert.match(text.stdout, /step has step that is not a number/);
+  const r = runTodo(home, '{"ops":[{"op":"step","item":"1.1","step":3}]}');
   assert.equal(r.status, 0, r.stderr);
   assert.equal(saved(home).plans[planKey].current, 3);
 });
@@ -128,7 +131,7 @@ await check('invalid current or step: the file is left alone', () => {
   const bad = JSON.stringify({ phases, plans: { [planKey]: { steps: ['a', 'b', 'c'], current: 'two' } } });
   writeState(home, bad);
   assert.throws(() => todo.loadState(SID), /unexpected shape/);
-  const r = runTodo(home, '{"ops":[{"op":"step","item":"1.1","step":"3"}]}');
+  const r = runTodo(home, '{"ops":[{"op":"step","item":"1.1","step":3}]}');
   assert.equal(r.status, 1);
   assert.match(r.stderr, /unexpected shape/);
   assert.equal(fs.readFileSync(stateFile(home), 'utf8'), bad);
@@ -136,7 +139,7 @@ await check('invalid current or step: the file is left alone', () => {
   writeState(home, good);
   const rejected = runTodo(home, '{"ops":[{"op":"step","item":"1.1","step":"two"}]}');
   assert.equal(rejected.status, 1);
-  assert.match(rejected.stdout, /step must be a number/);
+  assert.match(rejected.stdout, /step has step that is not a number/);
   assert.equal(fs.readFileSync(stateFile(home), 'utf8'), good);
 });
 
@@ -172,6 +175,86 @@ await check('dead owner: a lock whose PID no longer runs is reclaimed at once', 
   assert.equal(r.status, 0, r.stderr);
   assert.equal(taskCount(saved(home)), 1);
   assert.equal(fs.existsSync(lockFile(home)), false);
+});
+
+const runArgs = (home, args) => spawnSync(process.execPath, [todoCli, ...args], {
+  encoding: 'utf8',
+  env: { ...process.env, CODEX_HOME: home, CODEX_THREAD_ID: SID },
+});
+const runStdin = (home, text) => spawnSync(process.execPath, [todoCli], {
+  encoding: 'utf8',
+  input: text,
+  env: { ...process.env, CODEX_HOME: home, CODEX_THREAD_ID: SID },
+});
+
+await check('text ops via argv: init, then done closes 1.1 and starts 1.2', () => {
+  const home = freshHome();
+  let r = runArgs(home, ['init Фаза: a | b']);
+  assert.equal(r.status, 0, r.stderr);
+  r = runArgs(home, ['done']);
+  assert.equal(r.status, 0, r.stderr);
+  const st = saved(home);
+  assert.equal(st.phases[0].tasks[0].status, 'completed');
+  assert.equal(st.phases[0].tasks[1].status, 'in_progress');
+  assert.ok(r.stdout.includes('Next: 1.2 "b" has no plan'), r.stdout);
+  assert.ok(r.stdout.includes('<todo>'), r.stdout);
+});
+
+await check('text ops via argv: plan then step', () => {
+  const home = freshHome();
+  let r = runArgs(home, ['init Фаза: a | b']);
+  assert.equal(r.status, 0, r.stderr);
+  r = runArgs(home, ['plan: x | y']);
+  assert.equal(r.status, 0, r.stderr);
+  r = runArgs(home, ['step']);
+  assert.equal(r.status, 0, r.stderr);
+  assert.ok(r.stdout.includes('Step 1.1: 2/2'), r.stdout);
+  assert.equal(saved(home).plans['Фаза\u0000a'].current, 2);
+});
+
+await check('text ops via stdin lines', () => {
+  const home = freshHome();
+  const r = runStdin(home, 'init Ф: a | b\n\n  done  \n');
+  assert.equal(r.status, 0, r.stderr);
+  const st = saved(home);
+  assert.equal(st.phases[0].tasks[0].status, 'completed');
+  assert.equal(st.phases[0].tasks[1].status, 'in_progress');
+});
+
+await check('closed: lists the closed items', () => {
+  const home = freshHome();
+  assert.equal(runArgs(home, ['init Фаза: a | b']).status, 0);
+  assert.equal(runArgs(home, ['done']).status, 0);
+  const r = runArgs(home, ['closed']);
+  assert.equal(r.status, 0, r.stderr);
+  assert.ok(r.stdout.includes('1.1 ✓ a'), r.stdout);
+});
+
+await check('JSON array mixing a text op and an object op', () => {
+  const home = freshHome();
+  const r = runArgs(home, [JSON.stringify({ ops: ['init Фаза: a | b', { op: 'start', item: '1.2' }] })]);
+  assert.equal(r.status, 0, r.stderr);
+  const st = saved(home);
+  assert.equal(st.phases[0].tasks[0].status, 'pending');
+  assert.equal(st.phases[0].tasks[1].status, 'in_progress');
+});
+
+await check('init with an item given as JSON text carries its plan', () => {
+  const home = freshHome();
+  const planInit = JSON.stringify({ ops: [{ op: 'init', list: [{ phase: 'P', items: ['{"title":"A","plan":["s1","s2"]}'] }] }] });
+  const r = runArgs(home, [planInit]);
+  assert.equal(r.status, 0, r.stderr);
+  const st = saved(home);
+  assert.equal(st.phases[0].tasks[0].content, 'A');
+  assert.deepEqual(st.plans['P\u0000A'], { steps: ['s1', 's2'], current: 1 });
+  assert.ok(r.stdout.includes('Now: 1.1 "A", step 1/2 "s1".'), r.stdout);
+});
+
+await check('non-op value fails as not an op', () => {
+  const home = freshHome();
+  const r = runArgs(home, ['{"ops":[5]}']);
+  assert.equal(r.status, 1);
+  assert.ok(r.stdout.includes('op 1 is 5, not an op'), r.stdout);
 });
 
 if (failures.length === 0) console.log('PASS: todo state.');

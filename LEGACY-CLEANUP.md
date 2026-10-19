@@ -26,9 +26,13 @@ legacy. Установка и обновление её не запускают.
   MCP-записи, переменные окружения, блоки `AGENTS.md`, кэши, индексы и
   runtime показывай отдельной группой и удаляй только после ответа
   пользователя, что этот инструмент он отдельно не использует.
-- Текущие компоненты не трогай: плагин `scope-focus`, профили
-  `spotty`, `smarty`, `bossy`, `model_instructions_file` с его
-  копией.
+- Текущие компоненты не трогай: плагин `scope-focus` установленной версии,
+  профили `spotty`, `smarty`, `bossy`, `codebase_explorer`, `code_writer`,
+  `shell_runner`, `model_instructions_file` с его копией, `model_verbosity`,
+  таблицу `[features.multi_agent_v2]`, текущие ключи `hooks.state` Scope Focus
+  и каталог `<CODEX_HOME>/scope-focus-todo/` с todo-списками сессий.
+- Hooks, плагины и настройки, которых нет в истории этого репозитория, не
+  legacy этого harness: покажи их отдельно и не трогай без прямой просьбы.
 
 ## Удалённые плагины Codex
 
@@ -74,6 +78,22 @@ Lunatron, Task Notebook, ToSpec и профиль `enot` удалены из п�
 | путь `<CODEX_HOME>/scope-focus` в `sandbox_workspace_write.writable_roots` | убрать только этот элемент вместе с удалением данных Notebook |
 | `<tmpdir>/scope-focus-tospec-*` | рабочие папки ToSpec; данные пользователя по правилам выше |
 | `agents.max_concurrent_threads_per_session` в `config.toml` | значение, которое требовал Lunatron; настройка пользователя, менять только по его просьбе |
+
+## Прежние части Scope Focus после переноса omp
+
+Память решений и восстановление сессии (`tools/decisions.cjs`,
+`tools/session-history.cjs`, skills `restore-session` и `restore-todo`) жили в
+поставке 2026-10-17 и удалены в тот же день. Skills Gold Standard, Clear
+Communication, Main Workflow и три review-цикла заменены переносом omp
+2026-10-19; их файлы были только внутри пакета и уходят с обновлением.
+
+| Цель | Действие |
+|---|---|
+| `<CODEX_HOME>/scope-focus-decisions/` | сохранённые решения сессий; данные пользователя по правилам выше |
+| `<tmpdir>/scope-focus-recorder-*`, `<tmpdir>/scope-focus-history-*` | рабочие папки recorder и чтения истории; удалить |
+| `<CODEX_HOME>/plugins/cache/my-codex-harness/scope-focus/<версия>/` кроме версии из `codex plugin list --json` | прежние копии пакета; удалить |
+| `<CODEX_HOME>/plugins/data/scope-focus-my-codex-harness/` | удалить, если каталог пуст; иначе данные пользователя по правилам выше |
+| `<CODEX_HOME>/scope-focus-todo/agents-*/` | отметки субагентов сессий, которые оборвались до `SubagentStop`; удалить каталоги старше суток |
 
 ## Прежняя поставка через marketplace `personal`
 
@@ -174,5 +194,6 @@ Notebook, Goal Memory, отчёты и сохранённые результат
 
 После зачистки прочитай `config.toml`, `<CODEX_HOME>/AGENTS.md` и каталог
 `agents`: удалённые цели отсутствуют, текущие компоненты на месте. Через
-app-server `hooks/list` проверь, что hooks `scope-focus` доверены и включены.
+app-server `hooks/list` проверь, что пять hooks `scope-focus` доверены и
+включены, а в кэше плагинов осталась одна версия `scope-focus`.
 Сообщи удалённые цели, оставленные объекты с причиной и конфликты.

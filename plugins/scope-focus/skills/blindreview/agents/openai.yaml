@@ -1,0 +1,6 @@
+interface:
+  display_name: "Blind review"
+  short_description: "Review уровня blind текущей работы"
+  default_prompt: "Use $blindreview to review the current work."
+policy:
+  allow_implicit_invocation: false

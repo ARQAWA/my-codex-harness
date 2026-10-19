@@ -1,50 +1,45 @@
 ---
 name: define-goal
-description: "On $define-goal: interview the user, write a goal objective with verbatim quotes, success criteria and a Review section, confirm it from a short retelling, set the native Goal and finish only after the review cycle of its class returns CLEAN."
+description: "Agree on one goal with the user, set it with create_goal, carry it out and finish only after review returns CLEAN. Started by the user with $define-goal."
 ---
 
 # Define goal
 
-The user invoked `$define-goal`. The rest of that message is the rough objective: a description of the task, not yet an order to act. If there is none, ask what they want to achieve. Agree on one goal with the user, set it with `create_goal`, carry it out, and finish only after a blind reviewer returns CLEAN. A goal runs across many turns and outlives context compaction, so the objective alone must carry everything the work and its review need, including the user's own words.
+The user started `$define-goal`. The text after it is the rough objective: a description of the task, not yet an order to act. If there is none, ask what they want to achieve. Agree on one goal with the user, set it with `create_goal`, carry it out, and finish only after review returns CLEAN. A goal runs across many turns and outlives context compaction, and Codex repeats its objective in every goal turn, so the objective alone must carry everything the work and its review need, including the user's own words.
 
-Write every message and question of this procedure by [Clear Communication](../clear-communication/SKILL.md). The user never sees the objective and does not keep earlier messages in mind, so each message and question is clear on its own: name every item, quote, criterion, option and file by what it says, in plain words, never by a code such as `S2`, a bare number or a reference to an earlier message.
+Write every message by the message rules. The user never sees the objective and does not keep earlier messages in mind, so name every item, quote, criterion, option and file by what it says, never by a code or a bare number.
 
 ## 1. Explore first
 
-Before the first question, read the code, configuration and documents the rough objective touches, read-only and only as far as the questions need. Ask nothing the files answer, and ground every question and the draft in the project's actual stack, conventions and checks.
+Before the first question, read the code, configuration and documents the rough objective touches, read-only and only as far as the questions need. Ask nothing the files answer.
 
 ## 2. Interview
 
-Ask in the chat, in the question format of [Clear Communication](../clear-communication/SKILL.md), and put all open questions of a round into one message, then end the turn and wait for the user's reply. Ask only what changes the result and what the files cannot settle: the end state, how to prove it, what must not change, the limits of the run, and the hard parts the user may not have weighed, such as edge cases and tradeoffs. Each question gives the situation in its context line and two to four concrete options from the project, the recommended one marked, each with its consequence. Stop once the objective below can be written; one or two rounds usually suffice. If the user declines or abandons the interview, set no goal.
+Ask in the chat, in the question format, all open questions of a round in one message, then end the turn and wait. Ask only what changes the result and what the files cannot settle: the end state, how to prove it, what must not change, the limits of the run, and hard parts the user may not have weighed. Each question gives two to four concrete options from the project, the recommended one marked, each with its consequence. Stop once the objective can be written; one or two rounds usually suffice. If the user declines, set no goal.
 
 ## 3. Draft the objective
 
-Write the objective in English, keeping the user's quotes verbatim in his language, with these sections in this order:
+Write it in English, keeping the user's quotes verbatim in his language, with these sections in order:
 
 - `## Objective`: one or two sentences naming the single measurable end state.
-- `## Quotes`: numbered verbatim quotes of the user, `Q1. «…» (source)`. Take every statement of a requirement, value, constraint or prohibition from the rough objective, the user's messages and their answers to your questions. Copy each one character for character, without retelling, correcting or merging. Keep it short and clear on its own; when it makes sense only together with its question, such as a picked option or a «да», name that question as the source. These quotes are the agreement the reviewer enforces: with them it proves to Main that agreed work is missing or done badly, or that work nobody agreed to was added.
-- `## Success criteria`: `S1. <one result>. Check: <command, or file to read> → <expected signal>. Quotes: Q2, Q4.` Each criterion is binary: a reader who sees only the evidence decides pass or fail without taste, so reject «works well», «clean» or «done». Use the project's existing checks; when no command proves a criterion, reading the named file is its check.
-- `## Boundaries`: what may change and what must stay unchanged (files, interfaces, data, operations), each line with its quotes.
-- `## Stop conditions`: when to stop and ask the user: ambiguity the agreement does not settle, a risky or irreversible operation, or a user-specified cap reached. Include an attempt cap only when the user supplied one; do not invent a cap. Each line with its quotes.
-- `## Review`: the class and the completion rule, from the template below.
+- `## Quotes`: numbered verbatim quotes, `Q1. «…» (source)`: every requirement, value, constraint or prohibition from the rough objective, the user's messages and answers, copied character for character. When a quote makes sense only with its question, such as a picked option or a «да», name that question as the source.
+- `## Success criteria`: `S1. <one result>. Check: <command, or file to read> → <expected signal>. Quotes: Q2, Q4.` Each criterion is binary; reject «works well» or «clean». Use the project's existing checks; when no command proves a criterion, reading the named file is its check.
+- `## Boundaries`: what may change and what must stay unchanged, each line with its quotes.
+- `## Stop conditions`: when to stop and ask: ambiguity the agreement does not settle, a risky or irreversible operation, or a cap the user gave. Do not invent a cap.
+- `## Review`: `Class: <small | large>` (small: up to 5 success criteria and up to 5 changed files; large: more), then: "Before marking the goal complete, obtain each Check result once and save the outputs to a file in the operating system's temporary directory. Then run a review at level <light for small | blind for large> with the Quotes, Success criteria, Boundaries and Stop conditions verbatim as the agreement, the changed files and check outputs as the object, and the criterion that every success criterion holds by its check, every boundary holds and nothing outside the agreement was added. Fix admitted findings and repeat only affected checks until CLEAN. Complete the goal only after CLEAN."
 
-Keep required outcomes distinct from implementation choices. Do not add an unrequested command, metadata format, cap or untouched-file promise as a requirement. A necessary additional constraint that needs the owner's decision carries `Quotes: proposed` and binds only after the user accepts the retelling that names it.
-
-Review template; the class follows the work-class table of Main Workflow, small for up to 5 requirements and up to 5 changed files and large for more, where each success criterion counts as one requirement:
-
-    ## Review
-    Class: <small | large>. Before marking the goal complete, obtain each required Check result once, reusing still-valid evidence for unchanged checked inputs, and save the outputs to a file in the OS temporary directory. Then run <Light Review Cycle for small | Blind Review Cycle for large> with `review_stage=pre-completion`: the agreement is the Quotes, Success criteria, Boundaries and Stop conditions of this objective, verbatim; the object is the changed files and the check outputs; the criterion is that every success criterion holds by its check, every boundary holds, and nothing outside the agreement was added. Apply Main Workflow's combined documentation coverage and the shared review contract's reuse rules; a gate on different inputs keeps its own evidence and a release-only gate does not run at ordinary goal completion. Fix admitted findings and repeat only affected checks and parts until CLEAN. Complete the goal only after CLEAN.
+Keep required outcomes distinct from implementation choices. A necessary constraint the user did not state carries `Quotes: proposed` and binds only after the user accepts it.
 
 ## 4. Confirm
 
-The objective is for the agent and the reviewer; never show it to the user. First check it against the user's words: every agreed requirement, value, constraint and prohibition is in it, nothing is lost or distorted, and nothing the user did not say is added except items marked `Quotes: proposed`.
+Check the objective against the user's words: nothing agreed is lost or distorted, nothing unsaid is added except `Quotes: proposed` items. Never show the objective. Write a short retelling in the user's language: one bold sentence with the main point, short numbered items with the exact values, then «Границы», «Остановка» and «Проверка», a line or two each. Mark every proposed item as your proposal with its reason.
 
-Then write in the chat a short retelling in the user's language: one bold sentence with the main point of the goal, then short numbered items with the exact values the user accepts, including every proposed item, then the sections «Границы», «Остановка» and «Проверка», a line or two each. Give the user's own items as he said them, without reasons. Mark every proposed item as your proposal and give its reason. When the retelling holds no questions, that is no proposed item, no divergence that needs the user's decision and no decision of yours he must confirm, it needs no approval: set the goal at once by step 5 and start in the same turn. Otherwise, after the retelling, put every proposal, divergence and decision of yours with real alternatives into the question format of Clear Communication, each a question with two to four options and their consequences, the recommended one marked, and end the message with one short line that itself says what starts and asks for the go, such as «Начинаем цель: интерфейс в стиле Cursor? Ответь «го» или напиши, что поправить.» Then end the turn and wait. A confirming reply such as «го», «да» or «начинаем» accepts the whole goal with the chosen options, the recommended ones for questions left unanswered: put them into the objective and Quotes without asking again. A reply that corrects something changes the objective and adds his new words to Quotes; check it again, show the new retelling and ask again only about what changed and the acceptance of the whole. A retelling without questions, or its acceptance, fixes the objective and replaces the approval step of Main Workflow.
+When the retelling holds no proposal, divergence or decision of yours the user must confirm, set the goal at once by step 5. Otherwise put each into the question format and end with one line that says what starts and asks for the go, such as «Начинаем цель: интерфейс в стиле Cursor? Ответь «го» или напиши, что поправить.» Then wait. «го», «да» or «начинаем» accepts the whole goal with the chosen options, the recommended ones where unanswered. A correction changes the objective and adds his words to Quotes; show the new retelling and ask again only about what changed.
 
 ## 5. Set and work
 
-Call `create_goal` with the fixed objective verbatim, in the same response as the first work calls. Confirm in one sentence and start. Work by the objective and Main Workflow, and claim success only from evidence, such as the command and what it returned or the file and what it now says. When a stop condition fires, report it and wait for the user as Main Workflow describes, with the goal left open.
+Call `create_goal` with the fixed objective verbatim, and `token_budget` only when the user gave one. Confirm in one sentence and start. Claim success only from evidence. When a stop condition fires, report it and wait with the goal left open.
 
 ## 6. Finish
 
-Follow the objective's Review section, then mark the goal complete by its native rules and report the result briefly: what is now true and whether every check passed; give the evidence for each check when the user asks. If the reviewer cannot start, leave the goal open, tell the user and wait.
+Follow the objective's Review section, then complete the goal and report briefly what is now true and whether every check passed. If the review cannot start, leave the goal open, tell the user and wait.

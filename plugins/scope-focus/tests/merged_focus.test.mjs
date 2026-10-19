@@ -13,12 +13,12 @@ const bodyOf = text => {
   return text.slice(start + opening.length, text.lastIndexOf('"""'));
 };
 
-const reviewers = [['spotty', 'low'], ['smarty', 'medium'], ['bossy', 'high']];
-const bodies = reviewers.map(([name, effort]) => {
+const reviewers = [['spotty', 'gpt-6-sol', 'medium'], ['smarty', 'gpt-6.1-sol', 'low'], ['bossy', 'gpt-6.1-sol', 'medium']];
+const bodies = reviewers.map(([name, model, effort]) => {
   const text = read(`agents/${name}.toml`);
   for (const term of [
     `name = "${name}"`,
-    'model = "gpt-6.1-sol"',
+    `model = "${model}"`,
     `model_reasoning_effort = "${effort}"`,
     'sandbox_mode = "read-only"',
   ]) assert.ok(text.includes(term), `${name}: ${term}`);
@@ -27,15 +27,33 @@ const bodies = reviewers.map(([name, effort]) => {
 assert.equal(bodies[1], bodies[0], 'smarty developer_instructions');
 assert.equal(bodies[2], bodies[0], 'bossy developer_instructions');
 
-for (const skill of ['main-workflow', 'subagents', 'define-goal']) {
+for (const name of ['code_writer', 'shell_runner']) {
+  const text = read(`agents/${name}.toml`);
+  for (const term of [`name = "${name}"`, 'model = "gpt-6-luna"', 'model_reasoning_effort = "medium"']) {
+    assert.ok(text.includes(term), `${name}: ${term}`);
+  }
+}
+const explorer = read('agents/codebase_explorer.toml');
+assert.ok(explorer.includes('name = "codebase_explorer"'), 'codebase_explorer name');
+assert.ok(explorer.includes('sandbox_mode = "read-only"'), 'codebase_explorer sandbox');
+assert.ok(!/^model/m.test(explorer), 'codebase_explorer inherits model and reasoning');
+
+for (const skill of ['todo', 'subagents', 'codex-tools', 'define-goal', 'approval', 'lightreview', 'blindreview', 'highreview']) {
   for (const file of ['SKILL.md', 'agents/openai.yaml']) {
     assert.ok(existsSync(path.join(root, 'skills', skill, file)), `${skill}/${file}`);
   }
+  assert.ok(read(`skills/${skill}/agents/openai.yaml`).includes('allow_implicit_invocation: false'), `${skill}: implicit invocation off`);
+}
+for (const gone of ['gold-standard', 'clear-communication', 'main-workflow', 'light-review-cycle', 'blind-review-cycle', 'high-review-cycle']) {
+  assert.ok(!existsSync(path.join(root, 'skills', gone)), `${gone} removed`);
 }
 
 const hooks = JSON.parse(read('hooks/hooks.json')).hooks;
+assert.deepEqual(Object.keys(hooks), ['SessionStart', 'SubagentStart', 'SubagentStop', 'UserPromptSubmit', 'Stop'], 'hook events');
 assert.equal(hooks.SessionStart[0].hooks[0].additionalContextLimit, 65536, 'SessionStart');
 assert.equal(hooks.SubagentStart[0].hooks[0].additionalContextLimit, 32768, 'SubagentStart');
+assert.equal(Object.values(hooks).flatMap(groups => groups.flatMap(group => group.hooks)).length, 5, 'five hook definitions');
+assert.ok(hooks.SubagentStop[0].hooks[0].command.includes("'subagents.cjs'"), 'SubagentStop record');
 
 const runHook = eventName => {
   const result = spawnSync(process.execPath, [path.join(root, 'hooks', 'communication.cjs')], {
@@ -47,12 +65,12 @@ const runHook = eventName => {
 };
 
 const session = runHook('SessionStart');
-for (const term of ['# Gold Standard', '# Main Workflow', '# Subagents', '# Clear Communication']) {
+for (const term of ['# Codex tool mechanics', '# Todo', '# Subagents', 'Todo CLI:', 'Reader CLI:', 'Environment: paths: absolute like']) {
   assert.ok(session.includes(term), term);
 }
+for (const term of ['# Approval', '# Gold Standard', '# Main Workflow', '# Clear Communication']) assert.ok(!session.includes(term), `${term} must be absent`);
 const subagent = runHook('SubagentStart');
 for (const term of ['# Codex tool mechanics', 'Reader CLI:']) assert.ok(subagent.includes(term), term);
-assert.ok(!subagent.includes('# Main Workflow'));
-assert.ok(!subagent.includes('# Gold Standard'));
+for (const term of ['# Todo', '# Subagents', 'Todo CLI:']) assert.ok(!subagent.includes(term), `${term} must be absent`);
 
 console.log('PASS: Scope Focus profiles, skills and hook.');

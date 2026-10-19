@@ -1,6 +1,0 @@
-interface:
-  display_name: "Blind Review Cycle"
-  short_description: "Blind review cycle to CLEAN with Smarty (Sol 6.1 Medium)"
-  default_prompt: "Use $blind-review-cycle to check the frozen object."
-policy:
-  allow_implicit_invocation: false

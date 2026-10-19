@@ -1,6 +1,0 @@
-interface:
-  display_name: "Main Workflow"
-  short_description: "Approval step, work classes, todo list and Goal for root Main"
-  default_prompt: "Use $main-workflow to apply the root Main workflow to this task."
-policy:
-  allow_implicit_invocation: false
