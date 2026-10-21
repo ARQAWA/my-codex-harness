@@ -1,6 +1,6 @@
 interface:
   display_name: "Subagents"
-  short_description: "Review, code_writer, shell_runner, codebase_explorer и custom"
-  default_prompt: "Use $subagents to choose and launch the right harness agent."
+  short_description: "Запуск субагентов и review по просьбе пользователя"
+  default_prompt: "Use $subagents to launch subagents for this task."
 policy:
   allow_implicit_invocation: false

@@ -13,21 +13,20 @@ Skills:
 |---|---|
 | `codex-tools` | механика инструментов Codex: лимиты `exec`, code mode, `apply_patch`, жадный поиск `rg` волнами, CLI чтения `tools/read.cjs` |
 | `todo` | todo-список root Main через CLI `tools/todo.cjs`: операции строками вроде `'done 1.2'`, как инструмент `todo` в omp |
-| `subagents` | review, `code_writer`, `shell_runner`, `codebase_explorer` и `custom` через `spawn_agent`, как инструменты omp |
+| `subagents` | запуск любых субагентов через `spawn_agent` без ограничений и review только по просьбе пользователя |
 | `approval` | шаг согласования и классы работы micro/small/large; hook его не подаёт, вызывается явно `$approval` |
-| `lightreview`, `blindreview`, `highreview` | явный запуск review уровня light, blind или high текущей работы, как команды omp |
-| `define-goal` | `$define-goal`: цель с цитатами, старт без «го» при отсутствии вопросов, review перед завершением |
+| `blindreview`, `highreview` | единственный штатный запуск review уровня blind или high текущей работы |
+| `define-goal` | `$define-goal`: цель с цитатами, старт без «го» при отсутствии вопросов, проверки критериев перед завершением |
 
 Профили агентов в `agents/`:
 
 | Профиль | Модель | Роль |
 |---|---|---|
-| `spotty` | `gpt-6-sol / medium` | review уровня light |
 | `smarty` | `gpt-6.1-sol / low` | review уровня blind |
 | `bossy` | `gpt-6.1-sol / medium` | review уровня high и аудит |
-| `code_writer` | `gpt-6-luna / medium` | пишет код по брифу |
-| `shell_runner` | `gpt-6-luna / medium` | запускает программы по брифу |
-| `codebase_explorer` | модель и reasoning Main | поиск по коду только на чтение |
+
+Профили только для review: Main запускает их, только когда пользователь
+просит review. Другие субагенты Main запускает сам, без профилей пакета.
 
 Пять hooks. `hooks/communication.cjs` подаёт правила: `SessionStart`
 (startup, resume, clear, compact) — root Main получает `codex-tools` с путями
@@ -63,14 +62,15 @@ Todo CLI и hooks работают с сохранённым списком, б�
 
 Финалы субагентов приходят Main сообщениями в режиме `multi_agent_v2`, как в
 omp. Штатный режим v2 запрещает запускать субагентов без прямой просьбы
-пользователя; в omp Main запускает их сам. Поэтому установка задаёт в
-`config.toml` таблицу `[features.multi_agent_v2]` с текстом режима, который
-Codex подаёт вместо штатного запрета:
+пользователя. Scope Focus снимает это ограничение для всех субагентов, кроме
+ревьюеров. Поэтому установка задаёт в `config.toml` таблицу
+`[features.multi_agent_v2]` с текстом режима, который Codex подаёт вместо
+штатного запрета:
 
 ```toml
 [features.multi_agent_v2]
 enabled = true
-multi_agent_mode_hint_text = "Proactive multi-agent delegation is active: launch subagents by the subagents skill without waiting for an explicit user request, such as code_writer whenever its brief is shorter than the code, shell_runner for long or noisy runs, codebase_explorer for broad searches across several areas, and review for checks. User requests override this hint."
+multi_agent_mode_hint_text = "Multi-agent delegation is unrestricted: launch any subagents whenever they help, without waiting for an explicit user request. Launch the reviewers smarty and bossy only when the user asks for a review. User requests override this hint."
 ```
 
 Системный промпт — отдельный компонент: [system-prompt.md](system-prompt.md).
@@ -95,7 +95,7 @@ codex plugin marketplace add "<источник>"
 codex plugin add "scope-focus@<marketplace>" --json
 ```
 
-Скопируй шесть профилей `agents/*.toml` из установленного пакета в каталог
+Скопируй два профиля `agents/*.toml` из установленного пакета в каталог
 `agents` активного Codex home (обычно `~/.codex/agents`). Остальные профили
 сохрани. Если профиль с тем же именем уже есть и отличается от файла пакета,
 покажи владельцу разницу и заменяй только с его согласия.
@@ -117,7 +117,7 @@ hooks Scope Focus этого пакета. После штатного review/tr
 
 ## Проверка после установки
 
-На целевой ОС проверь: пакет установлен и включён; шесть профилей в
+На целевой ОС проверь: пакет установлен и включён; два профиля в
 `<CODEX_HOME>/agents` совпадают с файлами пакета; в `config.toml`
 таблица `[features.multi_agent_v2]` совпадает с «Составом»; в пакете есть `hooks/communication.cjs`,
 `hooks/subagents.cjs`, `hooks/running.cjs`, `hooks/todo.cjs`, `tools/read.cjs`,
@@ -130,7 +130,7 @@ hooks включены, доверены и ссылаются на устано
 ## Обновление
 
 Выполни ту же команду `codex plugin add "scope-focus@<marketplace>" --json`,
-затем скопируй шесть профилей той же версии, задай таблицу
+затем скопируй два профиля той же версии, задай таблицу
 `[features.multi_agent_v2]` из «Состава», и примени процедуру trust для изменившихся определений
 hooks. Отличающийся профиль или другое значение ключа заменяй после показа
 разницы и согласия владельца. Сохрани остальные профили, hooks, настройки и
@@ -143,7 +143,8 @@ hooks или зависимости; доказательства неизмен
 первую установку и пробные задачи не повторяй.
 
 После установки удали из `<CODEX_HOME>/agents` только устаревшие активные
-`enot.toml`, `properliler.toml` и `explorer.toml`, если они остались от
+`enot.toml`, `properliler.toml`, `explorer.toml`, `spotty.toml`,
+`code_writer.toml`, `shell_runner.toml` и `codebase_explorer.toml`, если они остались от
 предыдущего пакета Scope Focus; все остальные профили сохрани. Остальные следы
 прежних версий убирает [LEGACY-CLEANUP.md](../LEGACY-CLEANUP.md), который
 `INSTALL_FOR_AGENTS.md` выполняет после установки. Новые правила действуют в

@@ -1,6 +1,6 @@
 interface:
   display_name: "Define Goal"
-  short_description: "Agree a quoted goal, set it, finish after review CLEAN"
+  short_description: "Agree a quoted goal, set it, finish after every check passes"
   default_prompt: "Use $define-goal to agree and set a goal for this task."
 policy:
   allow_implicit_invocation: false

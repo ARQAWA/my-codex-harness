@@ -13,7 +13,7 @@ const bodyOf = text => {
   return text.slice(start + opening.length, text.lastIndexOf('"""'));
 };
 
-const reviewers = [['spotty', 'gpt-6-sol', 'medium'], ['smarty', 'gpt-6.1-sol', 'low'], ['bossy', 'gpt-6.1-sol', 'medium']];
+const reviewers = [['smarty', 'gpt-6.1-sol', 'low'], ['bossy', 'gpt-6.1-sol', 'medium']];
 const bodies = reviewers.map(([name, model, effort]) => {
   const text = read(`agents/${name}.toml`);
   for (const term of [
@@ -24,27 +24,19 @@ const bodies = reviewers.map(([name, model, effort]) => {
   ]) assert.ok(text.includes(term), `${name}: ${term}`);
   return bodyOf(text);
 });
-assert.equal(bodies[1], bodies[0], 'smarty developer_instructions');
-assert.equal(bodies[2], bodies[0], 'bossy developer_instructions');
+assert.equal(bodies[1], bodies[0], 'bossy developer_instructions');
 
-for (const name of ['code_writer', 'shell_runner']) {
-  const text = read(`agents/${name}.toml`);
-  for (const term of [`name = "${name}"`, 'model = "gpt-6-luna"', 'model_reasoning_effort = "medium"']) {
-    assert.ok(text.includes(term), `${name}: ${term}`);
-  }
+for (const gone of ['spotty', 'code_writer', 'shell_runner', 'codebase_explorer']) {
+  assert.ok(!existsSync(path.join(root, 'agents', `${gone}.toml`)), `${gone} profile removed`);
 }
-const explorer = read('agents/codebase_explorer.toml');
-assert.ok(explorer.includes('name = "codebase_explorer"'), 'codebase_explorer name');
-assert.ok(explorer.includes('sandbox_mode = "read-only"'), 'codebase_explorer sandbox');
-assert.ok(!/^model/m.test(explorer), 'codebase_explorer inherits model and reasoning');
 
-for (const skill of ['todo', 'subagents', 'codex-tools', 'define-goal', 'approval', 'lightreview', 'blindreview', 'highreview']) {
+for (const skill of ['todo', 'subagents', 'codex-tools', 'define-goal', 'approval', 'blindreview', 'highreview']) {
   for (const file of ['SKILL.md', 'agents/openai.yaml']) {
     assert.ok(existsSync(path.join(root, 'skills', skill, file)), `${skill}/${file}`);
   }
   assert.ok(read(`skills/${skill}/agents/openai.yaml`).includes('allow_implicit_invocation: false'), `${skill}: implicit invocation off`);
 }
-for (const gone of ['gold-standard', 'clear-communication', 'main-workflow', 'light-review-cycle', 'blind-review-cycle', 'high-review-cycle']) {
+for (const gone of ['lightreview', 'gold-standard', 'clear-communication', 'main-workflow', 'light-review-cycle', 'blind-review-cycle', 'high-review-cycle']) {
   assert.ok(!existsSync(path.join(root, 'skills', gone)), `${gone} removed`);
 }
 

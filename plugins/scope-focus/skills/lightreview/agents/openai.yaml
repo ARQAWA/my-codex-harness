@@ -1,6 +1,0 @@
-interface:
-  display_name: "Light review"
-  short_description: "Review уровня light текущей работы"
-  default_prompt: "Use $lightreview to review the current work."
-policy:
-  allow_implicit_invocation: false

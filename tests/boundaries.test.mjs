@@ -153,7 +153,7 @@ await check('subagents hook: Stop waits for a running subagent', () => {
   const subEvent = (name, extra) => JSON.stringify({ session_id: sid, hook_event_name: name, agent_id: 'a1', ...extra });
   const stop = extra => JSON.stringify({ session_id: sid, turn_id: 't', hook_event_name: 'Stop', stop_hook_active: false, last_assistant_message: 'x', ...extra });
 
-  let r = hookRun('subagents.cjs', subEvent('SubagentStart', { agent_type: 'spotty', transcript_path: rollout }), env);
+  let r = hookRun('subagents.cjs', subEvent('SubagentStart', { agent_type: 'smarty', transcript_path: rollout }), env);
   assert.equal(r.status, 0, r.stderr);
   assert.equal(r.stdout, '');
 
@@ -183,7 +183,7 @@ await check('subagents hook: an ended rollout does not hold Stop', () => {
   const subEvent = (name, extra) => JSON.stringify({ session_id: sid, hook_event_name: name, agent_id: 'a1', ...extra });
   const stop = JSON.stringify({ session_id: sid, turn_id: 't', hook_event_name: 'Stop', stop_hook_active: false, last_assistant_message: 'x' });
 
-  let r = hookRun('subagents.cjs', subEvent('SubagentStart', { agent_type: 'spotty', transcript_path: rollout }), env);
+  let r = hookRun('subagents.cjs', subEvent('SubagentStart', { agent_type: 'smarty', transcript_path: rollout }), env);
   assert.equal(r.status, 0, r.stderr);
 
   r = hookRun('todo.cjs', stop, env);
@@ -198,7 +198,7 @@ await check('subagents hook: a stale record does not hold Stop', () => {
   const subEvent = (name, extra) => JSON.stringify({ session_id: sid, hook_event_name: name, agent_id: 'a2', ...extra });
   const stop = JSON.stringify({ session_id: sid, turn_id: 't', hook_event_name: 'Stop', stop_hook_active: false, last_assistant_message: 'x' });
 
-  let r = hookRun('subagents.cjs', subEvent('SubagentStart', { agent_type: 'spotty', transcript_path: '' }), env);
+  let r = hookRun('subagents.cjs', subEvent('SubagentStart', { agent_type: 'smarty', transcript_path: '' }), env);
   assert.equal(r.status, 0, r.stderr);
   const record = path.join(home, 'scope-focus-todo', `agents-${sid}`, 'a2');
   const old = new Date(Date.now() - 2 * 60 * 60 * 1000);

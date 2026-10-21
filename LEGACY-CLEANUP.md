@@ -35,8 +35,8 @@
   показывай отдельной группой и удаляй только после ответа пользователя, что
   этот инструмент он отдельно не использует.
 - Текущие компоненты не трогай: плагин `scope-focus` установленной версии,
-  профили `spotty`, `smarty`, `bossy`, `codebase_explorer`, `code_writer`,
-  `shell_runner`, `model_instructions_file` с его копией, `model_verbosity`,
+  профили `smarty`, `bossy`, `model_instructions_file` с его копией,
+  `model_verbosity`,
   таблицу `[features.multi_agent_v2]`, текущие ключи `hooks.state` Scope Focus
   и каталог `<CODEX_HOME>/scope-focus-todo/` с todo-списками сессий.
 - Hooks, плагины и настройки, которых нет в истории этого репозитория, не
@@ -142,7 +142,7 @@ Communication, Main Workflow и три review-цикла заменены пер
 
 | Путь | Откуда |
 |---|---|
-| `agents/properliler.toml`, `agents/explorer.toml` | прежние профили Scope Focus |
+| `agents/properliler.toml`, `agents/explorer.toml`, `agents/spotty.toml`, `agents/code_writer.toml`, `agents/shell_runner.toml`, `agents/codebase_explorer.toml` | прежние профили Scope Focus |
 | `agents/luntik.toml`, `agents/lunatron_luna_xhigh.toml`, `agents/lunatron_sol_xhigh.toml` | прежние профили Lunatron |
 | `codex-model-catalog.json` | кастомный каталог моделей |
 | `skills/local-context-memory/` | прежняя ручная установка skill Context Management |

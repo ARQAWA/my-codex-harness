@@ -1,11 +1,11 @@
 ---
 name: define-goal
-description: "Agree on one goal with the user, set it with create_goal, carry it out and finish only after review returns CLEAN. Started by the user with $define-goal."
+description: "Agree on one goal with the user, set it with create_goal, carry it out and finish only after every check passes. Started by the user with $define-goal."
 ---
 
 # Define goal
 
-The user started `$define-goal`. The text after it is the rough objective: a description of the task, not yet an order to act. If there is none, ask what they want to achieve. Agree on one goal with the user, set it with `create_goal`, carry it out, and finish only after review returns CLEAN. A goal runs across many turns and outlives context compaction, and Codex repeats its objective in every goal turn, so the objective alone must carry everything the work and its review need, including the user's own words.
+The user started `$define-goal`. The text after it is the rough objective: a description of the task, not yet an order to act. If there is none, ask what they want to achieve. Agree on one goal with the user, set it with `create_goal`, carry it out, and finish only after every check of its success criteria passes. A goal runs across many turns and outlives context compaction, and Codex repeats its objective in every goal turn, so the objective alone must carry everything the work and its checks need, including the user's own words.
 
 Write every message by the message rules. The user never sees the objective and does not keep earlier messages in mind, so name every item, quote, criterion, option and file by what it says, never by a code or a bare number.
 
@@ -26,7 +26,7 @@ Write it in English, keeping the user's quotes verbatim in his language, with th
 - `## Success criteria`: `S1. <one result>. Check: <command, or file to read> → <expected signal>. Quotes: Q2, Q4.` Each criterion is binary; reject «works well» or «clean». Use the project's existing checks; when no command proves a criterion, reading the named file is its check.
 - `## Boundaries`: what may change and what must stay unchanged, each line with its quotes.
 - `## Stop conditions`: when to stop and ask: ambiguity the agreement does not settle, a risky or irreversible operation, or a cap the user gave. Do not invent a cap.
-- `## Review`: `Class: <small | large>` (small: up to 5 success criteria and up to 5 changed files; large: more), then: "Before marking the goal complete, obtain each Check result once and save the outputs to a file in the operating system's temporary directory. Then run a review at level <light for small | blind for large> with the Quotes, Success criteria, Boundaries and Stop conditions verbatim as the agreement, the changed files and check outputs as the object, and the criterion that every success criterion holds by its check, every boundary holds and nothing outside the agreement was added. Fix admitted findings and repeat only affected checks until CLEAN. Complete the goal only after CLEAN."
+- `## Completion`: "Before marking the goal complete, obtain each Check result once and confirm that every success criterion holds by its check and every boundary holds. Fix what fails and repeat only the affected checks. Complete the goal only when every check passes."
 
 Keep required outcomes distinct from implementation choices. A necessary constraint the user did not state carries `Quotes: proposed` and binds only after the user accepts it.
 
@@ -42,4 +42,4 @@ Call `create_goal` with the fixed objective verbatim, and `token_budget` only wh
 
 ## 6. Finish
 
-Follow the objective's Review section, then complete the goal and report briefly what is now true and whether every check passed. If the review cannot start, leave the goal open, tell the user and wait.
+Follow the objective's Completion section, then complete the goal and report briefly what is now true and whether every check passed. If a check cannot run, leave the goal open, tell the user and wait.
