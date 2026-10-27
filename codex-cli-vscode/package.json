@@ -1,0 +1,24 @@
+{
+  "name": "ccli",
+  "displayName": "ARQAWA CCLI",
+  "version": "0.0.1",
+  "publisher": "arqawa",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ARQAWA/my-codex-harness.git"
+  },
+  "engines": {
+    "vscode": "^1.86.0"
+  },
+  "main": "./extension.js",
+  "activationEvents": ["onStartupFinished"],
+  "contributes": {
+    "commands": [
+      { "command": "ccli.newTab", "title": "New Tab", "category": "Codex CLI" },
+      { "command": "ccli.login", "title": "Login", "category": "Codex CLI" }
+    ]
+  },
+  "dependencies": {
+    "npm": "10.9.9"
+  }
+}
