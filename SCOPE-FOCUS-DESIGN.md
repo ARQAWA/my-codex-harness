@@ -30,7 +30,7 @@ Scope Focus помогает Codex точно выполнять заказ бе
 
 ## Состав
 
-- Skills `codex-tools`, `todo`, `subagents`, `blindreview`, `highreview`,
+- Skills `codex-tools`, `todo`, `reviewer`, `blindreview`, `highreview`,
   `define-goal`. Skills review не вызываются неявно.
 - Профили `spotty` и `bossy` в `plugins/scope-focus/agents/`.
 - Пять hooks: `SessionStart`, `SubagentStart`, `SubagentStop`,
@@ -41,14 +41,14 @@ Scope Focus помогает Codex точно выполнять заказ бе
 
 ## Подача правил
 
-`SessionStart` подаёт root Main `codex-tools` с путями CLI, `todo`, `subagents`
+`SessionStart` подаёт root Main `codex-tools` с путями CLI, `todo`
 и строку окружения; при resume и compact ещё открытый todo-список.
 `SubagentStart` подаёт субагенту только `codex-tools`; роль он берёт из профиля
 и брифа. `UserPromptSubmit` подаёт открытый todo-список или напоминание создать
 его. `Stop` сначала не даёт Main закончить, пока работает субагент, потом один
 раз за ход возвращает модель к пунктам `pending` и `in_progress`.
 
-Правила todo-списка, review и субагентов живут в skills пакета, а не в системном
+Правила todo-списка и review живут в skills пакета, а не в системном
 промпте. Механика инструментов Codex — в `codex-tools`.
 
 ## Todo
@@ -63,8 +63,14 @@ Root Main ведёт список через `tools/todo.cjs` для задач�
 ## Субагенты и review
 
 Main пишет код, конфигурацию, документацию и промпты, запускает программы и сам
-выбирает способ выполнения. Обычных субагентов он запускает через `spawn_agent`
-без ограничений, по своему решению.
+выбирает способ выполнения. Плагин не задаёт правил запуска обычных субагентов
+и не подаёт собственный текст режима: действует штатная подсказка Codex,
+разрешающая `spawn_agent` только по явной просьбе пользователя или инструкциям
+AGENTS.md и skills. В `config.toml` нужна только `enabled = true` в
+`[features.multi_agent_v2]`, ключа `multi_agent_mode_hint_text` нет.
+
+Правила review живут в skill `reviewer`, который читается при вызове
+`$blindreview`, `$highreview` или аудита; hook его не подаёт.
 
 Review идёт только по просьбе пользователя: `$blindreview`, `$highreview` или
 явно заказанный аудит. Ни Main по своей инициативе, ни release, ни gate

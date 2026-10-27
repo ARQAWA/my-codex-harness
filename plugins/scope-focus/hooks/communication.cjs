@@ -80,7 +80,6 @@ const sections = input.hook_event_name === 'SubagentStart'
   : [
       `${codexTools}\nTodo CLI: node "${todoCli}"`,
       skill('Apply the following todo rules to every task.', 'todo'),
-      skill('Apply the following subagent and review rules to every subagent launch.', 'subagents'),
       environment(),
       ...todoSnapshot(),
     ];

@@ -1,17 +1,14 @@
 ---
-name: subagents
-description: "Root Main only: launching subagents with native spawn_agent, and review, which runs only when the user asks for it."
+name: reviewer
+description: "Review procedure for blind and high reviews through native agent profiles; only when requested or required by an invoked skill."
 ---
 
-# Subagents
-
-Launch subagents with native `spawn_agent` whenever they help the task, without waiting for a request from the user: you choose the agent type, model, reasoning, context and brief. The only exception is review below. Launch independent subagents in one response. The call returns at once; the final arrives later as a message from that agent. Keep doing your own part of the task, but do not write your final answer while a subagent runs: when nothing else is left, call `wait_agent`, and its finals wake you. Never poll and never run filler commands such as pwd, ls or git status.
-
-## review
+# Reviewer
 
 Blind review by a separate read-only model that works with you as one team for the user's agreement: it checks the requested criterion, including checks beyond the agreement and exclusions, and gets the user's own messages verbatim. Use it when the user asks for a review or a checked result: his skills `$blindreview` and `$highreview` ask for these levels, and a skill he calls may run it as its procedure. Never launch a reviewer on your own initiative or as an automatic step of other work. Keep working meanwhile, but leave the reviewed files unchanged until its verdict.
 
 - Level: blind by default; high when the user asks for it. The level picks the profile: blind `spotty` (`gpt-6.1-terra` low), high `bossy` (`gpt-6.1-terra` medium). Launch a fresh agent for the initial review and for each changed-object pass with `spawn_agent`, `agent_type` set to that profile and `fork_turns: "none"`; the profile pins the model and carries the reviewer role, and the brief is the reviewer's whole input, with every path absolute when the work runs in another directory. If the selected profile is unavailable, report that the reviewer cannot run. There is no standalone review tool or fallback.
+- The launch returns at once and the verdict arrives later as that agent's final message. Keep doing your own part meanwhile; when nothing else is left, call `wait_agent`, and finals wake you. Never poll and never run filler commands.
 - Brief, these sections in this order. Supply primary requirement and governing-rule sources, not only your summary; the reviewer reads them independently, including any required user-facing explanation rules:
   - `<user_messages>`: every message of the user in this conversation, verbatim and in order, each as `<message n="N">…</message>`; a summary of earlier context goes in as `<compaction_summary note="written by the main model when it compacted the context, not the user's words">…</compaction_summary>`.
   - `<agreement>`, only when needed: only decisions the user himself accepted, verbatim, each with its source and evidence of his acceptance. Your approval or another agent's is not agreement.

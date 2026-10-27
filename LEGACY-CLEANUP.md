@@ -88,6 +88,7 @@ done
 | `model_catalog_json` | удаляй, только если значение указывает на `codex-model-catalog.json` этого harness; другое значение сохрани и сообщи владельцу |
 | `codex-model-catalog.json` | файл, на который указывал удалённый `model_catalog_json`: в Codex home или по исторически настроенному пути вне его |
 | `features.multi_agent_v2 = false` | точное значение; заменяется таблицей из инструкции установки |
+| `multi_agent_mode_hint_text` в `[features.multi_agent_v2]` | прежняя подсказка активного делегирования; удали ключ, `enabled = true` сохрани |
 | `[features.token_budget]` с `guidance_message` про Context Router, `local-context-memory` или `ctx-mgr-local-native`, `features.context_management` | текст про Context Router, LCM или прежний Context Management; остальные ключи сохрани |
 | `model_provider = "luna_fast_proxy"` и `[model_providers.luna_fast_proxy]` | `base_url = "http://127.0.0.1:18080/v1"`; прежний provider выбирает владелец |
 | `hooks.state.*` с ключами `scope-focus` или `lunatron`, которых нет среди текущих определений `hooks/list` | ключ указывает на плагин и отсутствует в `hooks/list`; текущие ключи и ключи под охраной `personal` сохрани |

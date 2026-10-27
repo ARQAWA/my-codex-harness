@@ -13,7 +13,7 @@ Skills:
 |---|---|
 | `codex-tools` | механика инструментов Codex: лимиты `exec`, code mode, `apply_patch`, жадный поиск `rg` волнами, CLI чтения `tools/read.cjs` |
 | `todo` | todo-список root Main через CLI `tools/todo.cjs`: операции строками вроде `'done 1.2'` |
-| `subagents` | запуск любых субагентов через `spawn_agent` без ограничений и review только по просьбе пользователя |
+| `reviewer` | правила review уровней blind и high; читается при вызове `$blindreview`, `$highreview` или аудита, hook его не подаёт |
 | `blindreview`, `highreview` | единственный штатный запуск review уровня blind или high текущей работы |
 | `define-goal` | `$define-goal`: цель с цитатами, старт без «го» при отсутствии вопросов, проверки критериев перед завершением |
 
@@ -25,11 +25,11 @@ Skills:
 | `bossy` | `gpt-6.1-terra / medium` | review уровня high и аудит |
 
 Профили только для review: Main запускает их, только когда пользователь
-просит review. Другие субагенты Main запускает сам, без профилей пакета.
+просит review. Правил запуска других субагентов пакет не задаёт.
 
 Пять hooks. `hooks/communication.cjs` подаёт правила: `SessionStart`
 (startup, resume, clear, compact) — root Main получает `codex-tools` с путями
-CLI чтения и todo CLI, `todo`, `subagents` и строку окружения с программами в
+CLI чтения и todo CLI, `todo` и строку окружения с программами в
 `PATH` и правилом путей; при resume и compact ещё открытый todo-список.
 `SubagentStart` — субагент получает только `codex-tools` с путём CLI чтения.
 У `SessionStart` и `UserPromptSubmit` `additionalContextLimit = 65536`, у
@@ -60,17 +60,17 @@ Todo CLI и hooks работают с сохранённым списком, б�
 чтения истории разговора.
 
 Финалы субагентов приходят Main сообщениями в режиме `multi_agent_v2`.
-Штатный режим v2 запрещает запускать субагентов без прямой просьбы
-пользователя. Scope Focus снимает это ограничение для всех субагентов, кроме
-ревьюеров. Поэтому установка задаёт в `config.toml` таблицу
-`[features.multi_agent_v2]` с текстом режима, который Codex подаёт вместо
-штатного запрета:
+Scope Focus не меняет правила их запуска: действует штатная подсказка Codex,
+которая запрещает запуск без явной просьбы пользователя или инструкций
+AGENTS.md и skills. Собственного текста режима пакет не подаёт. Нативные
+агенты включаются одной таблицей в `config.toml`:
 
 ```toml
 [features.multi_agent_v2]
 enabled = true
-multi_agent_mode_hint_text = "Multi-agent delegation is unrestricted: launch any subagents whenever they help, without waiting for an explicit user request. Launch the reviewers spotty and bossy only when the user asks for a review. User requests override this hint."
 ```
+
+Ключ `multi_agent_mode_hint_text` из прежних версий удаляется при обновлении.
 
 Системный промпт — отдельный компонент: [system-prompt.md](system-prompt.md).
 
@@ -100,9 +100,9 @@ codex plugin add "scope-focus@<marketplace>" --json
 покажи владельцу разницу и заменяй только с его согласия.
 
 Задай в `config.toml` таблицу `[features.multi_agent_v2]` из «Состава», сохранив
-остальные ключи `[features]`. Строку `multi_agent_v2 = true` или `false` в
-`[features]` замени этой таблицей; `false` меняй после показа строки владельцу
-и его согласия.
+остальные ключи `[features]`. Ключ `multi_agent_mode_hint_text` удали, если он
+есть. Строку `multi_agent_v2 = true` или `false` в `[features]` замени этой
+таблицей; `false` меняй после показа строки владельцу и его согласия.
 
 Через штатный Codex app-server `hooks/list` найди пять текущих определений
 hooks Scope Focus этого пакета. После штатного review/trust запиши через
@@ -130,7 +130,8 @@ hooks включены, доверены и ссылаются на устано
 
 Выполни ту же команду `codex plugin add "scope-focus@<marketplace>" --json`,
 затем скопируй два профиля той же версии, задай таблицу
-`[features.multi_agent_v2]` из «Состава», и примени процедуру trust для изменившихся определений
+`[features.multi_agent_v2]` из «Состава» и удали ключ
+`multi_agent_mode_hint_text`, если он есть, и примени процедуру trust для изменившихся определений
 hooks. Отличающийся профиль или другое значение ключа заменяй после показа
 разницы и согласия владельца. Сохрани остальные профили, hooks, настройки и
 данные. Файлы и skills, которых нет в выбранной ревизии пакета, не должны

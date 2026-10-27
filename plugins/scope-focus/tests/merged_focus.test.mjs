@@ -30,13 +30,13 @@ for (const gone of ['smarty', 'code_writer', 'shell_runner', 'codebase_explorer'
   assert.ok(!existsSync(path.join(root, 'agents', `${gone}.toml`)), `${gone} profile removed`);
 }
 
-for (const skill of ['todo', 'subagents', 'codex-tools', 'define-goal', 'blindreview', 'highreview']) {
+for (const skill of ['todo', 'reviewer', 'codex-tools', 'define-goal', 'blindreview', 'highreview']) {
   for (const file of ['SKILL.md', 'agents/openai.yaml']) {
     assert.ok(existsSync(path.join(root, 'skills', skill, file)), `${skill}/${file}`);
   }
   assert.ok(read(`skills/${skill}/agents/openai.yaml`).includes('allow_implicit_invocation: false'), `${skill}: implicit invocation off`);
 }
-for (const gone of ['approval', 'testreview', 'lightreview', 'gold-standard', 'clear-communication', 'main-workflow', 'light-review-cycle', 'blind-review-cycle', 'high-review-cycle']) {
+for (const gone of ['subagents', 'approval', 'testreview', 'lightreview', 'gold-standard', 'clear-communication', 'main-workflow', 'light-review-cycle', 'blind-review-cycle', 'high-review-cycle']) {
   assert.ok(!existsSync(path.join(root, 'skills', gone)), `${gone} removed`);
 }
 
@@ -57,10 +57,10 @@ const runHook = eventName => {
 };
 
 const session = runHook('SessionStart');
-for (const term of ['# Codex tool mechanics', '# Todo', '# Subagents', 'Todo CLI:', 'Reader CLI:', 'Environment: paths: absolute like']) {
+for (const term of ['# Codex tool mechanics', '# Todo', 'Todo CLI:', 'Reader CLI:', 'Environment: paths: absolute like']) {
   assert.ok(session.includes(term), term);
 }
-for (const term of ['# Approval', '# Gold Standard', '# Main Workflow', '# Clear Communication']) assert.ok(!session.includes(term), `${term} must be absent`);
+for (const term of ['# Subagents', '# Reviewer', '# Approval', '# Gold Standard', '# Main Workflow', '# Clear Communication']) assert.ok(!session.includes(term), `${term} must be absent`);
 const subagent = runHook('SubagentStart');
 for (const term of ['# Codex tool mechanics', 'Reader CLI:']) assert.ok(subagent.includes(term), term);
 for (const term of ['# Todo', '# Subagents', 'Todo CLI:']) assert.ok(!subagent.includes(term), `${term} must be absent`);

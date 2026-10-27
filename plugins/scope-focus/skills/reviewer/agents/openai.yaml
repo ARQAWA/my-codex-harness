@@ -1,0 +1,6 @@
+interface:
+  display_name: "Reviewer"
+  short_description: "Правила review уровней blind и high по просьбе пользователя"
+  default_prompt: "Use $blindreview or $highreview to review the current work."
+policy:
+  allow_implicit_invocation: false

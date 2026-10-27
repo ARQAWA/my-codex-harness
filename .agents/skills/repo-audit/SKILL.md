@@ -5,7 +5,7 @@ description: "Whole-repository consistency audit only on the owner's request (au
 
 # Repository audit
 
-On the owner's direct audit request, run a high review with `bossy` by the review rules of the plugin's `subagents` skill. Nothing starts an audit automatically: no release, schedule, background timer or separate service. An audit alone authorizes no merge, push or installation.
+On the owner's direct audit request, run a high review with `bossy` by the review rules of the plugin's `reviewer` skill. Nothing starts an audit automatically: no release, schedule, background timer or separate service. An audit alone authorizes no merge, push or installation.
 
 When the owner orders the audit together with a release, finish the normal task edits and the finalize-work gate first, then audit that prepared result, instead of an intermediate result that Main is already changing. Keep the object unchanged during every pass and batch repairs after the verdicts.
 

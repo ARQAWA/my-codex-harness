@@ -1,6 +1,0 @@
-interface:
-  display_name: "Subagents"
-  short_description: "Запуск субагентов и review по просьбе пользователя"
-  default_prompt: "Use $subagents to launch subagents for this task."
-policy:
-  allow_implicit_invocation: false
