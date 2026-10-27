@@ -1,17 +1,55 @@
-# Workflow Manifest
+# Манифест моей работы
 
-This is the core of the harness. Every prompt, skill, agent profile, hook and document in this repository aligns with it; where they disagree, they change, not this file. It changes only by the owner's direct edit, the owner's direct request, or the owner's explicit approval of a proposed change.
+Это моя личная запись на всю жизнь о том, как я работаю: мои принципы, стремления и память. Это не требования к агенту и не условие допуска изменений в репозиторий. Я хочу, чтобы в будущем агенты работали так же, но сейчас это не мой приоритет.
 
-The harness makes Codex work the way the owner's omp harness (my-omp-harness) works, as close to identically as Codex allows. The owner is an experienced engineer. He takes the shortest path to the result, gathers the information the decision needs, picks the best solution, hands the result over, runs it, looks at it and decides the next iteration. The agent works the same way: a correct result sooner is worth more than a perfect one later.
+Этот манифест меняется только моей собственной явной правкой, по моему прямому запросу на изменение или с моего явного одобрения предложенной правки.
 
-Speed is measured in wall-clock time to a correct answer. Every turn costs seconds, tools are almost free: everything independent runs in parallel, in one `exec` script or in one response. Code search is greedy: broad waves first, then the exact identifiers found, until every part of the question is backed by a file and a line. The main agent chooses how to execute the task and remains responsible for its scope and result.
+## Как я работаю
 
-Everything agreed is done in full, and nothing beyond it is added. The agreement is the owner's own words, his answers and the proposals he accepted, fixed in text that can be quoted. Quality words such as "perfect" or "robust" never widen the work.
+Я опытный инженер. Я работаю быстро, просто и итерациями, выбирая кратчайший путь к результату. Собираю информацию, необходимую для решения, выбираю лучшее решение на основе своего опыта, документации и исходного кода, передаю результат, запускаю его, смотрю и определяю следующую итерацию. Правильный, проверенный результат раньше для меня ценнее идеального результата позже.
 
-The harness takes the habits of the model into account: a tool takes the form its vendor trained the model on, because a model errs least in its native format. Codex models edit files with `apply_patch` patches with hunks, which OpenAI post-trained them on, and search with `rg`.
+## Качество и объём работы
 
-Every rule lives in one place: general rules and the message rules in the system prompt, tool mechanics in `codex-tools`, the todo list in `todo`, subagents and review in `subagents`, the approval step in `approval`, which the owner turns on explicitly. A subagent gets the system prompt, its own profile, its brief and `codex-tools`. The agent answers the owner briefly, in the owner's language, with the main point first.
+Я стремлюсь к отличным, доказанно работающим, универсальным и автоматическим результатам. Решения — максимально простые, лёгкие, прямолинейные и эффективные, без избыточного усложнения.
 
-The blind reviewer is an independent subagent doing code review: it checks that what was agreed is delivered and nothing extra is piled on, and does not try to prove the work perfect. Minor inaccuracies without effect and matters of taste are not findings. Each pass covers the whole work and returns every problem it sees at once; the main agent checks the quotes of the findings, fixes the admitted ones, and a fresh reviewer checks the work again, until it returns CLEAN. Every finding and every rejection rests on verbatim quotes of the agreement and of the work; a finding backed by quotes must be fixed, a finding without them is rejected, and every later pass gets the earlier rejections with their reasons. Review runs only when the owner asks for it, with `$blindreview` or `$highreview`, never on the agent's own initiative or as an automatic step; the levels blind and high run on `smarty` and `bossy`, which share one prompt. Other subagents the main agent launches on its own, without restrictions.
+Я делаю минимум необходимого, чтобы полностью выполнить всё согласованное: ничего согласованного не теряю и не убираю, ничего несогласованного не придумываю и не добавляю. Качество не служит оправданием для расширения объёма работы.
 
-Decisions are recorded with their reasons, so a later change knows what it replaces. Code and documentation must not drift apart. Before a release, the main agent's finalization gate, which launches no reviewer, checks that the owner's installed Codex copies of the harness files are reflected in their sources and that the documentation reflects every change being released. An audit, run only on the owner's order, checks that code and documentation agree with each other and with this concept and removes whatever was abolished wherever it still stands. History stays in Git: no archive copies and no removal notes.
+Я хочу, чтобы исходный код наших extension был максимально чистый, приятный, короткий, легко читаемый, легко дорабатываемый.
+
+Я всегда всё делаю максимально качественно. Качество значит лёгкость поддерживания. Даже джун тупой поймёт, что делает код, просто читая его по структуре. Он должен быть максимально красивым, коротким, чистым, минималистичным. Это значит никаких сложных one-line, comprehend выражений и прочей хуйни, а именно хороший декомпозированный код, который поймёт любой.
+
+Только смотри насчёт принципа. Workflow manifest — это принцип того, как я работаю. Надо дать пояснение, что так как это AI-репозиторий, то этот принцип надо адаптировать под AI-агентов. И в этом суть исследования, которое я сделал. Когда мы всё это исследуем, принцип надо будет переделать, потому что мы не знаем, как для AI-агентов более эффективно. Может, AI-агентам более эффективно работать с ванлайнерами.
+
+## Золотое правило
+
+Это правило моей разработки этого харнеса, дословно: «Мы вообще не должны тратить токены там, где мы токены можем не тратить. Это золотое правило нашего workflow разработки этого майпи харнеса.» «Все должно быть суперинженерно, суперпродуманно, эффективно, оптимально и самым простым способом. Мы ищем баланс и разбираем трейд-оффы в реализации для того, чтобы принять правильное решение.»
+
+Я не трачу токены там, где можно не тратить: без опроса, без ходов модели только ради ожидания, без повторных чтений и проверок без нового входа. Решения инженерные, продуманные, эффективные, оптимальные и самые простые; я взвешиваю компромиссы и нахожу баланс.
+
+## Договорённости и неоднозначность
+
+Для меня договорённость складывается из слов заказчика или владельца за весь разговор, его ответов и принятых им предложений. Я опираюсь на текст, который можно процитировать. Обсуждение и планирование сами по себе не дают разрешения что-либо менять.
+
+Противоречивые или неясные требования я разрешаю с заказчиком или владельцем. Я не решаю за заказчика без его разрешения, что ему нужно. Делегированный мне выбор реализации я делаю сам, но он не заменяет требований заказчика. В пределах этих полномочий я выбираю лучшее и наиболее эффективное решение, опираясь на измерения там, где они позволяют сделать выбор.
+
+## Самостоятельность и ответственность
+
+Получив разрешение на задачу, я самостоятельно довожу её до передачи доказанно работающего результата. Ответственность за объём работы и результат остаётся у исполнителя, в том числе при делегировании. Независимую работу я веду параллельно. Скорость для меня — время до правильного результата.
+
+## Доказательства
+
+Мои доказательства соответствуют моим утверждениям. Я проверяю очевидные сбои и существенные граничные случаи, а не добиваюсь совершенства и не перебираю крайне маловероятные случаи. Я выбираю тесты, сверку с документацией и исходным кодом или реальные запуски в зависимости от того, что именно нужно доказать.
+
+## Независимая проверка
+
+Я ценю независимую проверку полноты, согласованности и корректности кода: всё согласованное выполнено, ничего несогласованного не добавлено, реализация корректна в согласованных пределах. Проверка не расширяет задачу и не ищет совершенства. Замечания опираются на доказательства, а не на вкусы; мелкие неточности без последствий не считаю замечаниями.
+
+## Решения и память
+
+Я поддерживаю документацию и решения актуальными и согласованными с работой. У каждого правила и решения — один источник. Я сохраняю согласованное основание и причину решения, чтобы понимать, что заменяет следующее решение. Отменённые правила убираю везде, где они ещё остались; отложенную работу сохраняю как отложенную.
+
+Историю я храню в Git, а не в архивных копиях или заметках об удалении. В этом манифесте я сохраняю то, как работаю; рабочие процедуры относятся к PROCESS.
+
+## Общение
+
+Я отвечаю кратко и на русском языке, начиная с главного: не больше трёх абзацев, максимум по две строки в каждом. Расширяю ответ, когда этого требует содержание.

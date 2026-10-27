@@ -15,7 +15,7 @@ Before the first question, read the code, configuration and documents the rough 
 
 ## 2. Interview
 
-Ask in the chat, in the question format, all open questions of a round in one message, then end the turn and wait. Ask only what changes the result and what the files cannot settle: the end state, how to prove it, what must not change, the limits of the run, and hard parts the user may not have weighed. Each question gives two to four concrete options from the project, the recommended one marked, each with its consequence. Stop once the objective can be written; one or two rounds usually suffice. If the user declines, set no goal.
+Ask in the chat, one question per message in the question format, then end the turn and wait; keep the other open questions for later messages. Ask only what changes the result and what the files cannot settle: the end state, how to prove it, what must not change, the limits of the run, and hard parts the user may not have weighed. Each question gives two to four concrete options from the project, the recommended one marked, each with its consequence. Stop once the objective can be written. If the user declines, set no goal.
 
 ## 3. Draft the objective
 
@@ -34,7 +34,7 @@ Keep required outcomes distinct from implementation choices. A necessary constra
 
 Check the objective against the user's words: nothing agreed is lost or distorted, nothing unsaid is added except `Quotes: proposed` items. Never show the objective. Write a short retelling in the user's language: one bold sentence with the main point, short numbered items with the exact values, then «Границы», «Остановка» and «Проверка», a line or two each. Mark every proposed item as your proposal with its reason.
 
-When the retelling holds no proposal, divergence or decision of yours the user must confirm, set the goal at once by step 5. Otherwise put each into the question format and end with one line that says what starts and asks for the go, such as «Начинаем цель: интерфейс в стиле Cursor? Ответь «го» или напиши, что поправить.» Then wait. «го», «да» or «начинаем» accepts the whole goal with the chosen options, the recommended ones where unanswered. A correction changes the objective and adds his words to Quotes; show the new retelling and ask again only about what changed.
+When the retelling holds no proposal, divergence or decision of yours the user must confirm, set the goal at once by step 5. Otherwise ask about each such place in the question format, one question per message; an unanswered question is not approval. Once every required decision has its own answer, end the retelling with one line that says what starts and asks for the go, such as «Начинаем цель: интерфейс в стиле Cursor? Ответь «го» или напиши, что поправить.» Then wait. «го», «да» or «начинаем» accepts the whole goal with the decisions already answered. A correction changes the objective and adds his words to Quotes; show the new retelling and ask again only about what changed.
 
 ## 5. Set and work
 

@@ -34,7 +34,7 @@ const main = async () => {
       break;
     }
     case 'Stop': {
-      // First in the stop order, like the omp subagent check, so the todo check never drops a final.
+      // First in the stop order, so the todo check never drops a subagent final.
       let running = 0;
       try {
         running = require(join(__dirname, 'running.cjs')).runningCount(input.session_id);

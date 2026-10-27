@@ -110,7 +110,7 @@ await check('state without plans: loads with no plans, and an append keeps the s
   assert.equal(after.phases[0].tasks[0].content, 'First');
 });
 
-await check('numeric-string current: a saved string loads as a number, a string step fails like omp and a number step saves', () => {
+await check('numeric-string current: a saved string loads as a number, a string step fails and a number step saves', () => {
   const home = freshHome();
   const planKey = 'Work\u0000First';
   const phases = [{ name: 'Work', tasks: [{ content: 'First', status: 'in_progress' }] }];

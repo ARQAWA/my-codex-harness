@@ -22,7 +22,7 @@ const readerCli = join(__dirname, '..', 'tools', 'read.cjs');
 const todoCli = join(__dirname, '..', 'tools', 'todo.cjs');
 const codexTools = `${skill('Apply the following Codex tool mechanics to every tool call.', 'codex-tools')}\nReader CLI: node "${readerCli}"`;
 
-// The same program list as the omp harness environment line.
+// Programs reported to the agent in the environment line.
 const ENV_PROGRAMS = ['git', 'node', 'bun', 'npm', 'pnpm', 'python3', 'python', 'cargo', 'rustc', 'go', 'java', 'docker', 'gh', 'rg', 'fd', 'jq', 'make', 'cmake'];
 
 function onPath(name) {

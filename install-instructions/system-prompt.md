@@ -5,7 +5,8 @@
 ## Состав
 
 [`new-model-instructions.md`](../new-model-instructions.md) — `SYSTEM.md`
-my-omp-harness (`master`, коммит `1f7e34d`) с правилами общения внутри.
+из `extensions/RQW-prompt` my-pi с правилами общения внутри и блоком
+Communication из `extensions/RQW-dyslexia` в конце.
 Отличия только в механике Codex: продукт назван Codex, независимые вызовы
 идут в один `exec`, файлы правятся только через `apply_patch`, промежуточные
 сообщения идут в канал `commentary`, финальный ответ в канал `final`.
@@ -38,7 +39,7 @@ model_instructions_file = "<абсолютный путь к установле�
 model_verbosity = "low"
 ```
 
-`model_verbosity = "low"` повторяет настройку `textVerbosity low` my-omp-harness.
+`model_verbosity = "low"` держит ответы модели короткими.
 Если установленная копия промпта или ключ уже есть и отличаются от исходника,
 покажи владельцу разницу и заменяй только с его согласия.
 

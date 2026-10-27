@@ -69,8 +69,8 @@ function rolloutEnded(transcriptPath) {
   }
 }
 
-// A new process of the session, at startup, resume or clear, starts with no running subagents, as omp keeps them in
-// process memory: records of a process that ended, such as after a crash, must not hold Main at Stop.
+// A new process of the session, at startup, resume or clear, starts with no running subagents:
+// records of a process that ended, such as after a crash, must not hold Main at Stop.
 function clearSession(sessionId) {
   rmSync(agentsDir(sessionId), { recursive: true, force: true });
 }

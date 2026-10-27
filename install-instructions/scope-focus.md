@@ -4,7 +4,7 @@
 
 ## Состав
 
-Пакет `plugins/scope-focus` переносит в Codex рабочий процесс my-omp-harness:
+Пакет `plugins/scope-focus` переносит в Codex пользовательский harness my-pi:
 skills, профили агентов, hooks и два CLI.
 
 Skills:
@@ -12,9 +12,8 @@ Skills:
 | Skill | Назначение |
 |---|---|
 | `codex-tools` | механика инструментов Codex: лимиты `exec`, code mode, `apply_patch`, жадный поиск `rg` волнами, CLI чтения `tools/read.cjs` |
-| `todo` | todo-список root Main через CLI `tools/todo.cjs`: операции строками вроде `'done 1.2'`, как инструмент `todo` в omp |
+| `todo` | todo-список root Main через CLI `tools/todo.cjs`: операции строками вроде `'done 1.2'` |
 | `subagents` | запуск любых субагентов через `spawn_agent` без ограничений и review только по просьбе пользователя |
-| `approval` | шаг согласования и классы работы micro/small/large; hook его не подаёт, вызывается явно `$approval` |
 | `blindreview`, `highreview` | единственный штатный запуск review уровня blind или high текущей работы |
 | `define-goal` | `$define-goal`: цель с цитатами, старт без «го» при отсутствии вопросов, проверки критериев перед завершением |
 
@@ -22,8 +21,8 @@ Skills:
 
 | Профиль | Модель | Роль |
 |---|---|---|
-| `smarty` | `gpt-6.1-sol / low` | review уровня blind |
-| `bossy` | `gpt-6.1-sol / medium` | review уровня high и аудит |
+| `spotty` | `gpt-6.1-terra / low` | review уровня blind |
+| `bossy` | `gpt-6.1-terra / medium` | review уровня high и аудит |
 
 Профили только для review: Main запускает их, только когда пользователь
 просит review. Другие субагенты Main запускает сам, без профилей пакета.
@@ -60,8 +59,8 @@ CLI чтения и todo CLI, `todo`, `subagents` и строку окружен
 Todo CLI и hooks работают с сохранённым списком, без запросов к модели и
 чтения истории разговора.
 
-Финалы субагентов приходят Main сообщениями в режиме `multi_agent_v2`, как в
-omp. Штатный режим v2 запрещает запускать субагентов без прямой просьбы
+Финалы субагентов приходят Main сообщениями в режиме `multi_agent_v2`.
+Штатный режим v2 запрещает запускать субагентов без прямой просьбы
 пользователя. Scope Focus снимает это ограничение для всех субагентов, кроме
 ревьюеров. Поэтому установка задаёт в `config.toml` таблицу
 `[features.multi_agent_v2]` с текстом режима, который Codex подаёт вместо
@@ -70,7 +69,7 @@ omp. Штатный режим v2 запрещает запускать суба
 ```toml
 [features.multi_agent_v2]
 enabled = true
-multi_agent_mode_hint_text = "Multi-agent delegation is unrestricted: launch any subagents whenever they help, without waiting for an explicit user request. Launch the reviewers smarty and bossy only when the user asks for a review. User requests override this hint."
+multi_agent_mode_hint_text = "Multi-agent delegation is unrestricted: launch any subagents whenever they help, without waiting for an explicit user request. Launch the reviewers spotty and bossy only when the user asks for a review. User requests override this hint."
 ```
 
 Системный промпт — отдельный компонент: [system-prompt.md](system-prompt.md).
@@ -143,7 +142,7 @@ hooks или зависимости; доказательства неизмен
 первую установку и пробные задачи не повторяй.
 
 После установки удали из `<CODEX_HOME>/agents` только устаревшие активные
-`enot.toml`, `properliler.toml`, `explorer.toml`, `spotty.toml`,
+`enot.toml`, `properliler.toml`, `explorer.toml`, `smarty.toml`,
 `code_writer.toml`, `shell_runner.toml` и `codebase_explorer.toml`, если они остались от
 предыдущего пакета Scope Focus; все остальные профили сохрани. Остальные следы
 прежних версий убирает [LEGACY-CLEANUP.md](../LEGACY-CLEANUP.md), который

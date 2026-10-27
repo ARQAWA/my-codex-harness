@@ -6,7 +6,7 @@ const { join } = require('node:path');
 
 // Todo list of the scope-focus plugin. Run as a CLI from the Codex shell, it edits the list of the
 // current session; required as a library, it exports the read side that the hooks use.
-// The op grammar and the texts follow the omp todo tool.
+// The op grammar and the texts are the stable contract of this CLI.
 const STATUSES = ['pending', 'in_progress', 'completed', 'abandoned', 'blocked'];
 const MARK = { completed: '✓', in_progress: '●', pending: '○', blocked: '⊘', abandoned: '✗' };
 const TODO_REMINDER = [
