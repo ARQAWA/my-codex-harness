@@ -27,7 +27,7 @@ Skills:
 Профили только для review: Main запускает их, только когда пользователь
 просит review. Правил запуска других субагентов пакет не задаёт.
 
-Пять hooks. `hooks/communication.cjs` подаёт правила: `SessionStart`
+Четыре hooks. `hooks/communication.cjs` подаёт правила: `SessionStart`
 (startup, resume, clear, compact) — root Main получает `codex-tools` с путями
 CLI чтения и todo CLI, `todo` и строку окружения с программами в
 `PATH` и правилом путей; при resume и compact ещё открытый todo-список.
@@ -36,21 +36,12 @@ CLI чтения и todo CLI, `todo` и строку окружения с пр�
 `SubagentStart` 32768. `communication.cjs` читает инструкции из установленного
 пакета. Подача не гарантирует следование модели.
 
-Работающих субагентов сессии отмечают файлы в
-`<CODEX_HOME>/scope-focus-todo/agents-<id сессии>/`: при `SubagentStart` его
-пишет `communication.cjs`, при `SubagentStop` убирает `hooks/subagents.cjs`. Пока такой субагент
-работает, `Stop` не даёт Main закончить ход и велит ждать финал через
-`wait_agent`. Субагент, чей rollout уже закончил ход, или запись старше часа
-ход не держат. Новый процесс сессии (`SessionStart` startup, resume и clear)
-сбрасывает отметки: субагенты оборванного процесса Main не держат.
-
 Собственный todo-список root Main ведёт CLI `tools/todo.cjs`: агент вызывает его
 через shell, а CLI по `CODEX_THREAD_ID` пишет список сессии в файл
 `<CODEX_HOME>/scope-focus-todo/todo-<id сессии>.json` (обычно `~/.codex`).
 После каждого изменения CLI печатает текущий пункт и открытый список. Hooks
 читают этот файл через `hooks/todo.cjs`: `UserPromptSubmit` подаёт список
-с открытыми пунктами или напоминание создать его, `Stop` после проверки
-субагентов один раз за ход возвращает модель к работе, пока есть пункты
+с открытыми пунктами или напоминание создать его, `Stop` один раз за ход возвращает модель к работе, пока есть пункты
 `pending` или `in_progress`; пункт `blocked` ход не держит. События субагентов
 `todo.cjs` пропускает.
 
@@ -104,7 +95,7 @@ codex plugin add "scope-focus@<marketplace>" --json
 есть. Строку `multi_agent_v2 = true` или `false` в `[features]` замени этой
 таблицей; `false` меняй после показа строки владельцу и его согласия.
 
-Через штатный Codex app-server `hooks/list` найди пять текущих определений
+Через штатный Codex app-server `hooks/list` найди четыре текущих определения
 hooks Scope Focus этого пакета. После штатного review/trust запиши через
 `config/batchWrite` их точные ключи в `hooks.state`, `enabled = true` и
 `trusted_hash = currentHash` текущего определения. Совпадающие записи не
@@ -119,8 +110,8 @@ hooks Scope Focus этого пакета. После штатного review/tr
 На целевой ОС проверь: пакет установлен и включён; два профиля в
 `<CODEX_HOME>/agents` совпадают с файлами пакета; в `config.toml`
 таблица `[features.multi_agent_v2]` совпадает с «Составом»; в пакете есть `hooks/communication.cjs`,
-`hooks/subagents.cjs`, `hooks/running.cjs`, `hooks/todo.cjs`, `tools/read.cjs`,
-`tools/todo.cjs` и `SKILL.md` всех skills из состава; по `hooks/list` все пять
+`hooks/todo.cjs`, `tools/read.cjs`,
+`tools/todo.cjs` и `SKILL.md` всех skills из состава; по `hooks/list` все четыре
 hooks включены, доверены и ссылаются на установленный пакет. На Windows
 используй Git Bash. Запросы к моделям и пробные задачи в проверку не входят.
 Состав активного установленного пакета совпадает с выбранной ревизией; в нём

@@ -3,8 +3,7 @@
 const { readFileSync } = require('node:fs');
 const { join } = require('node:path');
 
-// One script serves the todo hooks: UserPromptSubmit shows the open list, Stop first keeps Main from finishing while a
-// subagent it launched still runs, then returns the model to open items.
+// One script serves the todo hooks: UserPromptSubmit shows the open list, Stop returns the model to open items.
 // Subagent events and any failure do nothing and print nothing, except a todo list that cannot be read: that blocks,
 // so the list is never shown or taken for empty.
 let input = {};
@@ -34,17 +33,6 @@ const main = async () => {
       break;
     }
     case 'Stop': {
-      // First in the stop order, so the todo check never drops a subagent final.
-      let running = 0;
-      try {
-        running = require(join(__dirname, 'running.cjs')).runningCount(input.session_id);
-      } catch {
-        running = 0;
-      }
-      if (running > 0) {
-        block(`${running} subagent task(s) still running. Do not write your final answer yet: call wait_agent and continue with the finals it delivers. Never poll and never run filler commands such as pwd, ls or git status.`);
-        break;
-      }
       if (input.stop_hook_active === true) break;
       let state;
       try {

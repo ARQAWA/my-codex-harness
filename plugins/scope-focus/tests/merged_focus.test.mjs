@@ -41,11 +41,10 @@ for (const gone of ['subagents', 'approval', 'testreview', 'lightreview', 'gold-
 }
 
 const hooks = JSON.parse(read('hooks/hooks.json')).hooks;
-assert.deepEqual(Object.keys(hooks), ['SessionStart', 'SubagentStart', 'SubagentStop', 'UserPromptSubmit', 'Stop'], 'hook events');
+assert.deepEqual(Object.keys(hooks), ['SessionStart', 'SubagentStart', 'UserPromptSubmit', 'Stop'], 'hook events');
 assert.equal(hooks.SessionStart[0].hooks[0].additionalContextLimit, 65536, 'SessionStart');
 assert.equal(hooks.SubagentStart[0].hooks[0].additionalContextLimit, 32768, 'SubagentStart');
-assert.equal(Object.values(hooks).flatMap(groups => groups.flatMap(group => group.hooks)).length, 5, 'five hook definitions');
-assert.ok(hooks.SubagentStop[0].hooks[0].command.includes("'subagents.cjs'"), 'SubagentStop record');
+assert.equal(Object.values(hooks).flatMap(groups => groups.flatMap(group => group.hooks)).length, 4, 'four hook definitions');
 
 const runHook = eventName => {
   const result = spawnSync(process.execPath, [path.join(root, 'hooks', 'communication.cjs')], {

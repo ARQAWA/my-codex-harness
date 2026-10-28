@@ -60,10 +60,8 @@ CLI, `todo` и строку окружения; при resume и compact ещё 
 todo-список. `SubagentStart` подаёт субагенту только `codex-tools`, остальное
 он берёт из профиля и брифа. Root Main ведёт собственный todo-список через CLI
 `tools/todo.cjs`: CLI пишет список сессии в `<CODEX_HOME>/scope-focus-todo`,
-hook `UserPromptSubmit` подаёт его или напоминание создать. `SubagentStart` и
-`SubagentStop` отмечают работающих субагентов; hook `Stop` сначала не даёт Main
-закончить, пока субагент работает, потом один раз за ход возвращает модель к
-пунктам `pending` и `in_progress`; всего hooks пять. Вызов todo CLI Main делает
+hook `UserPromptSubmit` подаёт его или напоминание создать; hook `Stop` один раз
+за ход возвращает модель к пунктам `pending` и `in_progress`; всего hooks четыре. Вызов todo CLI Main делает
 в том же `exec`, что и работу. Root Main ведёт todo-список для задачи, которая
 меняет файлы или идёт в несколько этапов. Review идёт только по просьбе
 пользователя: `$blindreview` и `$highreview` запускают уровни blind и high по

@@ -33,8 +33,7 @@ Scope Focus помогает Codex точно выполнять заказ бе
 - Skills `codex-tools`, `todo`, `reviewer`, `blindreview`, `highreview`,
   `define-goal`. Skills review не вызываются неявно.
 - Профили `spotty` и `bossy` в `plugins/scope-focus/agents/`.
-- Пять hooks: `SessionStart`, `SubagentStart`, `SubagentStop`,
-  `UserPromptSubmit`, `Stop`.
+- Четыре hooks: `SessionStart`, `SubagentStart`, `UserPromptSubmit`, `Stop`.
 - CLI `tools/read.cjs` и `tools/todo.cjs` на Node.js, кроссплатформенно.
 - Системный промпт — отдельный компонент `new-model-instructions.md`, в пакет
   плагина не входит.
@@ -45,8 +44,7 @@ Scope Focus помогает Codex точно выполнять заказ бе
 и строку окружения; при resume и compact ещё открытый todo-список.
 `SubagentStart` подаёт субагенту только `codex-tools`; роль он берёт из профиля
 и брифа. `UserPromptSubmit` подаёт открытый todo-список или напоминание создать
-его. `Stop` сначала не даёт Main закончить, пока работает субагент, потом один
-раз за ход возвращает модель к пунктам `pending` и `in_progress`.
+его. `Stop` один раз за ход возвращает модель к пунктам `pending` и `in_progress`.
 
 Правила todo-списка и review живут в skills пакета, а не в системном
 промпте. Механика инструментов Codex — в `codex-tools`.
@@ -56,9 +54,7 @@ Scope Focus помогает Codex точно выполнять заказ бе
 Root Main ведёт список через `tools/todo.cjs` для задачи, которая меняет файлы
 или идёт в несколько этапов. CLI пишет список сессии в
 `<CODEX_HOME>/scope-focus-todo/todo-<id сессии>.json`. Вызов CLI делается в том
-же `exec`, что и работа, отдельный ход на список не тратится. Работающие
-субагенты отмечаются в `agents-<id сессии>/`; записи старше часа и оборванного
-процесса ход не держат.
+же `exec`, что и работа, отдельный ход на список не тратится.
 
 ## Субагенты и review
 

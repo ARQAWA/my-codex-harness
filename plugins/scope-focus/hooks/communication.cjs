@@ -5,8 +5,8 @@ const { homedir } = require('node:os');
 const { delimiter, join } = require('node:path');
 
 // Registered events accept plain stdout as additional developer context.
-// Only the event name, the session start source, the session id, the agent id and the agent's rollout path are used;
-// prompts and transcripts are never read. SubagentStart also records the running subagent for the Stop hook.
+// Only the event name, the session start source and the session id are used;
+// prompts and transcripts are never read.
 let input = {};
 try {
   input = JSON.parse(readFileSync(0, 'utf8')) ?? {};
@@ -54,24 +54,6 @@ function todoSnapshot() {
     return allItems(state).some((entry) => isOpen(entry.item.status)) ? [snapshot(state)] : [];
   } catch {
     return [];
-  }
-}
-
-if (input.hook_event_name === 'SubagentStart') {
-  try {
-    if (typeof input.session_id === 'string' && input.session_id !== '' && typeof input.agent_id === 'string' && input.agent_id !== '') {
-      require(join(__dirname, 'running.cjs')).markStarted(input.session_id, input.agent_id, input.transcript_path);
-    }
-  } catch {
-    // The record is a convenience for the stop check; a failure must not suppress the instructions.
-  }
-}
-
-if (input.hook_event_name === 'SessionStart' && input.source !== 'compact') {
-  try {
-    if (typeof input.session_id === 'string' && input.session_id !== '') require(join(__dirname, 'running.cjs')).clearSession(input.session_id);
-  } catch {
-    // A failure keeps the old records; the stale limit still frees Main.
   }
 }
 
