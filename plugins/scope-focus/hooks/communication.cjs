@@ -49,9 +49,9 @@ function todoSnapshot() {
   if (input.source !== 'compact' && input.source !== 'resume') return [];
   if (typeof input.session_id !== 'string' || input.session_id === '') return [];
   try {
-    const { allItems, isOpen, loadState, snapshot } = require(todoCli);
-    const state = loadState(input.session_id);
-    return allItems(state).some((entry) => isOpen(entry.item.status)) ? [snapshot(state)] : [];
+    const { loadState, openSnapshot } = require(todoCli);
+    const open = openSnapshot(loadState(input.session_id));
+    return open ? [open] : [];
   } catch {
     return [];
   }

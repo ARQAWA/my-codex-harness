@@ -39,8 +39,8 @@ const runTodo = (home, text) => spawnSync(process.execPath, [todoCli, text], {
 });
 const saved = (home) => JSON.parse(fs.readFileSync(stateFile(home), 'utf8'));
 const taskCount = (st) => st.phases.reduce((n, phase) => n + phase.tasks.length, 0);
-const initOne = '{"ops":[{"op":"init","list":[{"phase":"Work","items":["First"]}]}]}';
-const appendSecond = '{"ops":[{"op":"append","items":["Second"]}]}';
+const initOne = 'init Work: First';
+const appendSecond = 'append: Second';
 
 await check('missing state: loads as an empty list and init creates it', () => {
   const home = freshHome();
@@ -110,37 +110,28 @@ await check('state without plans: loads with no plans, and an append keeps the s
   assert.equal(after.phases[0].tasks[0].content, 'First');
 });
 
-await check('numeric-string current: a saved string loads as a number, a string step fails and a number step saves', () => {
+await check('numeric-string current: a saved string loads as a number and a step saves a number', () => {
   const home = freshHome();
   const planKey = 'Work\u0000First';
   const phases = [{ name: 'Work', tasks: [{ content: 'First', status: 'in_progress' }] }];
   writeState(home, JSON.stringify({ phases, plans: { [planKey]: { steps: ['a', 'b', 'c'], current: '2' } } }));
   assert.deepEqual(todo.loadState(SID).plans.get(planKey), { steps: ['a', 'b', 'c'], current: 2 });
-  const text = runTodo(home, '{"ops":[{"op":"step","item":"1.1","step":"3"}]}');
-  assert.equal(text.status, 1);
-  assert.match(text.stdout, /step has step that is not a number/);
-  const r = runTodo(home, '{"ops":[{"op":"step","item":"1.1","step":3}]}');
+  const r = runTodo(home, 'step 1.1 3');
   assert.equal(r.status, 0, r.stderr);
   assert.equal(saved(home).plans[planKey].current, 3);
 });
 
-await check('invalid current or step: the file is left alone', () => {
+await check('invalid current: the file is left alone', () => {
   const home = freshHome();
   const planKey = 'Work\u0000First';
   const phases = [{ name: 'Work', tasks: [{ content: 'First', status: 'in_progress' }] }];
   const bad = JSON.stringify({ phases, plans: { [planKey]: { steps: ['a', 'b', 'c'], current: 'two' } } });
   writeState(home, bad);
   assert.throws(() => todo.loadState(SID), /unexpected shape/);
-  const r = runTodo(home, '{"ops":[{"op":"step","item":"1.1","step":3}]}');
+  const r = runTodo(home, 'step 1.1 3');
   assert.equal(r.status, 1);
   assert.match(r.stderr, /unexpected shape/);
   assert.equal(fs.readFileSync(stateFile(home), 'utf8'), bad);
-  const good = JSON.stringify({ phases, plans: { [planKey]: { steps: ['a', 'b', 'c'], current: 1 } } });
-  writeState(home, good);
-  const rejected = runTodo(home, '{"ops":[{"op":"step","item":"1.1","step":"two"}]}');
-  assert.equal(rejected.status, 1);
-  assert.match(rejected.stdout, /step has step that is not a number/);
-  assert.equal(fs.readFileSync(stateFile(home), 'utf8'), good);
 });
 
 await check('unreadable state: loadState throws and the CLI leaves the directory unchanged', () => {
@@ -187,17 +178,26 @@ const runStdin = (home, text) => spawnSync(process.execPath, [todoCli], {
   env: { ...process.env, CODEX_HOME: home, CODEX_THREAD_ID: SID },
 });
 
-await check('text ops via argv: init, then done closes 1.1 and starts 1.2', () => {
+await check('text ops via argv: init prints the list, done closes 1.1 and prints only 1.2', () => {
   const home = freshHome();
   let r = runArgs(home, ['init Фаза: a | b']);
   assert.equal(r.status, 0, r.stderr);
+  assert.ok(r.stdout.includes('<todo>'), r.stdout);
   r = runArgs(home, ['done']);
   assert.equal(r.status, 0, r.stderr);
   const st = saved(home);
   assert.equal(st.phases[0].tasks[0].status, 'completed');
   assert.equal(st.phases[0].tasks[1].status, 'in_progress');
-  assert.ok(r.stdout.includes('Next: 1.2 "b" has no plan'), r.stdout);
-  assert.ok(r.stdout.includes('<todo>'), r.stdout);
+  assert.equal(r.stdout, 'Done 1.1. Now: 1.2 "b", no plan.\n');
+  r = runArgs(home, ['append: c']);
+  assert.equal(r.status, 0, r.stderr);
+  assert.ok(r.stdout.includes('<todo>') && r.stdout.includes('1.3 ○ c'), r.stdout);
+  r = runArgs(home, ['rm 1.3']);
+  assert.equal(r.status, 0, r.stderr);
+  assert.ok(r.stdout.includes('<todo>') && !r.stdout.includes('1.3 ○ c'), r.stdout);
+  r = runArgs(home, ['rm 1.2']);
+  assert.equal(r.status, 0, r.stderr);
+  assert.ok(r.stdout.includes('<todo> 0 of 1 open'), r.stdout);
 });
 
 await check('text ops via argv: plan then step', () => {
@@ -230,31 +230,14 @@ await check('closed: lists the closed items', () => {
   assert.ok(r.stdout.includes('1.1 ✓ a'), r.stdout);
 });
 
-await check('JSON array mixing a text op and an object op', () => {
+await check('JSON ops fail and leave the saved list unchanged', () => {
   const home = freshHome();
-  const r = runArgs(home, [JSON.stringify({ ops: ['init Фаза: a | b', { op: 'start', item: '1.2' }] })]);
-  assert.equal(r.status, 0, r.stderr);
-  const st = saved(home);
-  assert.equal(st.phases[0].tasks[0].status, 'pending');
-  assert.equal(st.phases[0].tasks[1].status, 'in_progress');
-});
-
-await check('init with an item given as JSON text carries its plan', () => {
-  const home = freshHome();
-  const planInit = JSON.stringify({ ops: [{ op: 'init', list: [{ phase: 'P', items: ['{"title":"A","plan":["s1","s2"]}'] }] }] });
-  const r = runArgs(home, [planInit]);
-  assert.equal(r.status, 0, r.stderr);
-  const st = saved(home);
-  assert.equal(st.phases[0].tasks[0].content, 'A');
-  assert.deepEqual(st.plans['P\u0000A'], { steps: ['s1', 's2'], current: 1 });
-  assert.ok(r.stdout.includes('Now: 1.1 "A", step 1/2 "s1".'), r.stdout);
-});
-
-await check('non-op value fails as not an op', () => {
-  const home = freshHome();
-  const r = runArgs(home, ['{"ops":[5]}']);
+  assert.equal(runTodo(home, initOne).status, 0);
+  const before = fs.readFileSync(stateFile(home), 'utf8');
+  const r = runTodo(home, '{"ops":[{"op":"done","item":"1.1"}]}');
   assert.equal(r.status, 1);
-  assert.ok(r.stdout.includes('op 1 is 5, not an op'), r.stdout);
+  assert.ok(r.stdout.includes('unknown op'), r.stdout);
+  assert.equal(fs.readFileSync(stateFile(home), 'utf8'), before);
 });
 
 if (failures.length === 0) console.log('PASS: todo state.');

@@ -29,12 +29,12 @@ const tmpDir = () => {
 const runNode = (script, args, options = {}) => spawnSync(process.execPath, [script, ...args], { encoding: 'utf8', ...options });
 const hookRun = (name, input, env) => runNode(path.join(P, 'hooks', name), [], { input, ...(env ? { env } : {}) });
 const todoEnv = (home, sid) => ({ ...process.env, CODEX_HOME: home, CODEX_THREAD_ID: sid });
-const todoArgv = (home, sid, text) => runNode(todoCli, [text], { env: todoEnv(home, sid) });
+const todoArgv = (home, sid, ...ops) => runNode(todoCli, ops, { env: todoEnv(home, sid) });
 const todoStdin = (home, sid, text) => runNode(todoCli, [], { env: todoEnv(home, sid), input: text });
 const state = (home, sid) => JSON.parse(fs.readFileSync(path.join(home, 'scope-focus-todo', `todo-${sid}.json`), 'utf8'));
 const taskCount = st => st.phases.reduce((n, phase) => n + phase.tasks.length, 0);
-const initOne = '{"ops":[{"op":"init","list":[{"phase":"Проба","items":["Один"]}]}]}';
-const initTwo = '{"ops":[{"op":"init","list":[{"phase":"Проба","items":["Один","Два"]}]}]}';
+const initOne = 'init Проба: Один';
+const initTwo = 'init Проба: Один | Два';
 
 await check('communication: empty, invalid and SessionStart stdin', () => {
   for (const input of ['', 'not json', JSON.stringify({ hook_event_name: 'SessionStart', source: 'startup' })]) {
@@ -137,7 +137,7 @@ await check('todo hook: reminder, snapshot, subagent skip, Stop once', () => {
   r = hookRun('todo.cjs', stop({ stop_hook_active: true }), env);
   assert.equal(r.stdout, '');
 
-  r = todoArgv(home, sid, '[{"op":"done","item":"1.1"},{"op":"block","item":"1.2","reason":"ждёт"}]');
+  r = todoArgv(home, sid, 'done 1.1', 'block 1.2: ждёт');
   assert.equal(r.status, 0, r.stderr);
 
   r = hookRun('todo.cjs', stop(), env);
@@ -153,67 +153,34 @@ await check('todo CLI: CODEX_HOME missing falls back to HOME/.codex', () => {
   assert.ok(fs.existsSync(path.join(home, '.codex', 'scope-focus-todo', 'todo-s2.json')));
 });
 
-await check('todo CLI: CRLF JSON on argv and stdin', () => {
+await check('todo CLI: CRLF ops on argv and stdin', () => {
   const home = tmpDir();
   const sid = 'crlf';
-  let r = todoArgv(home, sid, '{"ops":[\r\n{"op":"init","list":[{"phase":"A","items":["x"]}]}\r\n]}');
+  let r = todoArgv(home, sid, 'init A: x\r\n');
   assert.equal(r.status, 0, r.stderr);
-  r = todoStdin(home, sid, '{"ops":[\r\n{"op":"append","items":["y"]}\r\n]}');
+  r = todoStdin(home, sid, 'append: y\r\n');
   assert.equal(r.status, 0, r.stderr);
   assert.equal(taskCount(state(home, sid)), 2);
 });
 
-await check('todo CLI (BUG): numeric item number', () => {
+await check('todo CLI: a failing op keeps earlier ops and prints the list', () => {
   const home = tmpDir();
-  const sid = 'num';
+  const sid = 'fail';
   let r = todoArgv(home, sid, initTwo);
   assert.equal(r.status, 0, r.stderr);
-  const before = state(home, sid).phases[0].tasks[0].status;
-  r = todoArgv(home, sid, '{"ops":[{"op":"done","item":1.1}]}');
-  assert.equal(r.status, 1, r.stdout);
-  assert.ok(r.stdout.includes('Stopped at op 1'), r.stdout);
-  assert.ok(r.stdout.includes('done has item that is not text'), r.stdout);
-  assert.ok(!r.stderr.includes('TypeError'), r.stderr);
-  const after = state(home, sid).phases[0].tasks[0].status;
-  assert.equal(after, before);
-  assert.notEqual(after, 'completed');
-});
-
-await check('todo CLI (BUG): wrong field type keeps earlier ops', () => {
-  const home = tmpDir();
-  const sid = 'type';
-  let r = todoArgv(home, sid, initTwo);
-  assert.equal(r.status, 0, r.stderr);
-  r = todoArgv(home, sid, '{"ops":[{"op":"start","item":"1.2"},{"op":"block","item":"1.1","reason":5}]}');
+  r = todoArgv(home, sid, 'start 1.2', 'block 1.1');
   assert.equal(r.status, 1, r.stderr);
   assert.ok(r.stdout.includes('Stopped at op 2'), r.stdout);
-  assert.ok(r.stdout.includes('block has reason that is not text'), r.stdout);
-  assert.ok(!r.stderr.includes('TypeError'), r.stderr);
+  assert.ok(r.stdout.includes('block has no reason'), r.stdout);
+  assert.ok(r.stdout.includes('<todo>'), r.stdout);
   assert.equal(state(home, sid).phases[0].tasks[1].status, 'in_progress');
-});
-
-await check('todo CLI (BUG): plan steps that are not a list', () => {
-  const home = tmpDir();
-  const sid = 'plan';
-  let r = todoArgv(home, sid, initOne);
-  assert.equal(r.status, 0, r.stderr);
-  r = todoArgv(home, sid, '{"ops":[{"op":"plan","steps":"abc"}]}');
-  assert.equal(r.status, 1, r.stdout);
-  assert.ok(r.stdout.includes('Stopped at op 1'), r.stdout);
-  assert.ok(r.stdout.includes('plan has steps that is not a list of texts'), r.stdout);
-  assert.ok(!r.stderr.includes('TypeError'), r.stderr);
-  r = todoArgv(home, sid, '{"ops":[{"op":"plan","steps":["a",2]}]}');
-  assert.equal(r.status, 1, r.stdout);
-  assert.ok(r.stdout.includes('Stopped at op 1'), r.stdout);
-  r = todoArgv(home, sid, '{"ops":[{"op":"plan","steps":["a","b"]}]}');
-  assert.equal(r.status, 0, r.stderr);
 });
 
 await check('todo CLI (BUG): parallel calls lose nothing', async () => {
   const home = tmpDir();
   const sid = 'par';
   const env = todoEnv(home, sid);
-  const init = todoArgv(home, sid, '{"ops":[{"op":"init","list":[{"phase":"A","items":["base"]}]}]}');
+  const init = todoArgv(home, sid, 'init A: base');
   assert.equal(init.status, 0, init.stderr);
   const runChild = text => new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [todoCli, text], { env });
@@ -225,7 +192,7 @@ await check('todo CLI (BUG): parallel calls lose nothing', async () => {
   });
   for (let round = 1; round <= 3; round++) {
     const results = await Promise.all(Array.from({ length: 12 }, (_, i) =>
-      runChild(JSON.stringify({ ops: [{ op: 'append', items: [`r${round}-${i + 1}`] }] }))));
+      runChild(`append: r${round}-${i + 1}`)));
     for (const result of results) {
       assert.equal(result.code, 0, result.stderr);
       assert.equal(result.stderr, '');

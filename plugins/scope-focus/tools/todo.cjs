@@ -9,11 +9,10 @@ const { join } = require('node:path');
 // The op grammar and the texts are the stable contract of this CLI.
 const STATUSES = ['pending', 'in_progress', 'completed', 'abandoned', 'blocked'];
 const MARK = { completed: '✓', in_progress: '●', pending: '○', blocked: '⊘', abandoned: '✗' };
-const TODO_REMINDER = [
-  '<todo-reminder>',
-  'No todo list is open. For a task that changes files or runs several stages, init its list together with your first tool calls; a question answered by reading, one answer and one short action need none.',
-  '</todo-reminder>',
-].join('\n');
+const TODO_REMINDER = '<todo-reminder>No todo list is open. Init one in your first exec for a task that changes files or runs several stages; a question answered by reading, one answer or one short action needs none.</todo-reminder>';
+
+// Ops that change item numbers; after them the CLI prints the whole open list.
+const RENUMBERING = new Set(['init', 'append', 'rm']);
 
 class OpError extends Error {
   constructor(reason, fix) {
@@ -57,37 +56,6 @@ function capitalize(text) {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
-function label(op) {
-  return op.item !== undefined ? `${op.op} ${op.item}` : op.op;
-}
-
-// A raw op as the failure report names it: its text, its label, or the value itself when it is no op at all.
-function opName(raw) {
-  if (typeof raw === 'string') return raw;
-  if (typeof raw === 'object' && raw !== null && !Array.isArray(raw)) return label(raw);
-  return JSON.stringify(raw);
-}
-
-// Drops optional fields that are null, empty strings or empty arrays, and a non-positive step.
-function clean(value) {
-  if (value === null) return undefined;
-  if (typeof value === 'string') return value.trim() === '' ? undefined : value;
-  if (typeof value === 'number') return Number.isFinite(value) && value > 0 ? value : undefined;
-  if (Array.isArray(value)) {
-    const kept = value.map(clean).filter((part) => part !== undefined);
-    return kept.length > 0 ? kept : undefined;
-  }
-  if (value !== null && typeof value === 'object') {
-    const out = {};
-    for (const [key, part] of Object.entries(value)) {
-      const cleaned = clean(part);
-      if (cleaned !== undefined) out[key] = cleaned;
-    }
-    return out;
-  }
-  return value;
-}
-
 function allItems(next) {
   return next.phases.flatMap((phase, p) =>
     phase.tasks.map((item, i) => ({ phase: p, index: i, item, num: `${p + 1}.${i + 1}` })));
@@ -103,77 +71,6 @@ function show(entry) {
 
 function openList(next) {
   return allItems(next).filter((entry) => isOpen(entry.item.status)).map(show).join('; ') || 'none';
-}
-
-// An item sent as an object of the wrong shape, such as {"item": "text"}, can arrive as its JSON text.
-// Such text is read back as the item it meant.
-function parsedJson(text) {
-  const trimmed = text.trim();
-  if (!(trimmed.startsWith('{') && trimmed.endsWith('}')) && !(trimmed.startsWith('[') && trimmed.endsWith(']'))) return undefined;
-  try {
-    return JSON.parse(trimmed);
-  } catch {
-    return undefined;
-  }
-}
-
-const TITLE_KEYS = ['title', 'item'];
-const PLAN_KEYS = ['plan'];
-
-// True for a parsed object that names an item or a plan; other JSON-looking text, such as "[1]", stays plain text.
-function isWrapper(value) {
-  return typeof value === 'object' && value !== null && !Array.isArray(value) && [...TITLE_KEYS, ...PLAN_KEYS].some((key) => key in value);
-}
-
-// A list of step texts from a list, the JSON text of a list of texts, or an object wrapping one; undefined when any part
-// is no step, so the op fails instead of dropping it. Other bracketed text, such as "[1, 2]", stays one step.
-function stepList(value) {
-  if (typeof value === 'string') {
-    const parsed = parsedJson(value);
-    if (isTextList(parsed) && parsed.length > 0) return parsed;
-    return isWrapper(parsed) ? stepList(parsed) : [value];
-  }
-  if (Array.isArray(value)) {
-    const parts = value.map(stepList);
-    return parts.every((part) => part !== undefined) && parts.length > 0 ? parts.flat() : undefined;
-  }
-  if (isWrapper(value)) {
-    for (const key of [...PLAN_KEYS, ...TITLE_KEYS]) {
-      if (value[key] !== undefined) return stepList(value[key]);
-    }
-  }
-  return undefined;
-}
-
-function itemSpec(spec) {
-  let value = spec;
-  if (typeof value === 'string') {
-    const parsed = parsedJson(value);
-    if (isWrapper(parsed)) value = parsed;
-  }
-  let title = '';
-  let plan;
-  if (typeof value === 'string') {
-    title = value.trim();
-  } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-    const key = TITLE_KEYS.find((name) => value[name] !== undefined);
-    const inner = key === undefined ? undefined : value[key];
-    if (typeof inner === 'string' && !isWrapper(parsedJson(inner))) {
-      title = inner.trim();
-    } else if (inner !== undefined) {
-      // A wrapper such as {"item": {"title": ..., "plan": ...}}: the item is inside it.
-      const nested = itemSpec(inner);
-      title = nested.title;
-      plan = nested.plan;
-    }
-    const rawPlan = PLAN_KEYS.map((name) => value[name]).find((part) => part !== undefined);
-    if (rawPlan !== undefined) {
-      plan = stepList(rawPlan);
-      if (plan === undefined) throw new OpError(`the plan of "${title}" is not a list of steps`, 'write the plan as a list of step texts, or add it later with "plan <item>: step | step"');
-    }
-  }
-  if (title === '') throw new OpError('an item has no title', 'write items as text, e.g. "init Phase: first item | second item"');
-  return plan?.length ? { title, plan } : { title };
 }
 
 function claim(titles, title) {
@@ -239,34 +136,18 @@ function resolveDefault(next, query, op) {
 }
 
 function init(next, op) {
-  if (!op.list?.length) throw new OpError('init has no list', 'write "init Phase: item | item"');
-  const phases = [];
-  const plans = new Map();
-  const names = new Set();
+  const name = (op.phase ?? '').trim();
+  if (name === '') throw new OpError('a phase has no name', 'write "init Phase: item | item"');
+  if (op.items.length === 0) throw new OpError(`phase "${name}" has no items`, 'write "init Phase: item | item"');
   const titles = new Set();
-  for (const group of op.list) {
-    const name = (group.phase ?? '').trim();
-    if (name === '') throw new OpError('a phase has no name', 'give every phase a name in list, e.g. {phase: "Research", items: [...]}');
-    if (!group.items?.length) throw new OpError(`phase "${name}" has no items`, `give "${name}" at least one item, or drop it from list`);
-    if (names.has(normalize(name))) throw new OpError(`phase "${name}" is listed twice`, 'merge its items into one phase entry');
-    names.add(normalize(name));
-    const tasks = [];
-    for (const spec of group.items) {
-      const { title, plan } = itemSpec(spec);
-      claim(titles, title);
-      tasks.push({ content: title, status: 'pending' });
-      if (plan) plans.set(keyOf(name, title), { steps: plan, current: 1 });
-    }
-    phases.push({ name, tasks });
-  }
-  next.phases = phases;
-  next.plans = plans;
-  return `list set: ${allItems(next).length} items in ${phases.length} phases`;
+  for (const title of op.items) claim(titles, title);
+  next.phases = [{ name, tasks: op.items.map((content) => ({ content, status: 'pending' })) }];
+  next.plans = new Map();
+  return `list set: ${op.items.length} items in 1 phases`;
 }
 
 function append(next, op) {
-  if (!op.items?.length) throw new OpError('append has no items', 'write "append: item | item"');
-  const specs = op.items.map((spec) => itemSpec(spec));
+  if (op.items.length === 0) throw new OpError('append has no items', 'write "append: item | item"');
   const taken = new Set(allItems(next).map((entry) => normalize(entry.item.content)));
   let index = -1;
   let name = 'Todos';
@@ -288,11 +169,10 @@ function append(next, op) {
   }
   const phase = next.phases[index];
   const added = [];
-  for (const { title, plan } of specs) {
+  for (const title of op.items) {
     if (taken.has(normalize(title))) throw new OpError(`item "${title}" already exists`, 'use the existing item by its number, or give this one another title');
     taken.add(normalize(title));
     phase.tasks.push({ content: title, status: 'pending' });
-    if (plan) next.plans.set(keyOf(phase.name, title), { steps: plan, current: 1 });
     added.push(`${index + 1}.${phase.tasks.length} "${title}"`);
   }
   return `added ${added.join(', ')} to ${phase.name}`;
@@ -320,7 +200,7 @@ function closedLines(next, op) {
 
 const OP_NAMES = new Set(['init', 'append', 'start', 'done', 'drop', 'block', 'unblock', 'rm', 'plan', 'step', 'closed']);
 
-// A short op written as text, "<op> [item or phase][: text]": "done 1.2", "start 1.3", "step", "step 3",
+// An op written as text, "<op> [item or phase][: text]": "done 1.2", "start 1.3", "step", "step 3",
 // "block 1.4: waits for the key", "plan: first | second", "plan 2.1: first | second", "init Phase: item | item",
 // "append: item | item", "append Phase: item", "closed".
 function parseOpText(text) {
@@ -337,7 +217,6 @@ function parseOpText(text) {
   const parts = tail === undefined ? [] : tail.split('|').map((part) => part.trim()).filter((part) => part !== '');
   switch (name) {
     case 'init':
-      return { op: name, list: [{ phase: target, items: parts }] };
     case 'append':
       return { op: name, phase: target, items: parts };
     case 'block':
@@ -357,24 +236,7 @@ function parseOpText(text) {
   }
 }
 
-function isTextList(value) {
-  return Array.isArray(value) && value.every((part) => typeof part === 'string');
-}
-
-// The object form arrives as the model wrote it; a field of the wrong type fails here as an op, before any state changes.
-function checkOp(op) {
-  const wrong = (field, want) => new OpError(`${op.op} has ${field} that is not ${want}`, 'write the op as text, e.g. "done 1.2"');
-  for (const field of ['item', 'phase', 'reason']) if (op[field] !== undefined && typeof op[field] !== 'string') throw wrong(field, 'text');
-  if (op.step !== undefined && typeof op.step !== 'number') throw wrong('step', 'a number');
-  if (op.steps !== undefined && !isTextList(op.steps)) throw wrong('steps', 'a list of texts');
-  if (op.items !== undefined && !Array.isArray(op.items)) throw wrong('items', 'a list');
-  if (op.list !== undefined && (!Array.isArray(op.list) || op.list.some((group) => typeof group !== 'object' || group === null || (group.items !== undefined && !Array.isArray(group.items))))) {
-    throw wrong('list', 'a list of phases with items');
-  }
-}
-
 function applyOp(next, op, report) {
-  checkOp(op);
   switch (op.op) {
     case 'init':
       return init(next, op);
@@ -418,9 +280,7 @@ function applyOp(next, op, report) {
       return `removed ${target.num} "${target.item.content}"`;
     }
     case 'plan': {
-      const steps = op.steps === undefined ? undefined : stepList(op.steps);
-      if (!steps?.length) throw new OpError('plan has no steps', 'write "plan: first step | second step"');
-      op.steps = steps;
+      if (op.steps.length === 0) throw new OpError('plan has no steps', 'write "plan: first step | second step"');
       const target = resolveDefault(next, op.item, 'plan');
       next.plans.set(itemKey(next, target), { steps: op.steps, current: 1 });
       return `plan ${target.num}: ${op.steps.length} steps`;
@@ -431,9 +291,8 @@ function applyOp(next, op, report) {
       if (!plan) throw new OpError(`${target.num} has no plan`, `add its steps first: "plan ${target.num}: step | step"`);
       const total = plan.steps.length;
       if (op.step !== undefined) {
-        const step = op.step;
-        if (step <= 0 || step > total) throw new OpError(`step ${op.step} is outside 1..${total}`, `pass step from 1 to ${total}, or omit step to move on by one`);
-        plan.current = step;
+        if (op.step <= 0 || op.step > total) throw new OpError(`step ${op.step} is outside 1..${total}`, `pass step from 1 to ${total}, or omit step to move on by one`);
+        plan.current = op.step;
       } else {
         plan.current = Math.min(plan.current + 1, total + 1);
       }
@@ -463,11 +322,12 @@ function nextLine(next) {
   const entries = allItems(next);
   if (!entries.some((entry) => isOpen(entry.item.status))) return 'All items are closed; the list leaves the context.';
   const active = entries.find((entry) => entry.item.status === 'in_progress');
-  if (!active) return 'No item is in progress; start one with "start <item>".';
+  if (!active) return 'No item is in progress.';
+  const now = `Now: ${show(active)}`;
   const plan = next.plans.get(itemKey(next, active));
-  if (!plan) return `Next: ${active.num} "${active.item.content}" has no plan; add its steps with "plan: step | step".`;
-  if (plan.current > plan.steps.length) return `All steps of ${active.num} are marked; close it with "done".`;
-  return `Now: ${active.num} "${active.item.content}", step ${plan.current}/${plan.steps.length} "${plan.steps[plan.current - 1]}".`;
+  if (!plan) return `${now}, no plan.`;
+  if (plan.current > plan.steps.length) return `${now}, all steps marked.`;
+  return `${now}, step ${plan.current}/${plan.steps.length} "${plan.steps[plan.current - 1]}".`;
 }
 
 function planText(plan) {
@@ -484,14 +344,14 @@ function planText(plan) {
 function snapshot(next) {
   const entries = allItems(next);
   const open = entries.filter((entry) => isOpen(entry.item.status)).length;
-  const lines = ['<todo>', `Your todo list; item numbers work in every todo op. ${open} of ${entries.length} open; closed items are folded, list them with "closed".`];
+  const lines = [`<todo> ${open} of ${entries.length} open; closed items hidden, list them with "closed"`];
   next.phases.forEach((phase, p) => {
     if (phase.tasks.length === 0) {
-      lines.push(`${p + 1} ${phase.name} — empty`);
+      lines.push(`${p + 1} ${phase.name} empty`);
       return;
     }
     const closedCount = phase.tasks.filter((item) => !isOpen(item.status)).length;
-    lines.push(`${p + 1} ${phase.name} — ${closedCount}/${phase.tasks.length} closed`);
+    lines.push(`${p + 1} ${phase.name} ${closedCount}/${phase.tasks.length} closed`);
     phase.tasks.forEach((item, i) => {
       if (!isOpen(item.status)) return;
       const blocked = item.status === 'blocked' ? ` — blocked: ${item.blocker ?? ''}` : '';
@@ -502,6 +362,11 @@ function snapshot(next) {
   });
   lines.push('</todo>');
   return lines.join('\n');
+}
+
+// The list as the hooks show it: the snapshot while any item is open, otherwise an empty string.
+function openSnapshot(next) {
+  return allItems(next).some((entry) => isOpen(entry.item.status)) ? snapshot(next) : '';
 }
 
 // The finite number a step counter holds; a numeric string, as an older step op saved it, counts as that number.
@@ -623,52 +488,32 @@ function removeStaleLock(file) {
   }
 }
 
-const USAGE = `todo needs ops: text arguments such as 'done 1.2' 'plan: first | second', or JSON {"ops":[...]} as the only argument or on stdin. Fix: node todo.cjs 'start 1.1'.`;
 const NO_OPS = `todo needs at least one op. Fix: node todo.cjs 'start 1.1'.`;
 
-// Parses a JSON ops text: {"ops":[...]} or a bare array. Undefined when the text is not JSON or has no ops array.
-function parseJsonOps(text) {
-  let parsed;
-  try {
-    parsed = JSON.parse(text);
-  } catch {
-    return undefined;
-  }
-  const ops = Array.isArray(parsed) ? parsed : parsed?.ops;
-  return Array.isArray(ops) ? ops : undefined;
-}
-
-// The raw ops from argv or, without arguments, from stdin. Undefined when the JSON form is invalid.
+// The ops: the text arguments or, without arguments, the lines of stdin.
 function readOps() {
   const args = process.argv.slice(2);
-  if (args.length > 0) {
-    if (args.length === 1 && /^[{[]/.test(args[0].trim())) return parseJsonOps(args[0].trim());
-    return args;
+  let ops = args;
+  if (args.length === 0) {
+    let text = '';
+    try {
+      text = readFileSync(0, 'utf8');
+    } catch {
+      // Unreadable input leaves no ops; the no-ops error reports it.
+    }
+    ops = text.split('\n');
   }
-  let text = '';
-  try {
-    text = readFileSync(0, 'utf8');
-  } catch {
-    // Unreadable input leaves no ops; the no-ops error below reports it.
-  }
-  const trimmed = text.trim();
-  if (/^[{[]/.test(trimmed)) return parseJsonOps(trimmed);
-  return trimmed.split('\n').map((line) => line.trim()).filter((line) => line !== '');
+  return ops.map((op) => op.trim()).filter((op) => op !== '');
 }
 
-// Applies the ops in order like the todo tool does; stops at the first failing op and keeps the earlier ones.
+// Applies the ops in order; stops at the first failing op and keeps the earlier ones.
 function runCli() {
   const sessionId = process.env.CODEX_THREAD_ID || '';
   if (sessionId === '') {
     console.error('todo: CODEX_THREAD_ID is not set; run this program from the Codex shell tool.');
     return 1;
   }
-  const raw = readOps();
-  if (raw === undefined) {
-    console.error(USAGE);
-    return 1;
-  }
-  const ops = raw.map((op) => clean(op)).filter((op) => op !== undefined);
+  const ops = readOps();
   if (ops.length === 0) {
     console.error(NO_OPS);
     return 1;
@@ -688,43 +533,41 @@ function runCli() {
 }
 
 // Loads the list, applies the ops and saves the result; runCli holds the lock around this call.
-function applyOps(sessionId, rawOps) {
+// A success prints its result and the current item, plus the list when item numbers changed;
+// a failure prints the list as it was saved.
+function applyOps(sessionId, ops) {
   const start = loadState(sessionId);
   let working = structuredClone(start);
   const applied = [];
   const report = [];
+  let renumbered = false;
   let failure;
-  for (const [index, raw] of rawOps.entries()) {
+  for (const [index, text] of ops.entries()) {
     const trial = structuredClone(working);
     try {
-      if (typeof raw !== 'string' && (typeof raw !== 'object' || raw === null || Array.isArray(raw))) {
-        throw new OpError(`op ${index + 1} is ${JSON.stringify(raw)}, not an op`, 'write it as text, e.g. "done 1.2"');
-      }
-      const op = typeof raw === 'string' ? parseOpText(raw) : raw;
+      const op = parseOpText(text);
       applied.push(applyOp(trial, op, report));
+      if (RENUMBERING.has(op.op)) renumbered = true;
       working = settle(trial);
-    } catch (failed) {
-      // Malformed input that slipped past the checks fails like any op, never as a crash.
-      const error = failed instanceof OpError
-        ? failed
-        : new OpError(failed instanceof Error ? failed.message : String(failed), 'write the op as text, e.g. "done 1.2"');
+    } catch (error) {
+      if (!(error instanceof OpError)) throw error;
       failure = { index, error };
       break;
     }
   }
 
   const committed = applied.length > 0 ? working : start;
+  const result = applied.length > 0 ? `${capitalize(applied.join('; '))}.` : '';
   const lines = [];
-  if (applied.length > 0) lines.push(`${capitalize(applied.join('; '))}.`);
   if (failure) {
-    const parts = [`Stopped at op ${failure.index + 1} (${opName(rawOps[failure.index])}): ${failure.error.reason}. Fix: ${failure.error.fix}.`];
-    const rest = rawOps.slice(failure.index + 1).map((op, offset) => `op ${failure.index + 2 + offset} (${opName(op)})`);
+    if (result) lines.push(result);
+    const parts = [`Stopped at op ${failure.index + 1} (${ops[failure.index]}): ${failure.error.reason}. Fix: ${failure.error.fix}.`];
+    const rest = ops.slice(failure.index + 1).map((op, offset) => `op ${failure.index + 2 + offset} (${op})`);
     if (rest.length > 0) parts.push(`Not applied: ${rest.join(', ')}.`);
-    lines.push(parts.join(' '));
-    lines.push(snapshot(committed));
+    lines.push(parts.join(' '), snapshot(committed));
   } else {
-    lines.push(nextLine(committed));
-    if (allItems(committed).some((entry) => isOpen(entry.item.status))) lines.push(snapshot(committed));
+    lines.push(`${result} ${nextLine(committed)}`);
+    if (renumbered) lines.push(snapshot(committed));
   }
   lines.push(...report);
   if (applied.length > 0) saveState(sessionId, committed);
@@ -741,4 +584,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { loadState, allItems, isOpen, snapshot, nextLine, TODO_REMINDER };
+module.exports = { loadState, allItems, openSnapshot, TODO_REMINDER };

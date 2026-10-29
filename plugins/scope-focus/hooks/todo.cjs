@@ -15,10 +15,10 @@ try {
 
 const block = (reason) => process.stdout.write(JSON.stringify({ decision: 'block', reason }));
 
-const main = async () => {
+function main() {
   if (typeof input.agent_id === 'string' && input.agent_id !== '') return;
   if (typeof input.session_id !== 'string' || input.session_id === '') return;
-  const { allItems, isOpen, loadState, snapshot, TODO_REMINDER } = require(join(__dirname, '..', 'tools', 'todo.cjs'));
+  const { allItems, loadState, openSnapshot, TODO_REMINDER } = require(join(__dirname, '..', 'tools', 'todo.cjs'));
   switch (input.hook_event_name) {
     case 'UserPromptSubmit': {
       let state;
@@ -28,8 +28,7 @@ const main = async () => {
         block(`The todo list of this session cannot be read (${error.message}). The message was not sent; repeat it after fixing the cause.`);
         break;
       }
-      const open = allItems(state).some((entry) => isOpen(entry.item.status));
-      process.stdout.write(open ? snapshot(state) : TODO_REMINDER);
+      process.stdout.write(openSnapshot(state) || TODO_REMINDER);
       break;
     }
     case 'Stop': {
@@ -42,21 +41,19 @@ const main = async () => {
         break;
       }
       const open = allItems(state)
-        .filter((entry) => entry.item.status === 'pending' || entry.item.status === 'in_progress');
+        .filter((entry) => entry.item.status === 'pending' || entry.item.status === 'in_progress')
+        .map((entry) => `${entry.num} ${entry.item.content} (${entry.item.status})`);
       if (open.length === 0) break;
-      const reason = [
-        'The todo list still has open items:',
-        ...open.map((entry) => `- ${entry.num} ${entry.item.content} (${entry.item.status})`),
-        'Before finishing, mark each one done, drop it if it is no longer needed, or block it with a reason if it waits for the user or another event.',
-      ].join('\n');
-      block(reason);
+      block(`Open todo items: ${open.join('; ')}. Before finishing, mark each done, drop it if no longer needed, or block it with a reason if it waits for the user or another event.`);
       break;
     }
     default:
       break;
   }
-};
+}
 
-main().catch(() => {
+try {
+  main();
+} catch {
   // Failures stay silent: the hook exits 0 with no output.
-});
+}
